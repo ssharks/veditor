@@ -20,8 +20,13 @@ package net.sourceforge.veditor.editor;
 
 import net.sourceforge.veditor.VerilogPlugin;
 
+import org.eclipse.jface.preference.BooleanFieldEditor;
+import org.eclipse.jface.preference.ColorFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.StringFieldEditor;
+import org.eclipse.swt.layout.RowLayout;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Group;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
@@ -38,17 +43,35 @@ public class PreferencePage extends FieldEditorPreferencePage implements
 		setPreferenceStore(VerilogPlugin.getPlugin().getPreferenceStore());
 	}
 
+	Composite parent ;
+	
 	protected void createFieldEditors()
 	{
-		addStringField("Color.Default", "Default color");
-		addStringField("Color.SingleLineComment", "Single line comment color");
-		addStringField("Color.MultiLineComment", "Multi line comment color");
-		addStringField("Color.DoxygenComment", "Doxygen comment color");
-		addStringField("Color.KeyWord", "Reserved word color");
-		addStringField("Color.String", "String color");
+		addTextAttributeField("Default", "Default");
+		addTextAttributeField("SingleLineComment", "Single line comment");
+		addTextAttributeField("MultiLineComment", "Multi line comment");
+		addTextAttributeField("DoxygenComment", "Doxygen comment");
+		addTextAttributeField("KeyWord", "Reserved word");
+		addTextAttributeField("String", "String");
+		
 		addStringField("Compile.command", "Compile command");
 	}
 
+	private void addTextAttributeField(String name, String label)
+	{
+		// TODO: find how to layout in PreferencePage
+		Group parent = new Group(getFieldEditorParent(), 0);
+		parent.setText(label);
+
+		// setLayout is ignored
+		RowLayout rowLayout = new RowLayout();
+		parent.setLayout(rowLayout);
+
+		String colorName = "Color." + name;
+		addField(new ColorFieldEditor(colorName, "", parent));
+		addField(new BooleanFieldEditor("Bold." + name, "Bold", parent));
+		addField(new BooleanFieldEditor("Italic." + name, "Italic", parent));
+	}
 	private void addStringField(String name, String label)
 	{
 		addField(new StringFieldEditor(name, label, getFieldEditorParent()));
@@ -57,5 +80,13 @@ public class PreferencePage extends FieldEditorPreferencePage implements
 	public void init(IWorkbench workbench)
 	{
 	}
+
+	public boolean performOk()
+	{
+		super.performOk();
+		HdlTextAttribute.init();
+		return true;
+	}
+
 }
 

@@ -22,7 +22,6 @@ package net.sourceforge.veditor.editor;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.rules.IRule;
 import org.eclipse.jface.text.rules.IToken;
 import org.eclipse.jface.text.rules.IWordDetector;
@@ -46,14 +45,10 @@ public class HdlScanner extends RuleBasedScanner
 	
 	private HdlScanner(ColorManager manager, boolean isVerilog)
 	{
-		IToken keyword =
-			new Token(
-				new TextAttribute(
-					manager.getColor(ColorConstants.KEY_WORD)));
-		IToken other =
-			new Token(
-				new TextAttribute(
-					manager.getColor(ColorConstants.DEFAULT)));
+		IToken keyword = new Token(HdlTextAttribute.KEY_WORD
+				.getTextAttribute(manager));
+		IToken other = new Token(HdlTextAttribute.DEFAULT
+				.getTextAttribute(manager));
 
 		List rules = new ArrayList();
 

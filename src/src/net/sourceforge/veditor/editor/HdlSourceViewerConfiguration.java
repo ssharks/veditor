@@ -20,7 +20,6 @@
 package net.sourceforge.veditor.editor;
 
 import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.contentassist.ContentAssistant;
 import org.eclipse.jface.text.contentassist.IContentAssistant;
 import org.eclipse.jface.text.presentation.IPresentationReconciler;
@@ -29,7 +28,6 @@ import org.eclipse.jface.text.rules.DefaultDamagerRepairer;
 import org.eclipse.jface.text.rules.Token;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.SourceViewerConfiguration;
-import org.eclipse.swt.graphics.RGB;
 
 /**
  * parse verilog source code
@@ -99,8 +97,8 @@ abstract public class HdlSourceViewerConfiguration extends
 		if (scanner == null)
 		{
 			scanner = createScanner();
-			scanner.setDefaultReturnToken(new Token(new TextAttribute(
-					colorManager.getColor(ColorConstants.DEFAULT))));
+			scanner.setDefaultReturnToken(new Token(
+					HdlTextAttribute.DEFAULT.getTextAttribute(colorManager)));
 		}
 		return scanner;
 	}
@@ -116,20 +114,20 @@ abstract public class HdlSourceViewerConfiguration extends
 		reconciler.setRepairer(dr, IDocument.DEFAULT_CONTENT_TYPE);
 
 		String[] contentTypes = HdlPartitionScanner.getContentTypes();
-		RGB[] colors = HdlPartitionScanner.getContentTypeColors();
+		HdlTextAttribute[] attrs = HdlPartitionScanner.getContentTypeAttributes();
 		for (int i = 0; i < contentTypes.length; i++)
 		{
-			addRepairer(reconciler, colors[i], contentTypes[i]);
+			addRepairer(reconciler, attrs[i], contentTypes[i]);
 		}
 		return reconciler;
 	}
 
-	private void addRepairer(PresentationReconciler reconciler, RGB color,
-			String partition)
+	private void addRepairer(PresentationReconciler reconciler,
+			HdlTextAttribute attr, String partition)
 	{
 		NonRuleBasedDamagerRepairer ndr;
-		ndr = new NonRuleBasedDamagerRepairer(new TextAttribute(colorManager
-				.getColor(color)));
+		ndr = new NonRuleBasedDamagerRepairer(attr
+				.getTextAttribute(colorManager));
 		reconciler.setDamager(ndr, partition);
 		reconciler.setRepairer(ndr, partition);
 	}

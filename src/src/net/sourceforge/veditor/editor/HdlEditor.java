@@ -79,7 +79,7 @@ abstract public class HdlEditor extends TextEditor
 		current = this;
 		colorManager = new ColorManager();
 		setDocumentProvider(new HdlDocumentProvider());
-		ColorConstants.init();
+		HdlTextAttribute.init();
 	}
 
 	public void updatePartControl(IEditorInput input)

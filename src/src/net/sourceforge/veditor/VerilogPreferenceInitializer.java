@@ -30,15 +30,33 @@ public class VerilogPreferenceInitializer extends AbstractPreferenceInitializer
 
 	public void initializeDefaultPreferences()
 	{
-		Preferences preferences = VerilogPlugin.getPlugin().getPluginPreferences();
+		Preferences preferences = VerilogPlugin.getPlugin()
+				.getPluginPreferences();
 
-		preferences.setDefault("Color.DoxygenComment", "404080");
-		preferences.setDefault("Color.SingleLineComment", "008080");
-		preferences.setDefault("Color.MultiLineComment", "008080");
-		preferences.setDefault("Color.String", "000080");
-		preferences.setDefault("Color.Default", "000000");
-		preferences.setDefault("Color.KeyWord", "800080");
+//		setDefaultAttr(preferences, "DoxygenComment", "404080");
+//		setDefaultAttr(preferences, "SingleLineComment", "008080");
+//		setDefaultAttr(preferences, "MultiLineComment", "008080");
+//		setDefaultAttr(preferences, "String", "000080");
+//		setDefaultAttr(preferences, "Default", "000000");
+//		setDefaultAttr(preferences, "KeyWord", "800080");
+
+		setDefaultAttr(preferences, "DoxygenComment", "64,64,128");
+		setDefaultAttr(preferences, "SingleLineComment", "00,128,128");
+		setDefaultAttr(preferences, "MultiLineComment", "00,128,128");
+		setDefaultAttr(preferences, "String", "00,00,128");
+		setDefaultAttr(preferences, "Default", "00,00,00");
+		setDefaultAttr(preferences, "KeyWord", "128,00,128");
+
 		preferences.setDefault("Compile.command", "iverilog -tnull -y . -Wall");
-
 	}
-} 
+	
+	private void setDefaultAttr(Preferences preferences, String name,
+			String color)
+	{
+		preferences.setDefault("Color." + name, color);
+		preferences.setDefault("Bold.", false);
+		preferences.setDefault("Italic.", false);
+	}
+}
+
+

@@ -75,11 +75,21 @@ public class VerilogPlugin extends AbstractUIPlugin
 	}
 
 	/**
-	 * Returns the string from the plugin preferences file
+	 * Returns the string from the plugin preferences
 	 */
 	public static String getPreferenceString(String key)
 	{
 		return getPlugin().getPreferenceStore().getString(key);
 	}
+
+	/**
+	 * Returns the string from the plugin preferences
+	 */
+	public static boolean getPreferenceBoolean(String key)
+	{
+		return getPlugin().getPreferenceStore().getBoolean(key);
+	}
+	
+	
 }
 

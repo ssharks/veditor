@@ -32,7 +32,6 @@ import org.eclipse.jface.text.rules.RuleBasedPartitionScanner;
 import org.eclipse.jface.text.rules.SingleLineRule;
 import org.eclipse.jface.text.rules.Token;
 import org.eclipse.jface.text.rules.WordRule;
-import org.eclipse.swt.graphics.RGB;
 
 /**
  * parse comment
@@ -63,14 +62,14 @@ abstract public class HdlPartitionScanner extends RuleBasedPartitionScanner
 				STRING
 		};
 	}
-	public static RGB[] getContentTypeColors()
+	public static HdlTextAttribute[] getContentTypeAttributes()
 	{
 		// must be same sequence with getContentTypes
-		return new RGB[] {
-				ColorConstants.DOXYGEN_COMMENT,
-				ColorConstants.SINGLE_LINE_COMMENT,
-				ColorConstants.MULTI_LINE_COMMENT,
-				ColorConstants.STRING
+		return new HdlTextAttribute[] {
+				HdlTextAttribute.DOXYGEN_COMMENT,
+				HdlTextAttribute.SINGLE_LINE_COMMENT,
+				HdlTextAttribute.MULTI_LINE_COMMENT,
+				HdlTextAttribute.STRING
 		};
 	}
 
