@@ -8,12 +8,12 @@
 </HEAD>
 <BODY>
 <H2 align="center">Eclipse Verilog editor</H2>
-<P align="right">Last updated: April 04, 2004</P>
+<P align="right">Last updated: May 17, 2004</P>
 <H4>News</H4>
-<P>The version 0.1.2 released.<BR>
-It supported content assist, which depends on Verilog context. The proposals
-are code templates, signals and module instances. The signals include &quot;wire&quot;,
-&quot;reg&quot; and &quot;integer&quot;.</P>
+<P>The version 0.1.3 released.<BR>
+It supported &quot;Module Hierarchy&quot; view, which show a hierarchical list of module instantiation. The Module Hierarchy view also supports &quot;copy text&quot; and &quot;copy hierarchy&quot; to clipboard.<BR>
+<BR>
+The 0.1.3 is confirmed on Eclipse 2.1.2 and 3.0M8.</P>
 <H4>Introduction</H4>
 <P>Eclipse Verilog editor provides <A href="http://www.verilog.com/">Verilog (IEEE-1364)</A> language specific features on <A href="http://www.eclipse.org/">Eclipse IDE</A>. It helps coding and debugging in hardware development based on Verilog.<BR>
 <A href="http://sourceforge.net/projects/veditor/">Here</A> is the project summary page in SourceForge.<BR>
@@ -31,23 +31,26 @@ This is a screenshot:</P>
   /* multi-line comment */</P>
   <LI>Go to matching bracket
   <P>&quot;[]&quot;, &quot;{}&quot;, &quot;()&quot; and &quot;begin/end&quot;<BR>
-  Select Navigate-&gt;Go to-&gt;Matching Bracket menu.</P>
+  Select &quot;Navigate&quot;-&gt;&quot;Go to&quot;-&gt;&quot;Matching Bracket&quot; menu.</P>
   <LI>Contents outline view
   <P>The outline view shows module definition, module instantiation, task, function
   and comment with valid sentence in a Verilog source code.<BR>
   The version 0.1.1 fixed some bugs of source code parsing.</P>
   <LI>Code template
   <P>begin/end pair, always/initial block, function and task<BR>
-  Enter Ctrl+space or select Edit-&gt;Content Assist menu.<BR>
+  Enter Ctrl+space or select &quot;Edit&quot;-&gt;&quot;Content Assist&quot;
+  menu.<BR>
   It is implemented as a part of the content assist.</P>
   <LI>Open declaration
   <P>Go to module declaration of selected word by searching a project hierarchy.<BR>
   It is valid when you defined a same module name with file name, e.g. module
   &quot;adder&quot; is defined in file &quot;adder.v&quot;.<BR>
-  Select Navigate-&gt;Open Declaration menu.</P>
+  Select &quot;Navigate&quot;-&gt;&quot;Open Declaration&quot; menu, &quot;Open
+  Declaration&quot; in popup menu of editor page.</P>
   <LI>Automatic port connection for instantiation
   <P>Enter first character of module name which you want to instantiate.<BR>
-  Enter Ctrl+space or select Edit-&gt;Content Assist menu.<BR>
+  Enter Ctrl+space or select &quot;Edit&quot;-&gt;&quot;Content Assist&quot;
+  menu.<BR>
   Select module from the list. It is implemented as a part of the content
   assist.<BR>
   <BR>
@@ -61,9 +64,10 @@ This is a screenshot:</P>
   <P>When you enter 'a' and Ctrl+space then select 'adder', you can see this:</P>
   <BLOCKQUOTE>adder adder( .a(a), .b(b), .sum(b) );</BLOCKQUOTE>
   <P>It is more effective when you are using more complicated modules.</P>
-  <LI>Content assist<IMG src="new.gif" width="61" height="13" border="0">
+  <LI>Content assist
   <P>Content Assist completes a whole phrase which you want.<BR>
-  Enter a few character and enter Ctrl+space or Edit-&gt;Content Assist menu.<BR>
+  Enter a few character and enter Ctrl+space or &quot;Edit&quot;-&gt;&quot;Content
+  Assist&quot; menu.<BR>
   Select word from a proposal list.<BR>
   <BR>
   The proposal list can include code templates, signals and module instances.
@@ -76,16 +80,25 @@ This is a screenshot:</P>
   <P>There are always no proposals in 1. The proposals in 2 includes some templates
   and module instances. The proposal in 3 includes &quot;begin/end&quot;
   template and signals, which defined in same module.</P>
-  
+  <LI>Module Hierarchy<IMG src="new.gif" width="61" height="13" border="0">
+  <P>Select &quot;Window&quot;-&gt;&quot;Show View&quot;-&gt;&quot;Other...&quot; menu, then you can select &quot;Module Hierarchy&quot; in &quot;Eclipse Verilog Editor&quot; category.<BR>
+  The Module Hierarchy view show module(s) defined in current editor page
+  at first. You can click &quot;+&quot; and expand hierarchical tree of module
+  instatiation.</P>
+  <P>You can open editor and go to declaration by double clicking on Module
+  Hierarchy view.</P>
+  <P>You can open popup menu on Module Hierarchy view by right button clicking.
+  The menu show &quot;copy text&quot; and &quot;copy hierarchy&quot;. The
+  &quot;copy text&quot; copys module list to clipboard simply. The &quot;copy
+  hierarchy&quot; copys hierarchical list.</P>
 </UL>
-
 <H4>Install</H4>
-<P>Download <A href="https://sourceforge.net/project/showfiles.php?group_id=103963&package_id=111746">net.sourceforge.veditor_0.1.2.zip</A> and unzip.<BR>
+<P>Download <A href="https://sourceforge.net/project/showfiles.php?group_id=103963&package_id=111746">net.sourceforge.veditor_0.1.3.zip</A> and unzip.<BR>
 Copy your Eclipse plugin directory.<BR>
 - It is same manner with other Eclipse plug-in.<BR>
 <BR>
 Eclipse Verilog editor is licensed by GPL.<BR>
-You can also get the source code from <A href="http://sourceforge.net/project/showfiles.php?group_id=103963&package_id=112277">net.sourceforge.veditor_source_0.1.2.zip</A></P>
+You can also get the source code from <A href="http://sourceforge.net/project/showfiles.php?group_id=103963&package_id=112277">net.sourceforge.veditor_source_0.1.3.zip</A></P>
 <H4>Update log</H4>
 <DL>
   <DT>0.1.0
@@ -95,11 +108,12 @@ You can also get the source code from <A href="http://sourceforge.net/project/sh
   <DD>fixed bugs about source code parsing
   <DT>0.1.2
   <DD>supported content assist
+  <DT>0.1.3
+  <DD>supported Module Hierarchy view
 </DL>
 <H4>Future plan</H4>
 <UL>
   <LI>add code templates
-  <LI>hierarchical view of module instantiation
   <LI>preference
   <LI>code formatter
   <LI>lint tool
