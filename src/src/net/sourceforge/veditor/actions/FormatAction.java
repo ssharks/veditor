@@ -245,9 +245,9 @@ public class FormatAction extends AbstractAction
 
 		analyzer.next();
 		word = analyzer.getWord();
-		while (word.equals("\n") || word.equals("//"))
+		while (word.equals("\r") || word.equals("\n") || word.equals("//"))
 		{
-			while(!word.equals("\n") && !analyzer.isEos())
+			while (!word.equals("\n") && !analyzer.isEos())
 			{
 				dst.append(analyzer.getSpace());
 				dst.append(word);
@@ -322,12 +322,6 @@ public class FormatAction extends AbstractAction
 				return false;
 
 			char c = src.charAt(pos);
-			if (c == '\n')
-			{
-				word = "\n";
-				pos++;
-				return true;
-			}
 			if (c == '\"')
 			{
 				parseStringLiteral();
