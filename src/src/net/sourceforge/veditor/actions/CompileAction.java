@@ -33,10 +33,16 @@ import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.action.IAction;
+import org.eclipse.ui.console.ConsolePlugin;
+import org.eclipse.ui.console.IConsole;
+import org.eclipse.ui.console.IConsoleManager;
+import org.eclipse.ui.console.MessageConsole;
+import org.eclipse.ui.console.MessageConsoleStream;
 
 public class CompileAction extends AbstractActionDelegate
 {
 	private static final String MARKER_TYPE = "org.eclipse.core.resources.problemmarker";
+	private static final String CONSOLE_NAME = "veditor";
 
 	public CompileAction()
 	{
@@ -62,11 +68,12 @@ public class CompileAction extends AbstractActionDelegate
 		catch (CoreException e)
 		{
 		}
+
+		MessageConsoleStream out = findConsole(CONSOLE_NAME).newMessageStream();
+		out.println(msg);
+
 		parseMessage(msg, folder);
-
 		getEditor().update();
-
-		//System.out.println(msg);
 	}
 
 	private String executeCompiler(File dir, String command)
@@ -101,17 +108,26 @@ public class CompileAction extends AbstractActionDelegate
 		for (int i = 0; i < lines.length; i++)
 		{
 			String[] segs = lines[i].split(":", 4);
-			if (segs.length >= 4)
+			if (segs.length >= 3)
 			{
 				IResource resource = folder.findMember(segs[0]);
-				if ( resource != null )
+				if (resource != null)
 				{
 					try
 					{
 						int lineNumber = Integer.parseInt(segs[1]);
-						setProblemMarker(resource, segs[2], lineNumber, segs[3]);
+						if (segs[2].indexOf("parse error") != -1)
+						{
+							setProblemMarker(resource, "error", lineNumber,
+									"parse error");
+						}
+						else if (segs.length >= 4)
+						{
+							setProblemMarker(resource, segs[2], lineNumber,
+									segs[3]);
+						}
 					}
-					catch(NumberFormatException e)
+					catch (NumberFormatException e)
 					{
 					}
 				}
@@ -123,7 +139,7 @@ public class CompileAction extends AbstractActionDelegate
 			String msg)
 	{
 		int level;
-		if ( type.equals(" warning") )
+		if (type.indexOf("warning") != -1)
 			level = IMarker.SEVERITY_WARNING;
 		else
 			level = IMarker.SEVERITY_ERROR;
@@ -137,6 +153,22 @@ public class CompileAction extends AbstractActionDelegate
 		catch (CoreException e)
 		{
 		}
+	}
+	
+	private MessageConsole findConsole(String name)
+	{
+		IConsoleManager man = ConsolePlugin.getDefault().getConsoleManager();
+		IConsole[] consoles = man.getConsoles();
+		for (int i = 0; i < consoles.length; i++)
+		{
+			if (consoles[i].getName().equals(name))
+				return (MessageConsole)consoles[i];
+		}
+
+		// if not exists, add new console
+		MessageConsole newConsole = new MessageConsole(name, null);
+		man.addConsoles(new IConsole[]{newConsole});
+		return newConsole;
 	}
 	
 	private class MessageThread extends Thread
