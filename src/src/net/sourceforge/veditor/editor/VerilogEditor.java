@@ -62,14 +62,26 @@ public class VerilogEditor extends TextEditor
 {
 	private ColorManager colorManager;
 	private VerilogContentOutlinePage outlinePage;
+	private ModuleHierarchyPage modulePage;
+
+	private static VerilogEditor current;
+	public static VerilogEditor current()
+	{
+		return current;
+	}
 
 	public VerilogEditor()
 	{
 		super();
+
+		current = this;
 		colorManager = new ColorManager();
 		setSourceViewerConfiguration(new VerilogSourceViewerConfiguration(colorManager));
 		setDocumentProvider(new VerilogDocumentProvider());
 		VerilogColorConstants.init();
+
+//		Platform.getAdapterManager().registerAdapters(
+//				new AdapterFactory(), ModuleTreeView.class);
 	}
 
 	public void updatePartControl(IEditorInput input)
@@ -77,6 +89,8 @@ public class VerilogEditor extends TextEditor
 		super.updatePartControl(input);
 		if (outlinePage != null)
 			outlinePage.setInput(input);
+
+		// System.out.println("updatePartControl: " + input);
 	}
 
 	public IDocument getDocument()
@@ -128,6 +142,8 @@ public class VerilogEditor extends TextEditor
 		super.doRevertToSaved();
 		if (outlinePage != null)
 			outlinePage.update();
+		if (modulePage != null)
+			modulePage.update();
 	}
 
 	public void doSave(IProgressMonitor monitor)
@@ -135,6 +151,8 @@ public class VerilogEditor extends TextEditor
 		super.doSave(monitor);
 		if (outlinePage != null)
 			outlinePage.update();
+		if (modulePage != null)
+			modulePage.update();
 	}
 
 	public void doSaveAs()
@@ -142,6 +160,8 @@ public class VerilogEditor extends TextEditor
 		super.doSaveAs();
 		if (outlinePage != null)
 			outlinePage.update();
+		if (modulePage != null)
+			modulePage.update();
 	}
 
 	public void doSetInput(IEditorInput input) throws CoreException
@@ -168,17 +188,24 @@ public class VerilogEditor extends TextEditor
 
 	public Object getAdapter(Class required)
 	{
+		// System.out.println("VerilogEditor.getAdapter : " + required);
 		if (IContentOutlinePage.class.equals(required))
 		{
 			if (outlinePage == null)
 			{
-				outlinePage =
-					new VerilogContentOutlinePage(getDocumentProvider(), this);
+				outlinePage = new VerilogContentOutlinePage(this);
 				if (getEditorInput() != null)
 					outlinePage.setInput(getEditorInput());
 			}
 			return outlinePage;
 		}
+		else if (ModuleHierarchyPage.class.equals(required))
+		{
+			if (modulePage == null)
+				modulePage = new ModuleHierarchyPage(this);
+			return modulePage;
+		}
+
 		return super.getAdapter(required);
 	}
 
@@ -229,6 +256,65 @@ public class VerilogEditor extends TextEditor
 			return elements;
 		}
 		return null;
+	}
+
+	/**
+	 * open new editor page by module name
+	 * @param modName	module name
+	 * @param file		file which defines the module
+	 */
+	public void openPage(String modName, IFile file)
+	{
+		IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow()
+				.getActivePage();
+		try
+		{
+			IEditorPart editorPart = page.openEditor(new FileEditorInput(file),
+					"net.sourceforge.veditor.editor.VerilogEditor");
+			if (editorPart instanceof VerilogEditor)
+			{
+				VerilogEditor editor = (VerilogEditor)editorPart;
+				Segment[] modules = editor.parse();
+				if (modules != null)
+				{
+					for (int i = 0; i < modules.length; i++)
+					{
+						Segment mod = modules[i];
+						if (modName.equals(mod.toString()))
+						{
+							IDocument doc = editor.getDocument();
+							int line = mod.getLine() - 1;
+							int start = doc.getLineOffset(line);
+							ISourceViewer viewer = editor.getSourceViewer();
+							viewer.setTopIndex(start);
+							viewer.getTextWidget().setSelection(start);
+						}
+					}
+				}
+			}
+		}
+		catch (BadLocationException e)
+		{
+		}
+		catch (PartInitException e)
+		{
+		}
+	}
+
+	/**
+	 * open new editor page by module name
+	 * @param modName module name
+	 */
+	public void openPage(String modName)
+	{
+		ModuleList mlist = ModuleList.find(getVerilogDocument().getProject());
+		Module mod = mlist.findModule(modName);
+		if (mod == null)
+		{
+			beep();
+			return;
+		}
+		openPage(modName, mod.getFile());
 	}
 
 	/**
@@ -374,8 +460,8 @@ public class VerilogEditor extends TextEditor
 	}
 
 	/**
-	 * プロジェクトのツリーの中からモジュールの定義ファイルを探す<p>
-	 * モジュール名とファイル名は同じでなければならない
+	 * find module declaration from project tree<p>
+	 * file name and module name must be same
 	 */
 	public class OpenDeclarationAction extends Action
 	{
@@ -398,53 +484,7 @@ public class VerilogEditor extends TextEditor
 				beep();
 				return;
 			}
-
-			ModuleList mlist = ModuleList.find(getVerilogDocument().getProject());
-			Module mod = mlist.findModule(modName);
-			if (mod == null)
-			{
-				beep();
-				return;
-			}
-			openEditor(modName, mod.getFile());
-		}
-
-		private void openEditor(String modName, IFile file)
-		{
-			IWorkbenchPage page =
-				PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-			try
-			{
-				IEditorPart editorPart = page.openEditor(new FileEditorInput(
-						file), "net.sourceforge.veditor.editor.VerilogEditor");
-				if (editorPart instanceof VerilogEditor)
-				{
-					VerilogEditor editor = (VerilogEditor)editorPart;
-					Segment[] modules = editor.parse();
-					if (modules != null)
-					{
-						for (int i = 0; i < modules.length; i++)
-						{
-							Segment mod = modules[i];
-							if (modName.equals(mod.toString()))
-							{
-								IDocument doc = editor.getDocument();
-								int line = mod.getLine() - 1;
-								int start = doc.getLineOffset(line);
-								ISourceViewer viewer = editor.getSourceViewer();
-								viewer.setTopIndex(start);
-								viewer.getTextWidget().setSelection(start);
-							}
-						}
-					}
-				}
-			}
-			catch (BadLocationException e)
-			{
-			}
-			catch (PartInitException e)
-			{
-			}
+			openPage(modName);
 		}
 	}
 }

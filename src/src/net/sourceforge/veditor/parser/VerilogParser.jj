@@ -104,7 +104,7 @@ TOKEN :
 |	<TASK:		"task">
 |	<ENDTASK:	"endtask">
 |	<PORT_HEAD: 	( "input" | "output" | "inout") >
-|	<VARIABLE_HEAD: ( "integer" | "real" | "wire" | "reg" ) >
+|	<VARIABLE_HEAD: ( "integer" | "real" | "wire" | "reg" | "event" ) >
 |	<STMT_HEAD: (
 		"parameter" | "time" |
 		"assign" | "defparam" | "tri0" | "tri1" | "pullup" | "pulldown" |
@@ -123,8 +123,9 @@ TOKEN :
 |	<BQ:		"`" >
 |	<DOLLAR:	"$" >
 |	<COMMA:		"," >
+|	<COLON:		":" >
 |	<EQUAL:		"=" >
-|	<IDENT: 	([ "a"-"z", "A"-"Z", "0"-"9", "_", "." ])+>
+|	<IDENT: 	([ "a"-"z", "A"-"Z", "0"-"9", "_", ".", "'", "?", "\"" ])+>
 |	<SPC_CHAR:	~[] >
 |	<OTHER:		"[.]" >
 }
@@ -166,7 +167,7 @@ void moduleBody() :
 		[ "#" ( identifier() | <LPAREN> skipParen() <RPAREN> ) ]
 		inst = identifier() "(" skipParen() ")" iend = ";"
 		{
-			addElement( module.beginLine, iend.endLine, module.image, inst.image );
+			addInstance( module.beginLine, iend.endLine, module.image, inst.image );
 			endStatement();
 		}
 }
@@ -208,13 +209,13 @@ void variable() :
 }
 {
 	[ "[" skipTo(RBRACKET) ]
-	variable = identifier()
+	variable = identifier() [ "[" skipTo(RBRACKET) ]
 	{
 		addVariable( variable.beginLine, variable.image );
 	}
 	(
 		","
-		variable = identifier()
+		variable = identifier() [ "[" skipTo(RBRACKET) ]
 		{
 			addVariable( variable.beginLine, variable.image );
 		}
@@ -263,15 +264,11 @@ void function() :
 	Token name, end ;
 }
 {
-	{
-		System.out.println( "function begin" );
-	}
 	[ "[" skipBracket() "]" ]
 	name = identifier()
 	end = skipTo( ENDFUNCTION )
 	{
 		addElement( name.beginLine, end.endLine, "function", name.image );
-		System.out.println( "function end" );
 	}
 }
 
@@ -300,7 +297,11 @@ void caseStatement() :
 {
 }
 {
-	(<CASE>|<CASEX>) skipToEndcase()
+	(<CASE>|<CASEX>) "(" skipParen() ")"
+	(
+		identifier() ( "," identifier() )* ":" statement()
+	)*
+	<ENDCASE>
 }
 
 void whileStatement() :

@@ -30,18 +30,17 @@ import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.ui.texteditor.IDocumentProvider;
+import org.eclipse.ui.views.contentoutline.ContentOutline;
 import org.eclipse.ui.views.contentoutline.ContentOutlinePage;
 
 public class VerilogContentOutlinePage extends ContentOutlinePage
 {
-	private IDocumentProvider documentProvider;
 	private VerilogEditor editor;
+	private ContentOutline outline;
 
-	public VerilogContentOutlinePage(IDocumentProvider provider, VerilogEditor editor)
+	public VerilogContentOutlinePage(VerilogEditor editor)
 	{
 		super();
-		documentProvider = provider;
 		this.editor = editor;
 	}
 
@@ -56,7 +55,7 @@ public class VerilogContentOutlinePage extends ContentOutlinePage
 
 		IDocument doc = editor.getDocument();
 		if (doc != null)
-			viewer.setInput(editor.getDocument());
+			viewer.setInput(doc);
 	}
 
 	public void selectionChanged(SelectionChangedEvent event)

@@ -86,10 +86,15 @@ public abstract class VerilogParserBase
 		if (updateDatabase)
 			getCurrentModule().addVariable(varName);
 	}
-	protected void addElement(int begin, int end, String module, String inst)
+	protected void addElement(int begin, int end, String type, String name)
 	{
 		if (updateDatabase)
-			getCurrentModule().addElement(begin, end, module, inst);
+			getCurrentModule().addElement(begin, end, type, name);
+	}
+	protected void addInstance(int begin, int end, String module, String inst)
+	{
+		if (updateDatabase)
+			getCurrentModule().addInstance(begin, end, module, inst);
 	}
 	protected void beginStatement()
 	{
@@ -121,6 +126,7 @@ public abstract class VerilogParserBase
 		}
 		catch (ParseException e)
 		{
+			System.out.println(file);
 			System.out.println(e);
 		}
 	}

@@ -66,6 +66,10 @@ public abstract class Module extends Segment
 	{
 		return null;
 	}
+	public Object[] getInstance()
+	{
+		return null;
+	}
 	public IFile getFile()
 	{
 		return null;
@@ -84,7 +88,14 @@ public abstract class Module extends Segment
 	public void addElement(int begin, int end, String typeName, String name)
 	{
 	}
+	public void addInstance(int begin, int end, String typeName, String name)
+	{
+	}
 	public void addVariable(String str)
 	{
+	}
+	public Module findModule(String str)
+	{
+		return null;
 	}
 }

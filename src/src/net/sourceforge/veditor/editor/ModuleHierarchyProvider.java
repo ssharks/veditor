@@ -16,42 +16,33 @@
 //  along with this program; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
-package net.sourceforge.veditor.parser;
+package net.sourceforge.veditor.editor;
 
-/**
- * instance, function, task and comment in source code
- */
-public class Element extends Segment implements Comparable
+import net.sourceforge.veditor.parser.Element;
+import net.sourceforge.veditor.parser.Module;
+
+
+public class ModuleHierarchyProvider extends TreeProviderBase
 {
-	private Segment parent;		//  includes this
-	private String typeName;	//  module name, "function", "task" or "//"
-	private String name; 		//  instance name, function name, task name or comment
-
-	public Element(int line, Segment parent, String typeName, String name)
+	public Object[] getChildren(Object parentElement)
 	{
-		super(line);
-		this.parent = parent;
-		this.typeName = typeName;
-		this.name = name;
-	}
-
-	public Segment getParent()
-	{
-		return parent;
-	}
-
-	public String toString()
-	{
-		return typeName + " " + name;
-	}
-
-	public String getTypeName()
-	{
-		return typeName;
-	}
-
-	public int compareTo(Object arg)
-	{
-		return toString().compareTo(arg);
+		if (parentElement instanceof Module)
+		{
+			Module mod = (Module)parentElement;
+			return mod.getInstance();
+		}
+		if (parentElement instanceof Element)
+		{
+			//  search module by name
+			Element element = (Element)parentElement;
+			Module parent = (Module)(element.getParent());
+			Module mod = parent.findModule(element.getTypeName());
+			if (mod == null)
+				return null;
+			else
+				return mod.getInstance();
+		}
+		return null;
 	}
 }
+

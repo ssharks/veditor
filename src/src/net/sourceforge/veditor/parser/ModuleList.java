@@ -34,7 +34,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 
 /**
- * module database
+ * module database for each project
  */
 public final class ModuleList
 {
@@ -182,6 +182,10 @@ public final class ModuleList
 		}
 		return null;
 	}
+	private Module findModuleFromList(String name)
+	{
+		return findModule(name);
+	}
 
 	private void readModule(String name)
 	{
@@ -290,17 +294,28 @@ public final class ModuleList
 		private List elements = new ArrayList();
 		public Object[] getElements()
 		{
-			int size = elements.size();
+			return getListObject(elements);
+		}
+
+		/**
+		 * module instance
+		 */
+		private List instances = new ArrayList();
+		public Object[] getInstance()
+		{
+			return getListObject(instances);
+		}
+
+		private Object[] getListObject(List list)
+		{
+			int size = list.size();
 			if (size == 0)
 				return null;
-			else
-			{
-				Collections.sort(elements, new LineComparator());
-				Object[] eary = new Object[size];
-				for (int i = 0; i < size; i++)
-					eary[i] = elements.get(i);
-				return eary;
-			}
+			Collections.sort(list, new LineComparator());
+			Object[] eary = new Object[size];
+			for (int i = 0; i < size; i++)
+				eary[i] = list.get(i);
+			return eary;
 		}
 
 		/**
@@ -335,6 +350,17 @@ public final class ModuleList
 			Element child = new Element(begin, this, typeName, name);
 			child.setEndLine(end);
 			elements.add(child);
+		}
+		public void addInstance(int begin, int end, String typeName, String name)
+		{
+			Element child = new Element(begin, this, typeName, name);
+			child.setEndLine(end);
+			elements.add(child);
+			instances.add(child);
+		}
+		public Module findModule(String name)
+		{
+			return findModuleFromList(name);
 		}
 	}
 

@@ -41,10 +41,11 @@
             id="veditor">
       </category>
       <view
-            name="Module Tree View"
+            name="Module Hierarchy"
+            icon="icons/hierarchy.gif"
             category="veditor"
-            class="net.sourceforge.veditor.editor.ModuleTreeView"
-            id="net.sourceforge.veditor.editor.ModuleTreeView">
+            class="net.sourceforge.veditor.editor.ModuleHierarchyView"
+            id="net.sourceforge.veditor.editor.ModuleHierarchyView">
       </view>
    </extension>
 
