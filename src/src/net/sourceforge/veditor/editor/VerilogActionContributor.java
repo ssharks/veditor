@@ -21,6 +21,8 @@ package net.sourceforge.veditor.editor;
 
 import java.util.ResourceBundle;
 
+import net.sourceforge.veditor.actions.CompileAction;
+
 import org.eclipse.jdt.ui.actions.IJavaEditorActionDefinitionIds;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.Separator;
@@ -37,10 +39,14 @@ public class VerilogActionContributor extends TextEditorActionContributor
 	private RetargetTextEditorAction contentAssistProposal;
 	private RetargetTextEditorAction gotoMatchingBracket;
 	private RetargetTextEditorAction openDeclaration;
+	private RetargetTextEditorAction format;
+	private RetargetTextEditorAction compile;
 
 	private static final String CONTENT_ASSIST_PROPOSAL = "ContentAssistProposal";
 	private static final String GOTO_MATCHING_BRACKET = "GotoMatchingBracket";
 	private static final String OPEN_DECLARATION = "OpenDeclaration";
+	private static final String FORMAT = "Format";
+	private static final String COMPILE = "Compile";
 
 	private ResourceBundle resource;
 
@@ -60,6 +66,8 @@ public class VerilogActionContributor extends TextEditorActionContributor
 				IJavaEditorActionDefinitionIds.GOTO_MATCHING_BRACKET);
 		openDeclaration =
 			createAction(OPEN_DECLARATION, IJavaEditorActionDefinitionIds.OPEN_EDITOR);
+		format = createAction(FORMAT, IJavaEditorActionDefinitionIds.FORMAT);
+		compile = createAction(COMPILE, CompileAction.ID);
 	}
 	private RetargetTextEditorAction createAction(String name, String id)
 	{
@@ -82,6 +90,7 @@ public class VerilogActionContributor extends TextEditorActionContributor
 		{
 			editMenu.add(new Separator());
 			editMenu.add(contentAssistProposal);
+			editMenu.add(format);
 		}
 
 		IMenuManager navigateMenu =
@@ -93,6 +102,14 @@ public class VerilogActionContributor extends TextEditorActionContributor
 
 			navigateMenu.add(openDeclaration);
 		}
+		
+//		IMenuManager projectMenu =
+//			menuManager.findMenuUsingPath(IWorkbenchActionConstants. M_PROJECT);
+//		if (projectMenu != null)
+//		{
+//			projectMenu.add(format);
+//			projectMenu.add(compile);
+//		}
 	}
 
 	private void setEditorAction(
@@ -114,6 +131,8 @@ public class VerilogActionContributor extends TextEditorActionContributor
 		setEditorAction(editor, contentAssistProposal, CONTENT_ASSIST_PROPOSAL);
 		setEditorAction(editor, gotoMatchingBracket, GOTO_MATCHING_BRACKET);
 		setEditorAction(editor, openDeclaration, OPEN_DECLARATION);
+		setEditorAction(editor, format, FORMAT);
+//		setEditorAction(editor, compile, COMPILE);
 	}
 
 	public void setActiveEditor(IEditorPart part)

@@ -32,16 +32,37 @@ import org.eclipse.jface.text.rules.RuleBasedPartitionScanner;
 import org.eclipse.jface.text.rules.SingleLineRule;
 import org.eclipse.jface.text.rules.Token;
 import org.eclipse.jface.text.rules.WordRule;
+import org.eclipse.swt.graphics.RGB;
 
 /**
- * ÉRÉÅÉìÉgÇåüèoÇ∑ÇÈ
+ * parse comment
  */
 public class VerilogPartitionScanner extends RuleBasedPartitionScanner
 {
-	public static final String VERILOG_DEFAULT = "__verilog_default";
+	public static final String VERILOG_DOXYGEN_COMMENT = "__verilog_doxygen_comment";
 	public static final String VERILOG_SINGLE_LINE_COMMENT = "__verilog_singleline_comment";
 	public static final String VERILOG_MULTI_LINE_COMMENT = "__verilog_multiline_comment";
 	public static final String VERILOG_STRING = "__verilog_string";
+	
+	public static String[] getContentTypes()
+	{
+		return new String[] {
+				VERILOG_DOXYGEN_COMMENT,
+				VERILOG_SINGLE_LINE_COMMENT,
+				VERILOG_MULTI_LINE_COMMENT,
+				VERILOG_STRING
+		};
+	}
+	public static RGB[] getContentTypeColors()
+	{
+		// must be same sequence with getContentTypes
+		return new RGB[] {
+				VerilogColorConstants.DOXYGEN_COMMENT,
+				VerilogColorConstants.SINGLE_LINE_COMMENT,
+				VerilogColorConstants.MULTI_LINE_COMMENT,
+				VerilogColorConstants.STRING
+		};
+	}
 
 	public VerilogPartitionScanner()
 	{
@@ -50,9 +71,15 @@ public class VerilogPartitionScanner extends RuleBasedPartitionScanner
 		IToken string = new Token(VERILOG_STRING);
 		IToken multiLineComment = new Token(VERILOG_MULTI_LINE_COMMENT);
 		IToken singleLineComment = new Token(VERILOG_SINGLE_LINE_COMMENT);
+		IToken doxygenComment = new Token(VERILOG_DOXYGEN_COMMENT);
 
 		List rules = new ArrayList();
 
+		// doxygen comment
+		rules.add(new EndOfLineRule("///", doxygenComment));
+		rules.add(new EndOfLineRule("//@", doxygenComment));
+		rules.add(new MultiLineRule("/**", "*/", doxygenComment));
+		
 		// single line comments.
 		rules.add(new EndOfLineRule("//", singleLineComment));
 

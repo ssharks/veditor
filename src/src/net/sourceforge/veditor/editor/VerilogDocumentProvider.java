@@ -19,8 +19,6 @@
 
 package net.sourceforge.veditor.editor;
 
-import net.sourceforge.veditor.VerilogPlugin;
-
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -43,6 +41,7 @@ public class VerilogDocumentProvider extends FileDocumentProvider
 			// find project
 			IFileEditorInput input = (IFileEditorInput)element;
 			IFile file = input.getFile();
+
 			IContainer parent = file.getParent();
 			while (parent instanceof IFolder)
 			{
@@ -60,19 +59,23 @@ public class VerilogDocumentProvider extends FileDocumentProvider
 			IDocumentPartitioner partitioner =
 				new DefaultPartitioner(
 					new VerilogPartitionScanner(),
-					new String[] {
-						VerilogPartitionScanner.VERILOG_SINGLE_LINE_COMMENT,
-						VerilogPartitionScanner.VERILOG_MULTI_LINE_COMMENT,
-						VerilogPartitionScanner.VERILOG_STRING });
+					VerilogPartitionScanner.getContentTypes());
 			partitioner.connect(document);
 			document.setDocumentPartitioner(partitioner);
 		}
 		return document;
 	}
 
-	protected String getPersistedEncoding(Object element)
-	{
-		return VerilogPlugin.getPreferenceString("Encoding");
-	}
+//	Don't use special encoding.
+//	Set encoding in Project Properties page
+//	protected String getPersistedEncoding(Object element)
+//	{
+//		String encoding = VerilogPlugin.getPreferenceString("Encoding");
+//		if (encoding == null || encoding.equals(""))
+//			return super.getPersistedEncoding(element);
+//		else
+//			return encoding;
+//	}
+
 }
 

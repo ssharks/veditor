@@ -29,14 +29,19 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 
 /**
- * super class of VerilogParser<p/>
+ * implementation class of VerilogParser<p/>
  * for separating definition from JavaCC code
  */
-public abstract class VerilogParserBase
+public class VerilogCode extends VerilogParser
 {
 	public static final int OUT_OF_MODULE = 0;
 	public static final int IN_MODULE = 1;
 	public static final int IN_STATEMENT = 2;
+
+	public VerilogCode(Reader reader)
+	{
+		super(new AsciiReader(reader));
+	}
 
 	private int context = OUT_OF_MODULE;
 
@@ -151,8 +156,6 @@ public abstract class VerilogParserBase
 		mods = null;
 	}
 
-	protected abstract void parse() throws ParseException;
-
 	/**
 	 * parse line comment for content outline
 	 */
@@ -253,6 +256,36 @@ public abstract class VerilogParserBase
 		}
 	}
 	private int prevCommentLine;
+	
+	/**
+	 *	Wrapper of reader to ignore two bytes code because of JavaCC bug.
+	 *	It may be no problem. The two bytes characters are allowed in comment only.
+	 */
+	private static class AsciiReader extends Reader
+	{
+		private Reader reference;
+
+		public AsciiReader(Reader reference)
+		{
+			this.reference = reference;
+		}
+		
+		public void close() throws IOException
+		{
+			reference.close();
+		}
+
+		public int read(char[] cbuf, int off, int len) throws IOException
+		{
+			int n = reference.read(cbuf, off, len);
+			for (int i = 0; i < n; i++)
+			{
+				if (cbuf[i] >= 0x100)	// convert two bytes code to space
+					cbuf[i] = ' ';
+			}
+			return n;
+		}
+	}
 }
 
 

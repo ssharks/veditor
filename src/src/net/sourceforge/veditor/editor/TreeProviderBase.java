@@ -21,7 +21,7 @@ package net.sourceforge.veditor.editor;
 import java.io.StringReader;
 
 import net.sourceforge.veditor.parser.Segment;
-import net.sourceforge.veditor.parser.VerilogParser;
+import net.sourceforge.veditor.parser.VerilogCode;
 
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
@@ -58,7 +58,7 @@ public abstract class TreeProviderBase implements ITreeContentProvider
 	{
 		// parse source code and get instance list
 		VerilogDocument doc = (VerilogDocument)inputElement;
-		VerilogParser parser = parse(doc);
+		VerilogCode parser = parse(doc);
 		int size = parser.size();
 		Object[] elements = new Object[size];
 
@@ -67,14 +67,14 @@ public abstract class TreeProviderBase implements ITreeContentProvider
 		return elements;
 	}
 
-	protected VerilogParser parse(VerilogDocument doc)
+	protected VerilogCode parse(VerilogDocument doc)
 	{
 		String text = doc.get();
 
-		parser = new VerilogParser(new StringReader(text));
+		parser = new VerilogCode(new StringReader(text));
 		parser.parse(doc.getProject(), doc.getFile());
 		parser.parseLineComment(new StringReader(text));
 		return parser;
 	}
-	private VerilogParser parser;
+	private VerilogCode parser;
 }

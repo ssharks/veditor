@@ -72,7 +72,10 @@ public class ModuleHierarchyPage extends Page implements ISelectionChangedListen
 
 		IDocument doc = editor.getDocument();
 		if (doc != null)
+		{
 			treeViewer.setInput(doc);
+			treeViewer.expandToLevel(2);
+		}
 	}
 
 	private void createContextMenu(Control control)
@@ -102,6 +105,11 @@ public class ModuleHierarchyPage extends Page implements ISelectionChangedListen
 		treeViewer.getControl().setFocus();
 	}
 
+	public void setInput(Object input)
+	{
+		//update();
+	}
+
 	public void update()
 	{
 		if (treeViewer != null)
@@ -110,8 +118,8 @@ public class ModuleHierarchyPage extends Page implements ISelectionChangedListen
 			if (control != null && !control.isDisposed())
 			{
 				control.setRedraw(false);
-				//treeViewer.setInput(editor.getDocument());
-				//treeViewer.expandAll();
+				treeViewer.setInput(editor.getDocument());
+				treeViewer.expandToLevel(2);
 				control.setRedraw(true);
 			}
 		}

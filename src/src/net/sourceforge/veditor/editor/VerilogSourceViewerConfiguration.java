@@ -32,7 +32,7 @@ import org.eclipse.jface.text.source.SourceViewerConfiguration;
 import org.eclipse.swt.graphics.RGB;
 
 /**
- * ソースコードのコメントその他の構造を解析する
+ * parse verilog source code
  */
 public class VerilogSourceViewerConfiguration extends SourceViewerConfiguration
 {
@@ -45,11 +45,12 @@ public class VerilogSourceViewerConfiguration extends SourceViewerConfiguration
 	}
 	public String[] getConfiguredContentTypes(ISourceViewer sourceViewer)
 	{
-		return new String[] {
-			IDocument.DEFAULT_CONTENT_TYPE,
-			VerilogPartitionScanner.VERILOG_SINGLE_LINE_COMMENT,
-			VerilogPartitionScanner.VERILOG_MULTI_LINE_COMMENT,
-			VerilogPartitionScanner.VERILOG_STRING };
+		String[] types = VerilogPartitionScanner.getContentTypes();
+		String[] ret = new String[types.length+1];
+		ret[0] = IDocument.DEFAULT_CONTENT_TYPE; 
+		for( int i = 0 ; i < types.length ; i++ )
+			ret[i+1] = types[i];
+		return ret;
 	}
 
 	protected VerilogScanner getVerilogScanner()
@@ -68,45 +69,34 @@ public class VerilogSourceViewerConfiguration extends SourceViewerConfiguration
 		PresentationReconciler reconciler = new PresentationReconciler();
 
 		DefaultDamagerRepairer dr;
-
 		dr = new DefaultDamagerRepairer(getVerilogScanner());
 		reconciler.setDamager(dr, IDocument.DEFAULT_CONTENT_TYPE);
 		reconciler.setRepairer(dr, IDocument.DEFAULT_CONTENT_TYPE);
 
-		NonRuleBasedDamagerRepairer ndr;
-		addRepairer(
-			reconciler,
-			VerilogColorConstants.SINGLE_LINE_COMMENT,
-			VerilogPartitionScanner.VERILOG_SINGLE_LINE_COMMENT);
-
-		addRepairer(
-			reconciler,
-			VerilogColorConstants.MULTI_LINE_COMMENT,
-			VerilogPartitionScanner.VERILOG_MULTI_LINE_COMMENT);
-
-		addRepairer(
-			reconciler,
-			VerilogColorConstants.STRING,
-			VerilogPartitionScanner.VERILOG_STRING);
-
+		String[] contentTypes = VerilogPartitionScanner.getContentTypes();
+		RGB[] colors = VerilogPartitionScanner.getContentTypeColors();
+		for(int i = 0; i < contentTypes.length; i++)
+		{
+			addRepairer(reconciler,colors[i],contentTypes[i]);
+		}
 		return reconciler;
 	}
 
-	private void addRepairer(PresentationReconciler reconciler, RGB color, String partition)
+	private void addRepairer(PresentationReconciler reconciler, RGB color,
+			String partition)
 	{
 		NonRuleBasedDamagerRepairer ndr;
-		ndr = new NonRuleBasedDamagerRepairer(new TextAttribute(colorManager.getColor(color)));
+		ndr = new NonRuleBasedDamagerRepairer(new TextAttribute(colorManager
+				.getColor(color)));
 		reconciler.setDamager(ndr, partition);
 		reconciler.setRepairer(ndr, partition);
 	}
 
 	public IContentAssistant getContentAssistant(ISourceViewer sourceViewer)
 	{
-
 		ContentAssistant assistant = new ContentAssistant();
-		assistant.setContentAssistProcessor(
-			new VerilogCompletionProcessor(),
-			IDocument.DEFAULT_CONTENT_TYPE);
+		assistant.setContentAssistProcessor(new VerilogCompletionProcessor(),
+				IDocument.DEFAULT_CONTENT_TYPE);
 
 		assistant.enableAutoActivation(true);
 		assistant.setAutoActivationDelay(500);

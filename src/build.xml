@@ -8,7 +8,7 @@
 
 	<!-- must be linked with plugin.xml -->
 	<property name="project" value="net.sourceforge.veditor"/>
-	<property name="version" value="0.1.3"/>
+	<property name="plugin_version" value="0.1.4"/>
 
 	<property name="src" value="src"/>
 	<property name="dst" value="bin"/>
@@ -19,7 +19,7 @@
 	<property name="javacc_dst" value="${javacc_generated}/${javacc_file_dir}"/>
 
 	<property name="jar" value="veditor.jar"/>
-	<property name="project_version" value="${project}_${version}"/>
+	<property name="project_version" value="${project}_${plugin_version}"/>
 	<property name="plugin_dir" value="plugins/${project_version}"/>
 	<property name="zip" value="${project_version}.zip"/>
 
@@ -37,7 +37,7 @@
 	 		outputdirectory="${javacc_dst}" />
 	</target>
 
-	<target name="compile" depends="clean,javacc">
+	<target name="compile" depends="javacc">
 		<mkdir dir="${dst}" />
 		<javac
 			srcdir="${src};${javacc_generated}"
@@ -61,7 +61,6 @@
 		<mkdir dir="${plugin_dir}"/>
 		<copydir src="icons" dest="${plugin_dir}/icons"/>
 		<copy file="plugin.xml" todir="${plugin_dir}"/>
-		<copy file="preferences.properties" todir="${plugin_dir}"/>
 		<copy file="${jar}" todir="${plugin_dir}"/>
 		<zip
 			zipfile="${zip}"

@@ -35,17 +35,18 @@ public class VerilogPreferencePage extends FieldEditorPreferencePage implements
 	public VerilogPreferencePage()
 	{
 		super(GRID);
-		setPreferenceStore(VerilogPlugin.getDefault().getPreferenceStore());
+		setPreferenceStore(VerilogPlugin.getPlugin().getPreferenceStore());
 	}
 
 	protected void createFieldEditors()
 	{
-		addStringField("Encoding", "Default encoding");
-
+		// addStringField("Encoding", "Default encoding");
 		addStringField("Color.Default", "Default color");
 		addStringField("Color.SingleLineComment", "Single line comment color");
 		addStringField("Color.MultiLineComment", "Multi line comment color");
+		addStringField("Color.DoxygenComment", "Doxygen comment color");
 		addStringField("Color.KeyWord", "Reserved word color");
+		addStringField("Color.String", "String color");
 	}
 
 	private void addStringField(String name, String label)

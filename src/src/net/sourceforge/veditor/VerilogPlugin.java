@@ -19,8 +19,6 @@
 
 package net.sourceforge.veditor;
 
-import java.util.ResourceBundle;
-
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPluginDescriptor;
@@ -33,22 +31,29 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 public class VerilogPlugin extends AbstractUIPlugin
 {
 	private static VerilogPlugin plugin;
-	private ResourceBundle preferences;
 
+//	for eclipse 2.1
 	public VerilogPlugin(IPluginDescriptor descriptor)
 	{
 		super(descriptor);
 		plugin = this;
 	}
 
+	public VerilogPlugin()
+	{
+		super();
+		plugin = this;
+	}
+
+//	move to VerilogPreferenceInitializer
 	protected void initializeDefaultPreferences(IPreferenceStore store)
 	{
 		super.initializeDefaultPreferences(store);
 
-		store.setDefault("Encoding", "");
+		store.setDefault("Color.DoxygenComment", "404080");
 		store.setDefault("Color.SingleLineComment", "008080");
-		store.setDefault("Color.SingleLineComment", "008080");
-		store.setDefault("Color.MultiLineComment", "008000");
+		store.setDefault("Color.MultiLineComment", "008080");
+		store.setDefault("Color.String", "000080");
 		store.setDefault("Color.Default", "000000");
 		store.setDefault("Color.KeyWord", "800080");
 	}
@@ -56,7 +61,7 @@ public class VerilogPlugin extends AbstractUIPlugin
 	/**
 	 * Returns the shared instance.
 	 */
-	public static VerilogPlugin getDefault()
+	public static VerilogPlugin getPlugin()
 	{
 		return plugin;
 	}
@@ -74,7 +79,7 @@ public class VerilogPlugin extends AbstractUIPlugin
 	 */
 	public static String getPreferenceString(String key)
 	{
-		return VerilogPlugin.getDefault().getPreferenceStore().getString(key);
+		return getPlugin().getPreferenceStore().getString(key);
 	}
 }
 

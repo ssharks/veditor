@@ -26,9 +26,10 @@ public final class VerilogColorConstants
 {
 	public static final RGB SINGLE_LINE_COMMENT = new RGB(0, 0, 0);
 	public static final RGB MULTI_LINE_COMMENT = new RGB(0, 0, 0);
-	public static final RGB STRING = new RGB(0, 0, 0);
+	public static final RGB STRING = new RGB(255, 0, 0);
 	public static final RGB DEFAULT = new RGB(0, 0, 0);
 	public static final RGB KEY_WORD = new RGB(0, 0, 0);
+	public static final RGB DOXYGEN_COMMENT = new RGB(0,0,0);
 
 	private VerilogColorConstants()
 	{
@@ -38,6 +39,7 @@ public final class VerilogColorConstants
 	{
 		readColor(SINGLE_LINE_COMMENT, "Color.SingleLineComment");
 		readColor(MULTI_LINE_COMMENT, "Color.MultiLineComment");
+		readColor(DOXYGEN_COMMENT, "Color.DoxygenComment");
 		readColor(STRING, "Color.String");
 		readColor(DEFAULT, "Color.Default");
 		readColor(KEY_WORD, "Color.KeyWord");

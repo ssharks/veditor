@@ -31,7 +31,7 @@ import org.eclipse.jface.text.rules.Token;
 import org.eclipse.jface.text.rules.WordRule;
 
 /**
- * —\–ñŒê‚ğŒŸo‚·‚é
+ * find reserved word
  */
 public class VerilogScanner extends RuleBasedScanner
 {

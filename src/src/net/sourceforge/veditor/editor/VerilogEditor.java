@@ -20,12 +20,14 @@
 package net.sourceforge.veditor.editor;
 
 import java.io.StringReader;
-import java.util.ResourceBundle;
 
+import net.sourceforge.veditor.actions.FormatAction;
+import net.sourceforge.veditor.actions.GotoMatchingBracketAction;
+import net.sourceforge.veditor.actions.OpenDeclarationAction;
 import net.sourceforge.veditor.parser.Module;
 import net.sourceforge.veditor.parser.ModuleList;
 import net.sourceforge.veditor.parser.Segment;
-import net.sourceforge.veditor.parser.VerilogParser;
+import net.sourceforge.veditor.parser.VerilogCode;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
@@ -34,14 +36,12 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.ui.actions.IJavaEditorActionDefinitionIds;
-import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.source.ISourceViewer;
-import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
@@ -73,6 +73,10 @@ public class VerilogEditor extends TextEditor
 	public VerilogEditor()
 	{
 		super();
+		if ( this instanceof IFileEditorInput )
+		{
+			System.out.println("aaa");
+		}
 
 		current = this;
 		colorManager = new ColorManager();
@@ -87,10 +91,7 @@ public class VerilogEditor extends TextEditor
 	public void updatePartControl(IEditorInput input)
 	{
 		super.updatePartControl(input);
-		if (outlinePage != null)
-			outlinePage.setInput(input);
-
-		// System.out.println("updatePartControl: " + input);
+		setInputPages(input);
 	}
 
 	public IDocument getDocument()
@@ -112,13 +113,21 @@ public class VerilogEditor extends TextEditor
 		action.setActionDefinitionId(ITextEditorActionDefinitionIds.CONTENT_ASSIST_PROPOSALS);
 		setAction("ContentAssistProposal", action);
 
-		action = new GotoMatchingBracketAction();
+		action = new GotoMatchingBracketAction(this);
 		action.setActionDefinitionId(IJavaEditorActionDefinitionIds.GOTO_MATCHING_BRACKET);
 		setAction("GotoMatchingBracket", action);
 
-		action = new OpenDeclarationAction();
+		action = new OpenDeclarationAction(this);
 		action.setActionDefinitionId(IJavaEditorActionDefinitionIds.OPEN_EDITOR);
 		setAction("OpenDeclaration", action);
+
+		action = new FormatAction(this);
+		action.setActionDefinitionId(IJavaEditorActionDefinitionIds.FORMAT);
+		setAction("Format", action);
+		
+//		action = new CompileAction(this);
+//		action.setActionDefinitionId(CompileAction.ID);
+//		setAction("Compile", action);
 	}
 
 //	これはコンテンツアシストのためのコードだと思われるが不要か？
@@ -132,43 +141,51 @@ public class VerilogEditor extends TextEditor
 	public void dispose()
 	{
 		colorManager.dispose();
-		if (outlinePage != null)
-			outlinePage.setInput(null);
+		setInputPages(null);
 		super.dispose();
 	}
 
 	public void doRevertToSaved()
 	{
 		super.doRevertToSaved();
-		if (outlinePage != null)
-			outlinePage.update();
-		if (modulePage != null)
-			modulePage.update();
+		updatePages();
 	}
 
 	public void doSave(IProgressMonitor monitor)
 	{
 		super.doSave(monitor);
-		if (outlinePage != null)
-			outlinePage.update();
-		if (modulePage != null)
-			modulePage.update();
+		updatePages();
 	}
 
 	public void doSaveAs()
 	{
 		super.doSaveAs();
+		updatePages();
+	}
+	
+	/**
+	 * update outline and module hierarchy page
+	 */
+	private void updatePages()
+	{
 		if (outlinePage != null)
 			outlinePage.update();
 		if (modulePage != null)
 			modulePage.update();
 	}
 
+	private void setInputPages(IEditorInput input)
+	{
+		if (outlinePage != null)
+			outlinePage.setInput(input);
+		if (modulePage != null)
+			modulePage.setInput(input);
+	}
+
 	public void doSetInput(IEditorInput input) throws CoreException
 	{
 		super.doSetInput(input);
-		if (outlinePage != null)
-			outlinePage.setInput(input);
+		setInputPages(input);
 	}
 	private IProject findProject(IEditorInput input)
 	{
@@ -202,7 +219,11 @@ public class VerilogEditor extends TextEditor
 		else if (ModuleHierarchyPage.class.equals(required))
 		{
 			if (modulePage == null)
+			{
 				modulePage = new ModuleHierarchyPage(this);
+				if (getEditorInput() != null)
+					modulePage.setInput(getEditorInput());
+			}
 			return modulePage;
 		}
 
@@ -234,9 +255,13 @@ public class VerilogEditor extends TextEditor
 		menu.add(getAction("OpenDeclaration"));
 	}
 
-	private void beep()
+	public void beep()
 	{
 		Display.getCurrent().beep();
+	}
+	public ISourceViewer getViewer()
+	{
+		return getSourceViewer();
 	}
 
 	public Segment[] parse()
@@ -244,7 +269,7 @@ public class VerilogEditor extends TextEditor
 		VerilogDocument doc = getVerilogDocument();
 		if (doc != null)
 		{
-			VerilogParser parser = new VerilogParser(new StringReader(doc.get()));
+			VerilogCode parser = new VerilogCode(new StringReader(doc.get()));
 			parser.parse(doc.getProject(), doc.getFile());
 
 			int size = parser.size();
@@ -317,176 +342,6 @@ public class VerilogEditor extends TextEditor
 		openPage(modName, mod.getFile());
 	}
 
-	/**
-	 * jamp bracket which includes begin/end
-	 */
-	public class GotoMatchingBracketAction extends Action
-	{
-		public static final String ID =
-			"verilog.VerilogEditor.GotoMatchingBracketAction";
-		public GotoMatchingBracketAction()
-		{
-			setEnabled(true);
-			setId("ID");
-			ResourceBundle resource = VerilogEditorMessages.getResourceBundle();
-			setText(resource.getString("GotoMatchingBracket.label"));
-		}
-		public void run()
-		{
-			StyledText widget = getSourceViewer().getTextWidget();
-			String text = widget.getText();
-
-			int pos = widget.getCaretOffset();
-			String[] open = { "(", "{", "[", "begin" };
-			String[] close = {  ")", "}", "]", "end" };
-
-			int openIdx = searchWord(open, text, pos);
-			int closeIdx = searchWord(close, text, pos);
-
-			int refPos = -1;
-			if (openIdx != -1)
-			{
-				refPos = searchCloseBracket(text, pos, open[openIdx], close[openIdx]);
-			}
-			else if (closeIdx != -1)
-			{
-				refPos = searchOpenBracket(text, pos, open[closeIdx], close[closeIdx]);
-			}
-			if (refPos >= 0)
-			{
-				widget.setSelection(refPos);
-				return;
-			}
-			beep();
-		}
-
-		/**
-		 * open/closeのキーワードを探す
-		 * @param words	キーワード配列
-		 * @param text		参照テキスト
-		 * @param pos		参照位置（ここから前方に検索）
-		 * @return			キーワード配列のインデックス
-		 */
-		private int searchWord(String[] words, String text, int pos)
-		{
-			for (int i = 0; i < words.length; i++)
-			{
-				int len = words[i].length();
-				if (text.substring(pos - len, pos).equals(words[i]))
-					return i;
-			}
-			return -1;
-		}
-
-		/**
-		 * 閉じる括弧を探す（ネストに対応する）
-		 * @param text		参照テキスト
-		 * @param pos		検索開始位置
-		 * @param open		開く括弧の文字
-		 * @param close	開じる括弧の文字
-		 * @return
-		 */
-		private int searchCloseBracket(String text, int pos, String open, String close)
-		{
-			int level = 1;
-			int len = text.length();
-			pos++;
-			int openLen = open.length();
-			int closeLen = close.length();
-			while (pos < len)
-			{
-				String ref = text.substring(pos, pos + 1);
-				if (testBracket(text, pos, open, openLen))
-					level++;
-				if (testBracket(text, pos, close, closeLen))
-					level--;
-				if (level == 0)
-					return pos + closeLen;
-				pos++;
-			}
-			return -1;
-		}
-
-		/**
-		 * 開く括弧を探す（ネストに対応する）
-		 * @param text		参照テキスト
-		 * @param pos		検索開始位置
-		 * @param open		開く括弧の文字
-		 * @param close	開じる括弧の文字
-		 * @return
-		 */
-		private int searchOpenBracket(String text, int pos, String open, String close)
-		{
-			int level = 1;
-			int openLen = open.length();
-			int closeLen = close.length();
-			pos -= 1 + closeLen;
-			while (pos >= 0)
-			{
-				if (testBracket(text, pos, open, openLen))
-					level--;
-				if (testBracket(text, pos, close, closeLen))
-					level++;
-				if (level == 0)
-					return pos + openLen;
-				pos--;
-			}
-			return -1;
-		}
-
-		/**
-		 * 対応する括弧をテストする
-		 * @param text
-		 * @param pos
-		 * @param bracket
-		 * @param len
-		 * @return
-		 */
-		private boolean testBracket(String text, int pos, String bracket, int len)
-		{
-			if (bracket.equals(text.substring(pos, pos + len)))
-			{
-				if (Character.isJavaIdentifierStart(bracket.charAt(0)))
-				{
-					return !Character.isJavaIdentifierPart(text.charAt(pos - 1))
-						&& !Character.isJavaIdentifierPart(text.charAt(pos + len));
-				}
-				else
-					return true;
-			}
-			else
-				return false;
-		}
-	}
-
-	/**
-	 * find module declaration from project tree<p>
-	 * file name and module name must be same
-	 */
-	public class OpenDeclarationAction extends Action
-	{
-		public static final String ID =
-			"verilog.VerilogEditor.OpenDeclarationAction";
-		public OpenDeclarationAction()
-		{
-			setEnabled(true);
-			setId("ID");
-			ResourceBundle resource = VerilogEditorMessages.getResourceBundle();
-			setText(resource.getString("OpenDeclaration.label"));
-		}
-		public void run()
-		{
-			StyledText widget = getSourceViewer().getTextWidget();
-
-			String modName = widget.getSelectionText();
-			if (modName.equals(""))
-			{
-				beep();
-				return;
-			}
-			openPage(modName);
-		}
-	}
 }
 
 

@@ -26,7 +26,7 @@ import java.util.List;
 
 import net.sourceforge.veditor.parser.Module;
 import net.sourceforge.veditor.parser.ModuleList;
-import net.sourceforge.veditor.parser.VerilogParser;
+import net.sourceforge.veditor.parser.VerilogCode;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.text.BadLocationException;
@@ -54,12 +54,12 @@ public class VerilogCompletionProcessor implements IContentAssistProcessor
 		String match = getMatchingWord(doc.get(), documentOffset);
 		int length = match.length();  // replace length
 
-		int context = VerilogParser.OUT_OF_MODULE;
+		int context = VerilogCode.OUT_OF_MODULE;
 		String moduleName = "";
 		try
 		{
-			VerilogParser parser =
-				new VerilogParser(new StringReader(doc.get(0, documentOffset - length)));
+			VerilogCode parser = new VerilogCode(new StringReader(doc.get(0,
+					documentOffset - length)));
 			context = parser.getContext();
 			moduleName = parser.getCurrentModuleName();
 		}
@@ -71,13 +71,13 @@ public class VerilogCompletionProcessor implements IContentAssistProcessor
 
 		switch(context)
 		{
-			case VerilogParser.IN_MODULE:
+			case VerilogCode.IN_MODULE:
 				matchList = getInModuleProprosals(doc, documentOffset, match);
 				break;
-			case VerilogParser.IN_STATEMENT:
+			case VerilogCode.IN_STATEMENT:
 				matchList = getInStatmentProposals(doc, documentOffset, match, moduleName);
 				break;
-			case VerilogParser.OUT_OF_MODULE:
+			case VerilogCode.OUT_OF_MODULE:
 			default:
 				Display.getCurrent().beep();
 				return null;
@@ -106,6 +106,12 @@ public class VerilogCompletionProcessor implements IContentAssistProcessor
 			matchList.add(createFunction(doc, offset, length));
 		if (isMatch(replace, "task"))
 			matchList.add(createTask(doc, offset, length));
+
+		//  reserved word
+		if (isMatch(replace, "assign"))
+			matchList.add(createWord("assign ", offset, length));
+		if (isMatch(replace, "integer"))
+			matchList.add(createWord("integer ", offset, length));
 
 		//  module instantiation
 		ModuleList mlist = ModuleList.find(doc.getProject());
@@ -215,6 +221,10 @@ public class VerilogCompletionProcessor implements IContentAssistProcessor
 		String first = "task ";
 		String second = ";\nbegin\n\t\nend\nendtask\n";
 		return getCompletionProposal(first + second, offset, length, first.length(), "task");
+	}
+	private ICompletionProposal createWord(String word, int offset, int length)
+	{
+		return getCompletionProposal(word, offset, length, word.length(), word);
 	}
 
 	/**

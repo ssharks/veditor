@@ -195,7 +195,7 @@ public final class ModuleList
 		try
 		{
 			InputStreamReader reader = new InputStreamReader(file.getContents());
-			VerilogParser parser = new VerilogParser(reader);
+			VerilogCode parser = new VerilogCode(reader);
 			parser.parse(project, file);
 			parser.dispose();
 		}

@@ -26,8 +26,17 @@ PARSER_BEGIN(VerilogParser)
 
 package net.sourceforge.veditor.parser;
 
-public class VerilogParser extends VerilogParserBase
+public abstract class VerilogParser
 {
+	protected abstract void addModule(int begin, String name);
+	protected abstract void endModule(int line);
+	protected abstract void addPort(int line, String portName);
+	protected abstract void addVariable(int line, String varName);
+	protected abstract void addElement(int begin, int end, String type, String name);
+	protected abstract void addInstance(int begin, int end, String module, String inst);
+	protected abstract void beginStatement();
+	protected abstract void endStatement();
+
 	protected void parse() throws ParseException
 	{
 		modules();
@@ -126,7 +135,7 @@ TOKEN :
 |	<COLON:		":" >
 |	<EQUAL:		"=" >
 |	<IDENT: 	([ "a"-"z", "A"-"Z", "0"-"9", "_", ".", "'", "?", "\"" ])+>
-|	<SPC_CHAR:	~[] >
+|	<SPC_CHAR:	~[ " ", "\t"] >
 |	<OTHER:		"[.]" >
 }
 
@@ -188,7 +197,10 @@ void port() :
 	Token port ;
 }
 {
-	[ "[" skipTo(RBRACKET) ]
+//	cannot generate correct code in Ant JavaCC. Why?
+//	[ "[" skipTo(RBRACKET) ]
+
+	[ "[" <IDENT> ":" <IDENT> "]" ]
 	port = identifier()
 	{
 		addPort( port.beginLine, port.image );
