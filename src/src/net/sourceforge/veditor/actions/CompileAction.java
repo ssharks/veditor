@@ -27,8 +27,8 @@ import java.io.Reader;
 
 import net.sourceforge.veditor.VerilogPlugin;
 
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
@@ -45,7 +45,8 @@ public class CompileAction extends AbstractActionDelegate
 	public void run(IAction action)
 	{
 		IFile file = getEditor().getHdlDocument().getFile();
-		IFolder folder = (IFolder)file.getParent();
+		IContainer parent = file.getParent();
+		IContainer folder = parent;
 		File dir = folder.getLocation().toFile();
 
 		String command = VerilogPlugin.getPreferenceString("Compile.command")
@@ -94,7 +95,7 @@ public class CompileAction extends AbstractActionDelegate
 		return "";
 	}
 	
-	private void parseMessage(String msg, IFolder folder)
+	private void parseMessage(String msg, IContainer folder)
 	{
 		String[] lines = msg.split("\n");
 		for (int i = 0; i < lines.length; i++)
