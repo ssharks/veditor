@@ -19,8 +19,6 @@
 
 package net.sourceforge.veditor.parser;
 
-import java.util.Iterator;
-
 import org.eclipse.core.resources.IFile;
 
 /**
@@ -72,7 +70,11 @@ public abstract class Module extends Segment
 	{
 		return null;
 	}
-	public Iterator getPortIterator()
+	public Object[] getPorts()
+	{
+		return null;
+	}
+	public Object[] getVariables()
 	{
 		return null;
 	}
@@ -82,7 +84,7 @@ public abstract class Module extends Segment
 	public void addElement(int begin, int end, String typeName, String name)
 	{
 	}
-	public void addComment(int begin, String str)
+	public void addVariable(String str)
 	{
 	}
 }

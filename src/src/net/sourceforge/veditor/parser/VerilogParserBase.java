@@ -34,6 +34,15 @@ import org.eclipse.core.resources.IProject;
  */
 public abstract class VerilogParserBase
 {
+	public static final int OUT_OF_MODULE = 0;
+	public static final int IN_MODULE = 1;
+	public static final int IN_STATEMENT = 2;
+
+	private int context = OUT_OF_MODULE;
+
+	//  depend on calling parse or getContext
+	private boolean updateDatabase;
+
 	private Module getCurrentModule()
 	{
 		int n = mods.size() - 1;
@@ -41,25 +50,54 @@ public abstract class VerilogParserBase
 	}
 	private List mods = new ArrayList();
 
+	public String getCurrentModuleName()
+	{
+		return currentModuleName;
+	}
+	private String currentModuleName;
+
 	// called by VerilogParser
 	protected void addModule(int begin, String name)
 	{
-		Module module = ModuleList.getCurrent().newModule(begin, name, file);
-		mods.add(module);
+		context = IN_MODULE;
+		currentModuleName = name;
+		if (updateDatabase)
+		{
+			Module module = ModuleList.getCurrent().newModule(begin, name, file);
+			mods.add(module);
+		}
 	}
 	protected void endModule(int line)
 	{
-		getCurrentModule().setEndLine(line);
+		context = OUT_OF_MODULE;
+		if (updateDatabase)
+			getCurrentModule().setEndLine(line);
 	}
 	protected void addPort(int line, String portName)
 	{
-		getCurrentModule().addPort(portName);
-
-		// addElement(line, line, "port", portName);
+		if (updateDatabase)
+		{
+			getCurrentModule().addPort(portName);
+			// addElement(line, line, "port", portName);
+		}
+	}
+	protected void addVariable(int line, String varName)
+	{
+		if (updateDatabase)
+			getCurrentModule().addVariable(varName);
 	}
 	protected void addElement(int begin, int end, String module, String inst)
 	{
-		getCurrentModule().addElement(begin, end, module, inst);
+		if (updateDatabase)
+			getCurrentModule().addElement(begin, end, module, inst);
+	}
+	protected void beginStatement()
+	{
+		context = IN_STATEMENT;
+	}
+	protected void endStatement()
+	{
+		context = IN_MODULE;
 	}
 
 	//  called by editor
@@ -74,6 +112,7 @@ public abstract class VerilogParserBase
 
 	public void parse(IProject project, IFile file)
 	{
+		updateDatabase = true;
 		ModuleList.setCurrent(project);
 		this.file = file;
 		try
@@ -86,6 +125,20 @@ public abstract class VerilogParserBase
 		}
 	}
 	private IFile file;
+
+	public int getContext()
+	{
+		updateDatabase = false;
+		context = OUT_OF_MODULE;
+		try
+		{
+			parse();
+		}
+		catch (ParseException e)
+		{
+		}
+		return context;
+	}
 
 	public void dispose()
 	{
@@ -188,12 +241,12 @@ public abstract class VerilogParserBase
 				break;
 			if (line >= mod.getLine())
 			{
-				System.out.println(comment);
+				// System.out.println(comment);
 				mod.addElement(line, line, "//", comment);
 			}
 		}
 	}
-	private static int prevCommentLine;
+	private int prevCommentLine;
 }
 
 

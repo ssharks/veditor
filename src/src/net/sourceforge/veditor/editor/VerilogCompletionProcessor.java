@@ -19,17 +19,19 @@
 
 package net.sourceforge.veditor.editor;
 
+import java.io.StringReader;
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.Collections;
+import java.util.List;
 
 import net.sourceforge.veditor.parser.Module;
 import net.sourceforge.veditor.parser.ModuleList;
+import net.sourceforge.veditor.parser.VerilogParser;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextViewer;
-import org.eclipse.jface.text.contentassist.CompletionProposal;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
 import org.eclipse.jface.text.contentassist.IContextInformation;
@@ -49,45 +51,123 @@ public class VerilogCompletionProcessor implements IContentAssistProcessor
 		int documentOffset)
 	{
 		VerilogDocument doc = (VerilogDocument)viewer.getDocument();
-
 		String match = getMatchingWord(doc.get(), documentOffset);
 		int length = match.length();  // replace length
 
-		//  simple template
-		if (length == 0)
+		int context = VerilogParser.OUT_OF_MODULE;
+		String moduleName = "";
+		try
 		{
-			ICompletionProposal[] result = new ICompletionProposal[4];
-			result[0] = createBeginEnd(doc, documentOffset);
-			result[1] = createAlways(doc, documentOffset);
-			result[2] = createFunction(doc, documentOffset);
-			result[3] = createTask(doc, documentOffset);
-			return result;
+			VerilogParser parser =
+				new VerilogParser(new StringReader(doc.get(0, documentOffset - length)));
+			context = parser.getContext();
+			moduleName = parser.getCurrentModuleName();
 		}
+		catch (BadLocationException e)
+		{
+		}
+
+		List matchList = null;
+
+		switch(context)
+		{
+			case VerilogParser.IN_MODULE:
+				matchList = getInModuleProprosals(doc, documentOffset, match);
+				break;
+			case VerilogParser.IN_STATEMENT:
+				matchList = getInStatmentProposals(doc, documentOffset, match, moduleName);
+				break;
+			case VerilogParser.OUT_OF_MODULE:
+			default:
+				Display.getCurrent().beep();
+				return null;
+		}
+
+		Collections.sort(matchList);
+		ICompletionProposal[] result = new ICompletionProposal[matchList.size()];
+		for (int i = 0; i < matchList.size(); i++)
+		{
+			result[i] = (ICompletionProposal)matchList.get(i);
+		}
+		return result;
+	}
+
+	private List getInModuleProprosals(VerilogDocument doc, int offset, String replace)
+	{
+		int length = replace.length();
+		List matchList = new ArrayList();
+
+		//  template
+		if (isMatch(replace, "always"))
+			matchList.add(createAlways(doc, offset, length));
+		if (isMatch(replace, "initial"))
+			matchList.add(createInitial(doc, offset, length));
+		if (isMatch(replace, "function"))
+			matchList.add(createFunction(doc, offset, length));
+		if (isMatch(replace, "task"))
+			matchList.add(createTask(doc, offset, length));
 
 		//  module instantiation
 		ModuleList mlist = ModuleList.find(doc.getProject());
 		String[] mnames = mlist.getModuleNames();
-		ArrayList matchList = new ArrayList();
 		for (int i = 0; i < mnames.length; i++)
 		{
-			if (mnames[i].length() >= length
-				&& mnames[i].substring(0, length).equals(match))
+			if (isMatch(replace, mnames[i]))
 			{
-				matchList.add(mnames[i]);
+				matchList.add(
+					new InstanceCompletionProposal(
+						doc.getProject(),
+						mnames[i],
+						offset,
+						length));
 			}
 		}
+		return matchList;
+	}
 
-		ICompletionProposal[] result = new ICompletionProposal[matchList.size()];
-		for (int i = 0; i < matchList.size(); i++)
+	private List getInStatmentProposals(
+		VerilogDocument doc,
+		int offset,
+		String replace,
+		String mname)
+	{
+		List matchList = new ArrayList();
+
+		//  template
+		if (isMatch(replace, "begin"))
+			matchList.add(createBeginEnd(doc, offset, replace.length()));
+
+		//  variable
+		ModuleList mlist = ModuleList.find(doc.getProject());
+		Module module = mlist.findModule(mname);
+		if (module != null)
 		{
-			result[i] =
-				new InstanceCompletionProposal(
-					doc.getProject(),
-					(String)matchList.get(i),
-					documentOffset,
-					length);
+			addInStatementProposals(matchList, offset, replace, module.getPorts());
+			addInStatementProposals(matchList, offset, replace, module.getVariables());
 		}
-		return result;
+		return matchList;
+	}
+
+	private void addInStatementProposals(
+		List matchList,
+		int offset,
+		String replace,
+		Object[] vars)
+	{
+		for (int i = 0; i < vars.length; i++)
+		{
+			String port = vars[i].toString();
+			if (isMatch(replace, port))
+			{
+				matchList.add(new CompletionProposal(port, offset, replace.length()));
+			}
+		}
+	}
+
+	private boolean isMatch(String replace, String name)
+	{
+		int length = replace.length();
+		return name.length() >= length && name.substring(0, length).equals(replace);
 	}
 
 	private String getMatchingWord(String text, int offset)
@@ -105,30 +185,36 @@ public class VerilogCompletionProcessor implements IContentAssistProcessor
 
 
 	//  code templates
-	private ICompletionProposal createBeginEnd(IDocument doc, int offset)
+	private ICompletionProposal createBeginEnd(IDocument doc, int offset, int length)
 	{
 		String indent = getIndent(doc, offset);
 		String str = "begin\n" + indent + "\t\n" + indent + "end";
 		int cursor = 7 + indent.length();
-		return getCompletionProposal(str, offset, cursor, "begin/end");
+		return getCompletionProposal(str, offset, length, cursor, "begin/end");
 	}
-	private ICompletionProposal createAlways(IDocument doc, int offset)
+	private ICompletionProposal createAlways(IDocument doc, int offset, int length)
 	{
 		String first = "always @(posedge clk) begin\n\t";
 		String second = "\nend\n";
-		return getCompletionProposal(first + second, offset, first.length(), "always");
+		return getCompletionProposal(first + second, offset, length, first.length(), "always");
 	}
-	private ICompletionProposal createFunction(IDocument doc, int offset)
+	private ICompletionProposal createInitial(IDocument doc, int offset, int length)
+	{
+		String first = "initial begin\n\t";
+		String second = "\nend\n";
+		return getCompletionProposal(first + second, offset, length, first.length(), "initial");
+	}
+	private ICompletionProposal createFunction(IDocument doc, int offset, int length)
 	{
 		String first = "function ";
 		String second = ";\nbegin\n\t\nend\nendfunction\n";
-		return getCompletionProposal(first + second, offset, first.length(), "function");
+		return getCompletionProposal(first + second, offset, length, first.length(), "function");
 	}
-	private ICompletionProposal createTask(IDocument doc, int offset)
+	private ICompletionProposal createTask(IDocument doc, int offset, int length)
 	{
 		String first = "task ";
 		String second = ";\nbegin\n\t\nend\nendtask\n";
-		return getCompletionProposal(first + second, offset, first.length(), "task");
+		return getCompletionProposal(first + second, offset, length, first.length(), "task");
 	}
 
 	/**
@@ -160,10 +246,11 @@ public class VerilogCompletionProcessor implements IContentAssistProcessor
 	private ICompletionProposal getCompletionProposal(
 		String replace,
 		int offset,
+		int length,
 		int cursor,
 		String display)
 	{
-		return new CompletionProposal(replace, offset, 0, cursor, null, display, null, display);
+		return new TemplateCompletionProposal(replace, offset, length, cursor, display);
 	}
 
 	public char[] getCompletionProposalAutoActivationCharacters()
@@ -193,11 +280,95 @@ public class VerilogCompletionProcessor implements IContentAssistProcessor
 		return null;
 	}
 
-	private class InstanceCompletionProposal implements ICompletionProposal
+	private class CompletionProposal implements ICompletionProposal, Comparable
+	{
+		private String replace;
+		private int offset, length;
+
+		public CompletionProposal(String replace, int offset, int length)
+		{
+			this.replace = replace;
+			this.offset = offset;
+			this.length = length;
+		}
+		public void apply(IDocument document)
+		{
+			try
+			{
+				document.replace(offset - length, length, replace.toString());
+			}
+			catch (BadLocationException e)
+			{
+			}
+		}
+		public Point getSelection(IDocument document)
+		{
+			return null;
+		}
+		public String getAdditionalProposalInfo()
+		{
+			return null;
+		}
+		public Image getImage()
+		{
+			return null;
+		}
+		public IContextInformation getContextInformation()
+		{
+			return null;
+		}
+		public String toString()
+		{
+			return getDisplayString();
+		}
+		public int compareTo(Object arg)
+		{
+			return toString().compareTo(arg.toString());
+		}
+		public String getDisplayString()
+		{
+			return replace;
+		}
+		public int getLength()
+		{
+			return length;
+		}
+		public int getOffset()
+		{
+			return offset;
+		}
+	}
+
+	private class TemplateCompletionProposal extends CompletionProposal
+	{
+		private int cursor;
+		private String display;
+
+		public TemplateCompletionProposal(
+			String replace,
+			int offset,
+			int length,
+			int cursor,
+			String display)
+		{
+			super(replace, offset, length);
+			this.cursor = cursor;
+			this.display = display;
+		}
+		public String getDisplayString()
+		{
+			return display;
+		}
+		public Point getSelection(IDocument document)
+		{
+			return new Point(getOffset() - getLength() + cursor, 0);
+		}
+	}
+
+	private class InstanceCompletionProposal extends CompletionProposal
 	{
 		private IProject proj;
 		private String name;
-		private int offset, length;
 
 		public InstanceCompletionProposal(
 			IProject proj,
@@ -205,10 +376,9 @@ public class VerilogCompletionProcessor implements IContentAssistProcessor
 			int offset,
 			int length)
 		{
+			super("", offset, length);
 			this.proj = proj;
 			this.name = name;
-			this.offset = offset;
-			this.length = length;
 		}
 
 		public void apply(IDocument document)
@@ -222,11 +392,11 @@ public class VerilogCompletionProcessor implements IContentAssistProcessor
 			}
 
 			StringBuffer replace = new StringBuffer(name + " " + name + "(\n\t");
-			Iterator i = module.getPortIterator();
+			Object[] ports = module.getPorts();
 			int column = 0;
-			while (i.hasNext())
+			for (int i = 0; i < ports.length; i++)
 			{
-				String port = i.next().toString();
+				String port = ports[i].toString();
 				String append = "." + port + "(" + port + ")";
 				if (column + append.length() >= 80)
 				{
@@ -236,43 +406,25 @@ public class VerilogCompletionProcessor implements IContentAssistProcessor
 				replace.append(append);
 				column += append.length();
 
-				if (i.hasNext())
+				if (i < ports.length - 1)
 					replace.append(", ");
 			}
 			replace.append("\n);");
 
 			try
 			{
-				document.replace(offset - length, length, replace.toString());
+				document.replace(
+					getOffset() - getLength(),
+					getLength(),
+					replace.toString());
 			}
 			catch (BadLocationException e)
 			{
 			}
 		}
-
-		public Point getSelection(IDocument document)
-		{
-			return null;
-		}
-
-		public String getAdditionalProposalInfo()
-		{
-			return null;
-		}
-
 		public String getDisplayString()
 		{
 			return name;
-		}
-
-		public Image getImage()
-		{
-			return null;
-		}
-
-		public IContextInformation getContextInformation()
-		{
-			return null;
 		}
 	}
 }

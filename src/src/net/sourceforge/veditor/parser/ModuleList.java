@@ -21,6 +21,7 @@ package net.sourceforge.veditor.parser;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -192,6 +193,7 @@ public final class ModuleList
 			InputStreamReader reader = new InputStreamReader(file.getContents());
 			VerilogParser parser = new VerilogParser(reader);
 			parser.parse(project, file);
+			parser.dispose();
 		}
 		catch (CoreException e)
 		{
@@ -293,7 +295,7 @@ public final class ModuleList
 				return null;
 			else
 			{
-				Collections.sort(elements);
+				Collections.sort(elements, new LineComparator());
 				Object[] eary = new Object[size];
 				for (int i = 0; i < size; i++)
 					eary[i] = elements.get(i);
@@ -305,9 +307,18 @@ public final class ModuleList
 		 * input/output prots
 		 */
 		private List ports = new ArrayList();
-		public Iterator getPortIterator()
+		public Object[] getPorts()
 		{
-			return ports.iterator();
+			return ports.toArray();
+		}
+
+		/**
+		 * wire, reg, integer
+		 */
+		private List variables = new ArrayList();
+		public Object[] getVariables()
+		{
+			return variables.toArray();
 		}
 
 		//  called by parser
@@ -315,62 +326,31 @@ public final class ModuleList
 		{
 			ports.add(name);
 		}
+		public void addVariable(String name)
+		{
+			variables.add(name);
+		}
 		public void addElement(int begin, int end, String typeName, String name)
 		{
 			Element child = new Element(begin, this, typeName, name);
 			child.setEndLine(end);
 			elements.add(child);
 		}
-		public void addComment(int begin, String str)
+	}
+
+	/**
+	 * line comparator<p/>
+	 * used by Collectoins.sort
+	 */
+	private static class LineComparator implements Comparator
+	{
+		public int compare(Object arg0, Object arg1)
 		{
-			if (!isValidComment(str))
-				return;
-
-			//  コメント行が連続している場合は最初で代表させる
-			if (begin == lastCommentLine + 1)
-			{
-				lastCommentLine = begin;
-				return;
-			}
-
-			//  行の最初の"//"と無駄な文字を削除する
-			for (int i = 0; i < str.length(); i++)
-			{
-				char ch = str.charAt(i);
-				if (Character.isLetterOrDigit(ch))
-				{
-					str = str.substring(i);
-					break;
-				}
-			}
-			//  行の最後の無駄な文字を削除する
-			for (int i = str.length() - 1; i >= 0; i--)
-			{
-				char ch = str.charAt(i);
-				if (Character.isLetterOrDigit(ch))
-				{
-					str = str.substring(0, i + 1);
-					break;
-				}
-			}
-
-			Element comment = new Element(begin, this, "//", str);
-			elements.add(comment);
-
-			lastCommentLine = begin;
+			if (arg0 instanceof Segment && arg1 instanceof Segment)
+				return ((Segment)arg0).getLine() - ((Segment)arg1).getLine();
+			else
+				return -1;
 		}
-		private int lastCommentLine;
-		private boolean isValidComment(String str)
-		{
-			for (int i = 0; i < str.length(); i++)
-			{
-				char ch = str.charAt(i);
-				if (Character.isLetterOrDigit(ch))
-					return true;
-			}
-			return false;
-		}
-
 	}
 }
 

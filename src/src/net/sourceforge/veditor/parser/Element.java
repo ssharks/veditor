@@ -21,7 +21,7 @@ package net.sourceforge.veditor.parser;
 /**
  * instance, function, task and comment in source code
  */
-public class Element extends Segment
+public class Element extends Segment implements Comparable
 {
 	private Segment module;
 	private String typeName; //  module–¼‚Ü‚½‚Ífunction–¼
@@ -43,5 +43,10 @@ public class Element extends Segment
 	public String toString()
 	{
 		return typeName + " " + name;
+	}
+
+	public int compareTo(Object arg)
+	{
+		return toString().compareTo(arg);
 	}
 }

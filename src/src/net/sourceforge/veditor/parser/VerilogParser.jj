@@ -103,28 +103,30 @@ TOKEN :
 |	<ENDFUNCTION: "endfunction">
 |	<TASK:		"task">
 |	<ENDTASK:	"endtask">
-|	<PORT_HEAD: ( "input" | "output" | "inout") >
+|	<PORT_HEAD: 	( "input" | "output" | "inout") >
+|	<VARIABLE_HEAD: ( "integer" | "real" | "wire" | "reg" ) >
 |	<STMT_HEAD: (
-		"parameter" | "integer" | "real" | "wire" | "reg" | "time" |
+		"parameter" | "time" |
 		"assign" | "defparam" | "tri0" | "tri1" | "pullup" | "pulldown" |
 		"buf"
 	)>
 |	<BLOCK_HEAD: ( "always" | "initial" )>
-|	<LPAREN:	"(">
-|	<RPAREN:	")">
+|	<LPAREN:	"(" >
+|	<RPAREN:	")" >
 |	<LBRACE: 	"{" >
 |	<RBRACE: 	"}" >
 |	<LBRACKET:	"[" >
 |	<RBRACKET:	"]" >
-|	<EOS:		";">
-|	<PARA:		"#">
-|	<AT:		"@">
-|	<BQ:		"`">
-|	<DOLLAR:	"$">
-|	<COMMA:		",">
+|	<EOS:		";" >
+|	<PARA:		"#" >
+|	<AT:		"@" >
+|	<BQ:		"`" >
+|	<DOLLAR:	"$" >
+|	<COMMA:		"," >
+|	<EQUAL:		"=" >
 |	<IDENT: 	([ "a"-"z", "A"-"Z", "0"-"9", "_", "." ])+>
-|	<SPC_CHAR:	~[]>
-|	<OTHER:		"[.]">
+|	<SPC_CHAR:	~[] >
+|	<OTHER:		"[.]" >
 }
 
 void modules() :
@@ -152,16 +154,20 @@ void moduleBody() :
 }
 {
 		LOOKAHEAD( 5 )
-		<PORT_HEAD> port()
-	|	<STMT_HEAD> skipTo( EOS )
-	|	<BLOCK_HEAD> statement()
-	|	<SPECIFY> skipTo( ENDSPECIFY )
-	|	<FUNCTION> function()
-	|	<TASK> task()
-	|	module = identifier() [ "#" ( identifier() | <LPAREN> skipParen() <RPAREN> ) ]
+		<PORT_HEAD> {beginStatement();} port() {endStatement();}
+	|	<VARIABLE_HEAD> {beginStatement();} variable() {endStatement();}
+	|	<STMT_HEAD> {beginStatement();} skipTo( EOS ) {endStatement();}
+	|	<BLOCK_HEAD> {beginStatement();} statement() {endStatement();}
+	|	<SPECIFY> {beginStatement();} skipTo( ENDSPECIFY ) {endStatement();}
+	|	<FUNCTION> {beginStatement();} function() {endStatement();}
+	|	<TASK> {beginStatement();} task() {endStatement();}
+	|	module = identifier() 
+		{ beginStatement(); }
+		[ "#" ( identifier() | <LPAREN> skipParen() <RPAREN> ) ]
 		inst = identifier() "(" skipParen() ")" iend = ";"
 		{
 			addElement( module.beginLine, iend.endLine, module.image, inst.image );
+			endStatement();
 		}
 }
 
@@ -194,7 +200,29 @@ void port() :
 		}
 	)*
 	";"
-	
+}
+
+void variable() :
+{
+	Token variable ;
+}
+{
+	[ "[" skipTo(RBRACKET) ]
+	variable = identifier()
+	{
+		addVariable( variable.beginLine, variable.image );
+	}
+	(
+		","
+		variable = identifier()
+		{
+			addVariable( variable.beginLine, variable.image );
+		}
+	)*
+	(
+		";"
+	|	"=" skipTo( EOS )
+	)
 }
 
 void delay() :
@@ -235,11 +263,15 @@ void function() :
 	Token name, end ;
 }
 {
+	{
+		System.out.println( "function begin" );
+	}
 	[ "[" skipBracket() "]" ]
 	name = identifier()
 	end = skipTo( ENDFUNCTION )
 	{
 		addElement( name.beginLine, end.endLine, "function", name.image );
+		System.out.println( "function end" );
 	}
 }
 
@@ -293,7 +325,7 @@ Token skipTo( int skip )
 	{
 		token = getToken( 1 );
 		if ( token.kind == EOF )
-			break ;
+			throw new ParseException("unexpected EOF");
 		if ( token.kind == skip )
 		{
 			getNextToken();
@@ -313,7 +345,7 @@ void skipParen()
 	{
 		token = getToken( 1 );
 		if ( token.kind == EOF )
-			break ;
+			throw new ParseException("unexpected EOF");
 		if ( token.kind == LPAREN )
 			nesting++;
 		if ( token.kind == RPAREN )
@@ -335,7 +367,7 @@ void skipBracket()
 	{
 		token = getToken( 1 );
 		if ( token.kind == EOF )
-			break ;
+			throw new ParseException("unexpected EOF");
 		if ( token.kind == LBRACKET )
 			nesting++;
 		if ( token.kind == RBRACKET )
@@ -358,7 +390,7 @@ void skipToEndcase()
 	{
 		token = getToken( 1 );
 		if ( token.kind == EOF )
-			break ;
+			throw new ParseException("unexpected EOF");
 		if ( token.kind == CASE )
 			nesting++;
 		if ( token.kind == ENDCASE )

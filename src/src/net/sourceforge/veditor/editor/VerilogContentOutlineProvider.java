@@ -108,7 +108,6 @@ public class VerilogContentOutlineProvider implements ITreeContentProvider
 
 		parser = new VerilogParser(new StringReader(text));
 		parser.parse(doc.getProject(), doc.getFile());
-
 		parser.parseLineComment(new StringReader(text));
 	}
 }
