@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
 <plugin
    id="net.sourceforge.veditor"
    name="verilog plugin"
-   version="0.2.0"
+   version="0.2.1"
    provider-name="tadashi"
    class="net.sourceforge.veditor.VerilogPlugin">
 
@@ -20,6 +21,7 @@
       <import plugin="org.eclipse.jdt.core"/>
       <import plugin="org.eclipse.jdt.ui"/>
       <import plugin="org.eclipse.ui.views"/>
+      <import plugin="org.eclipse.ui.ide"/>
    </requires>
    
    <extension
@@ -85,12 +87,10 @@
       </editorContribution> 
    </extension>
 
-<!--
    <extension
          point="org.eclipse.core.runtime.preferences">
       <initializer class="net.sourceforge.veditor.VerilogPreferenceInitializer"/>
    </extension>
--->
 
 </plugin>
 

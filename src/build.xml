@@ -8,7 +8,7 @@
 
 	<!-- must be linked with plugin.xml -->
 	<property name="project" value="net.sourceforge.veditor"/>
-	<property name="plugin_version" value="0.2.0"/>
+	<property name="plugin_version" value="0.2.1"/>
 
 	<property name="src" value="src"/>
 	<property name="dst" value="bin"/>
@@ -43,8 +43,10 @@
 	</target>
 
 	<target name="compile" depends="javacc">
+		<mkdir dir="plugins"/>
 		<mkdir dir="${dst}" />
 		<javac
+			debug="on"
 			srcdir="${src};${javacc_generated}"
 			destdir="${dst}">
 			<classpath refid="compile.classpath"/>
