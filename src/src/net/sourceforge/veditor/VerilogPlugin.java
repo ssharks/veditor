@@ -21,8 +21,6 @@ package net.sourceforge.veditor;
 
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.IPluginDescriptor;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 /**
@@ -33,32 +31,32 @@ public class VerilogPlugin extends AbstractUIPlugin
 	private static VerilogPlugin plugin;
 
 //	for eclipse 2.1
-	public VerilogPlugin(IPluginDescriptor descriptor)
-	{
-		super(descriptor);
-		plugin = this;
-	}
-
-//	for eclipse 3.0
-//	public VerilogPlugin()
+//	public VerilogPlugin(IPluginDescriptor descriptor)
 //	{
-//		super();
+//		super(descriptor);
 //		plugin = this;
 //	}
 
-//	move to VerilogPreferenceInitializer
-	protected void initializeDefaultPreferences(IPreferenceStore store)
+//	for eclipse 3.0
+	public VerilogPlugin()
 	{
-		super.initializeDefaultPreferences(store);
-
-		store.setDefault("Color.DoxygenComment", "404080");
-		store.setDefault("Color.SingleLineComment", "008080");
-		store.setDefault("Color.MultiLineComment", "008080");
-		store.setDefault("Color.String", "000080");
-		store.setDefault("Color.Default", "000000");
-		store.setDefault("Color.KeyWord", "800080");
-		store.setDefault("Compile.command", "iverilog -tnull -y . -Wall");
+		super();
+		plugin = this;
 	}
+
+//	move to VerilogPreferenceInitializer
+//	protected void initializeDefaultPreferences(IPreferenceStore store)
+//	{
+//		super.initializeDefaultPreferences(store);
+//
+//		store.setDefault("Color.DoxygenComment", "404080");
+//		store.setDefault("Color.SingleLineComment", "008080");
+//		store.setDefault("Color.MultiLineComment", "008080");
+//		store.setDefault("Color.String", "000080");
+//		store.setDefault("Color.Default", "000000");
+//		store.setDefault("Color.KeyWord", "800080");
+//		store.setDefault("Compile.command", "iverilog -tnull -y . -Wall");
+//	}
 
 	/**
 	 * Returns the shared instance.
