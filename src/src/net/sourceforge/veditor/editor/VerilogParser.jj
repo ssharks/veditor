@@ -94,12 +94,15 @@ MORE :
 SPECIAL_TOKEN :
 {
 	<SINGLE_LINE_COMMENT: (~["\n"]) "//" (~["\n"])* ("\n")>
+|	<DIRECTIVE: "`" (~["\n"])* ("\n")>
+/*
 |	<IFDEF: 	"`ifdef" (~["\n"])* ("\n")>
 |	<IFELSE: 	"`else" (~["\n"])* ("\n")>
 |	<ENDIF: 	"`endif" (~["\n"])* ("\n")>
 |	<INCLUDE: 	"`include" (~["\n"])* ("\n")>
 |	<DEFINE: 	"`define" (~["\n"])* ("\n")>
 |	<TIMESCALE: "`timescale" (~["\n"])* ("\n")>
+*/
 }
 
 <IN_MULTI_LINE_COMMENT>
@@ -135,7 +138,8 @@ TOKEN :
 |	<ENDTASK:	"endtask">
 |	<STMT_HEAD: (
 		"parameter" | "input" | "output" | "inout" |
-		"integer" | "real" | "wire" | "reg" | "assign"
+		"integer" | "real" | "wire" | "reg" | "assign" |
+		"defparam"
 	)>
 |	<BLOCK_HEAD: ( "always" | "initial" )>
 |	<LPAREN:	"(">
