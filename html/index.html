@@ -1,24 +1,22 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<HTML>
-<HEAD>
-<META http-equiv="Content-Type" content="text/html; charset=Shift_JIS">
-<META name="GENERATOR" content="IBM WebSphere Studio Homepage Builder Version 7.0.0.0 for Windows">
+<HTML><HEAD>
 <META http-equiv="Content-Style-Type" content="text/css">
-<TITLE></TITLE>
+<META http-equiv="Content-Type" content="text/html; charset=Shift_JIS">
+<META name="GENERATOR" content="IBM WebSphere Studio Homepage Builder Version 7.0.1.0 for Windows">
+<TITLE>Eclipse Verilog editor</TITLE>
 </HEAD>
 <BODY>
 <H2 align="center">Eclipse Verilog editor</H2>
-<P align="right">Last updated: August 29, 2004</P>
+<P align="right">Last updated: March 20, 2005</P>
 <H3>News</H3>
-<P>Eclipse Verilog editor version 0.2.0 was distributed with <A href="http://www.opencores.org/projects.cgi/web/opentech/">OpenTech</A> package for Open source EDA tools and open source hardware designs.<BR>
-Eclipse Verilog editor 0.2.1 released. The new version fixed some bugs
-and added some functions..</P>
+<P>Eclipse Verilog editor 0.3.0 released. The new version supported code formatter and fixed some bugs.<BR>
+Eclipse Verilog editor version 0.2.0 was distributed with <A href="http://www.opencores.org/projects.cgi/web/opentech/">OpenTech</A> package for Open source EDA tools and open source hardware designs.</P>
 <H3>Introduction</H3>
 <P>Eclipse Verilog editor provides <A href="http://www.verilog.com/">Verilog (IEEE-1364)</A> and VHDL language specific features on <A href="http://www.eclipse.org/">Eclipse IDE</A>. It helps coding and debugging in hardware development based on Verilog
 or VHDL.<BR>
 <A href="http://sourceforge.net/projects/veditor/">Here</A> is the project summary page in SourceForge.<BR>
 <BR>
-Eclipse Verilog Editor is tested on Eclipse 3.0. It cannot run on Eclipse
+Eclipse Verilog Editor is tested on Eclipse 3.0.1. It cannot run on Eclipse
 2.1 or earlier.</P>
 <P><A href="screenshot.html">Screenshot samples</A></P>
 <H3>Features</H3>
@@ -87,6 +85,17 @@ Eclipse Verilog Editor is tested on Eclipse 3.0. It cannot run on Eclipse
   <LI>Preference page
   <P>It can modify colors and font styles in editor and command line option
   for external Verilog compiler.</P>
+  <LI>Code Formatter (beta)<IMG src="new.gif" width="61" height="13" border="0">
+  <P>Code formatter arranges Verilog source code just like same function with
+  JDT. It corrects indent and space characters before/after operators.<BR>
+  Now you are forced to my own code style because there are no preference
+  page of Verilog code style. Please report your required preference of code
+  style. Of course welcome to bug report with your expected code too.<BR>
+  Code formatter can do on Verilog language only now. Please contribute about
+  VHDL. </P>
+  <LI>Console view<IMG src="new.gif" width="61" height="13" border="0">
+  <P>Console view show output messages from external compiler and error messages
+  from internal code parser. It make you easy to fix problems.</P>
 </UL>
 <H3>How to use Eclipse Verilog editor</H3>
 <P><A href="install.html">Install Eclipse and Eclipse Verilog editor plug-in</A></P>
@@ -97,24 +106,27 @@ Eclipse Verilog Editor is tested on Eclipse 3.0. It cannot run on Eclipse
   <DT>0.1.0
   <DD>is the first release
   <DT>0.1.1
-  <DD>supported automatic port connection for instantiation
-  <DD>fixed bugs about source code parsing
+  <DD>supported automatic port connection for instantiation<BR>fixed bugs about source code parsing
   <DT>0.1.2
   <DD>supported content assist
   <DT>0.1.3
   <DD>supported Module Hierarchy view
   <DT>0.2.0
-  <DD>supported Problems view and external compiler
-  <DD>supported VHDL
+  <DD>supported Problems view and external compiler<BR>supported VHDL
   <DT>0.2.1
-  <DD>added keywords in Verilog.
-  <DD>added preference about font style.
-  <DD>fixed bugs which are 1000438, 992492, 992490 and 992485. Please refer <A href="http://sourceforge.net/tracker/?atid=636481&group_id=103963&func=browse">Bugs Tracker</A>.
+  <DD>added keywords in Verilog.<BR>
+  added preference about font style.<BR>fixed bugs which are 1000438, 992492, 992490 and 992485. Please refer <A href="http://sourceforge.net/tracker/?atid=636481&group_id=103963&func=browse">Bugs Tracker</A>.
+  <DT>0.2.2
+  <DD>fixed bugs which are 1036061 and 1039090.
+  <DT>0.3.0
+  <DD>supported Code Formatter.<BR>
+  supported Console view.<BR>
+  fixed bugs which are 1055081, 1067840, 1148609 and 1157885.
 </DL>
 <H3>Future plan</H3>
 <UL>
   <LI>add code templates
-  <LI>code formatter
+  <LI>preference page of code formatter
   <LI>lint tool
   <LI>wave form view - Signals are selected from source code view
 </UL>
