@@ -250,6 +250,7 @@ void statement() :
 {
 	[ delay() ]
 	(	";"
+	|	":" identifier()
 	|	<STMT_HEAD> skipTo( EOS )
 	|	ifStatement()
 	|	block()

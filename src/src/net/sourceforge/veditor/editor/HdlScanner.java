@@ -42,7 +42,35 @@ public class HdlScanner extends RuleBasedScanner
 	{
 		return new HdlScanner(manager, false);
 	}
-	
+
+	private static final String[] verilogWords = {"always", "and", "assign",
+			"attribute", "begin", "buf", "bufif0", "bufif1", "case", "casex",
+			"casez", "cmos", "deassign", "default", "defparam", "disable",
+			"edge", "else", "end", "endcase", "endfunction", "endmodule",
+			"endprimitive", "endspecify", "endtable", "endtask", "event",
+			"for", "force", "forever", "fork", "function", "highz0", "highz1",
+			"if", "ifnone", "initial", "inout", "input", "integer", "join",
+			"medium", "module", "large", "macromodule", "nand", "negedge",
+			"nmos", "nor", "not", "notif0", "notif1", "or", "output",
+			"parameter", "pmos", "posedge", "primitive", "pull0", "pull1",
+			"pulldown", "pullup", "rcmos", "real", "realtime", "reg",
+			"release", "repeat", "rnmos", "rpmos", "rtran", "rtranif0",
+			"rtranif1", "scalared", "signed", "small", "specify", "specparam",
+			"strenght", "strong0", "strong1", "supply0", "supply1", "table",
+			"task", "time", "tran", "tranif0", "tranif1", "tri", "tri0",
+			"tri1", "triand", "trior", "trireg", "unsigned", "vectoryd",
+			"wait", "wand", "weak0", "weak1", "while", "wire", "wor", "xnor",
+			"xor"};
+
+	private static final String[] vhdlWords = {"begin", "end", "if", "else",
+			"for", "while", "case", "library", "use", "entity", "architecture",
+			"is", "of", "generic", "port", "process", "constant", "procedure",
+			"signal", "shared", "variable", "type", "subtype", "file", "alias",
+			"attribute", "component", "disconnect", "group", "block", "assert",
+			"generate", "with", "elsif", "in", "out", "inout", "buffer",
+			"linkage", "return", "when", "then", "and", "or", "to", "downto",
+			"map"};
+
 	private HdlScanner(ColorManager manager, boolean isVerilog)
 	{
 		IToken keyword = new Token(HdlTextAttribute.KEY_WORD
@@ -63,22 +91,6 @@ public class HdlScanner extends RuleBasedScanner
 				return Character.isJavaIdentifierStart(character);
 			}
 		}, other);
-
-		String[] verilogWords = {"module", "endmodule", "assign", "always",
-				"initial", "wire", "reg", "event", "input", "output", "inout",
-				"time", "if", "else", "for", "while", "case", "endcase",
-				"function", "endfunction", "task", "endtask", "begin", "end",
-				"parameter", "fork", "join", "integer", "posedge", "negedge",
-				"forever", "repeat"};
-
-		String[] vhdlWords = {"begin", "end", "if", "else", "for", "while",
-				"case", "library", "use", "entity", "architecture", "is", "of",
-				"generic", "port", "process", "constant", "procedure",
-				"signal", "shared", "variable", "type", "subtype", "file",
-				"alias", "attribute", "component", "disconnect", "group",
-				"block", "assert", "generate", "with", "elsif", "in", "out",
-				"inout", "buffer", "linkage", "return", "when", "then", "and",
-				"or", "to", "downto", "map"};
 
 		if (isVerilog)
 		{
