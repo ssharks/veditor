@@ -15,7 +15,8 @@
 
 	<property name="javacc_generated" value="_generated"/>
 	<property name="javacc_file_dir" value="net/sourceforge/veditor/parser"/>
-	<property name="javacc_src" value="${src}/${javacc_file_dir}/VerilogParser.jj"/>
+	<property name="javacc_src_verilog" value="${src}/${javacc_file_dir}/VerilogParserCore.jj"/>
+	<property name="javacc_src_vhdl" value="${src}/${javacc_file_dir}/VhdlParserCore.jj"/>
 	<property name="javacc_dst" value="${javacc_generated}/${javacc_file_dir}"/>
 
 	<property name="jar" value="veditor.jar"/>
@@ -29,11 +30,15 @@
         </fileset>
 	</path>
 
-	<target name="javacc">	
+	<target name="javacc">
 		<mkdir dir="${javacc_dst}" />
 		<javacc
 			javacchome="${javacc_dir}" 
-	 		target="${javacc_src}"
+	 		target="${javacc_src_verilog}"
+	 		outputdirectory="${javacc_dst}" />
+		<javacc
+			javacchome="${javacc_dir}" 
+	 		target="${javacc_src_vhdl}"
 	 		outputdirectory="${javacc_dst}" />
 	</target>
 

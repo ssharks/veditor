@@ -105,6 +105,12 @@ public final class ModuleList
 						Module mod = new ModuleReference(name);
 						replaceModule(mod);
 					}
+					if (len >= 5 && name.substring(len - 4).equals(".vhd"))
+					{
+						name = name.substring(0, len - 4);
+						Module mod = new ModuleReference(name);
+						replaceModule(mod);
+					}
 				}
 			}
 		}
@@ -190,12 +196,14 @@ public final class ModuleList
 	private void readModule(String name)
 	{
 		IFile file = findFile(name + ".v");
+		if ( file == null )
+			file = findFile(name + ".vhd");
 		// System.out.println( "file : " + file );
 
 		try
 		{
 			InputStreamReader reader = new InputStreamReader(file.getContents());
-			VerilogCode parser = new VerilogCode(reader);
+			IParser parser = ParserFactory.create(reader, file);
 			parser.parse(project, file);
 			parser.dispose();
 		}

@@ -24,10 +24,11 @@ import java.io.StringReader;
 import net.sourceforge.veditor.actions.FormatAction;
 import net.sourceforge.veditor.actions.GotoMatchingBracketAction;
 import net.sourceforge.veditor.actions.OpenDeclarationAction;
+import net.sourceforge.veditor.parser.IParser;
 import net.sourceforge.veditor.parser.Module;
 import net.sourceforge.veditor.parser.ModuleList;
+import net.sourceforge.veditor.parser.ParserFactory;
 import net.sourceforge.veditor.parser.Segment;
-import net.sourceforge.veditor.parser.VerilogCode;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
@@ -42,6 +43,7 @@ import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.source.ISourceViewer;
+import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
@@ -174,6 +176,26 @@ public class VerilogEditor extends TextEditor
 			modulePage.setInput(input);
 	}
 	
+	public void update()
+	{
+		try
+		{
+			StyledText widget = getViewer().getTextWidget();
+			int caret = widget.getCaretOffset();
+			int top = widget.getTopIndex();
+			
+			doSetInput(getEditorInput());
+			
+			// widget might change in doSetInput
+			widget = getViewer().getTextWidget();
+			widget.setSelection(caret);
+			widget.setTopIndex(top);
+		}
+		catch (CoreException e)
+		{
+		}
+	}
+	
 	public void doSetInput(IEditorInput input) throws CoreException
 	{
 		super.doSetInput(input);
@@ -261,7 +283,8 @@ public class VerilogEditor extends TextEditor
 		VerilogDocument doc = getVerilogDocument();
 		if (doc != null)
 		{
-			VerilogCode parser = new VerilogCode(new StringReader(doc.get()));
+			IParser parser = ParserFactory.create(new StringReader(doc.get()), doc
+					.getFile());
 			parser.parse(doc.getProject(), doc.getFile());
 
 			int size = parser.size();

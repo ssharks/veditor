@@ -22,11 +22,11 @@ options {
 	STATIC = false ;
 }
 
-PARSER_BEGIN(VerilogParser)
+PARSER_BEGIN(VhdlParserCore)
 
 package net.sourceforge.veditor.parser;
 
-public abstract class VerilogParser
+public abstract class VhdlParserCore
 {
 	protected abstract void addModule(int begin, String name);
 	protected abstract void endModule(int line);
@@ -43,7 +43,7 @@ public abstract class VerilogParser
 	}
 }
 
-PARSER_END(VerilogParser)
+PARSER_END(VhdlParserCore)
 
 //
 // operation for /* */
@@ -69,18 +69,6 @@ MORE :
 //
 // ignore from `else to `endif
 //
-<IN_ELSE_BLOCK>
-SKIP :
-{
-	<ENDIF: "`endif" > : DEFAULT
-}
-
-<IN_ELSE_BLOCK>
-MORE :
-{
-	< ~[] >
-}
-
 SKIP :
 {
 	" " | "\t" | "\r" | "\n" | "\f"
@@ -88,38 +76,44 @@ SKIP :
 
 SPECIAL_TOKEN :
 {
-	<SINGLE_LINE_COMMENT: "//" (~["\n"])* ("\n")>
-|	<DELSE:     "`else" (~["\n"])* ("\n")> : IN_ELSE_BLOCK
-|	<DIRECTIVE: "`" ["a"-"z"] (~["\n"])* ("\n")>  // directive must be lower case
+	<SINGLE_LINE_COMMENT: "--" (~["\n"])* ("\n")>
 }
 
 TOKEN :
 {
-	<MODULE:	"module">
-|	<ENDMODULE: "endmodule">
+	<LIBRARY:	"library">
+|	<USE:		"use">
+|	<ENTITY:	"entity">
+|	<ARCHITECTURE:	"architecture">
+|	<IS:		"is">
+|	<OF:		"of">
+|	<GENERIC:	"generic">
+|	<PORT:		"port">
+|	<PROCESS:	"process">
 |	<BEGIN: 	"begin">
 |	<END:		"end">
-|	<SPECIFY:	"specify">
-|	<ENDSPECIFY:"endspecify">
-|	<IF:		"if">
-|	<ELSE:		"else">
-|	<WHILE:		"while">
-|	<FOR:		"for">
-|	<CASE:		"case">
-|	<CASEX:		"casex">
-|	<ENDCASE:	"endcase">
+|	<CONSTANT:	"constant">
+|	<PROCEDURE:	"procedure">
 |	<FUNCTION:	"function">
-|	<ENDFUNCTION: "endfunction">
-|	<TASK:		"task">
-|	<ENDTASK:	"endtask">
-|	<PORT_HEAD: 	( "input" | "output" | "inout") >
-|	<VARIABLE_HEAD: ( "integer" | "real" | "wire" | "reg" | "event" ) >
-|	<STMT_HEAD: (
-		"parameter" | "time" |
-		"assign" | "defparam" | "tri0" | "tri1" | "pullup" | "pulldown" |
-		"buf"
-	)>
-|	<BLOCK_HEAD: ( "always" | "initial" )>
+|	<SIGNAL:	"signal">
+|	<SHARED:	"shared">
+|	<VARIABLE:	"variable">
+|	<TYPE:		"type">
+|	<SUBTYPE:	"subtype">
+|	<FILE:		"file">
+|	<ALIAS:		"alias">
+|	<ATTRIBUTE:	"attribute">
+|	<COMPONENT:	"component">
+|	<FOR:		"for">
+|	<IF:		"if">
+|	<CASE:		"case">
+|	<DISCONNECT:"disconnect">
+|	<GROUP:		"group">
+|	<BLOCK:		"block">
+|	<ASSERT:	"assert">
+|	<GENERATE:	"generate">
+|	<WITH:		"with">
+|	<MODE:		( "in" | "out" | "inout" | "buffer" | "linkage" )>
 |	<LPAREN:	"(" >
 |	<RPAREN:	")" >
 |	<LBRACE: 	"{" >
@@ -133,6 +127,7 @@ TOKEN :
 |	<DOLLAR:	"$" >
 |	<COMMA:		"," >
 |	<COLON:		":" >
+|	<ASSIGN:	"<=" >
 |	<EQUAL:		"=" >
 |	<IDENT: 	([ "a"-"z", "A"-"Z", "0"-"9", "_", ".", "'", "?", "\"" ])+>
 |	<SPC_CHAR:	~[ " ", "\t"] >
@@ -146,49 +141,24 @@ void modules() :
 }
 {
 	(
-		<MODULE> name = identifier() [ <LPAREN> skipParen() <RPAREN> ] <EOS>
-		{
-			addModule( name.beginLine, name.image );
-		}
-		( moduleBody() )*
-		end = <ENDMODULE>
-		{
-			endModule( end.beginLine );
-		}
+		<LIBRARY> skipTo( EOS )
+	|	<USE> skipTo( EOS )
 	)*
-}
-
-void moduleBody() :
-{
-	Token	module, inst, iend ;
-}
-{
-//		LOOKAHEAD( 5 )
-		<PORT_HEAD> {beginStatement();} port() {endStatement();}
-	|	<VARIABLE_HEAD> {beginStatement();} variable() {endStatement();}
-	|	<STMT_HEAD> {beginStatement();} skipTo( EOS ) {endStatement();}
-	|	<BLOCK_HEAD> {beginStatement();} statement() {endStatement();}
-	|	<SPECIFY> {beginStatement();} skipTo( ENDSPECIFY ) {endStatement();}
-	|	<FUNCTION> {beginStatement();} function() {endStatement();}
-	|	<TASK> {beginStatement();} task() {endStatement();}
-	|	module = identifier() 
-		{ beginStatement(); }
-		[ "#" ( identifier() | <LPAREN> skipParen() <RPAREN> ) ]
-		inst = identifier() "(" skipParen() ")" iend = ";"
-		{
-			addInstance( module.beginLine, iend.endLine, module.image, inst.image );
-			endStatement();
-		}
-}
-
-Token identifier() :
-{
-	Token token ;
-}
-{
-	[ "`" ] token = <IDENT>
+	
+	<ENTITY> name = identifier() <IS>
 	{
-		return token ;
+		addModule( name.beginLine, name.image );
+	}
+	(
+		<GENERIC> "(" skipParen() ")" <EOS>
+	|	<PORT> "(" port() ( ";" port() )* ")" <EOS>
+	)*
+	<END> identifier() <EOS>
+	<ARCHITECTURE> identifier() <OF> identifier() <IS>
+	moduleBody()
+	end = <EOS>
+	{
+		endModule( end.beginLine );
 	}
 }
 
@@ -197,7 +167,6 @@ void port() :
 	Token port ;
 }
 {
-	[ "[" skipTo(RBRACKET) ]
 	port = identifier()
 	{
 		addPort( port.beginLine, port.image );
@@ -209,122 +178,82 @@ void port() :
 			addPort( port.beginLine, port.image );
 		}
 	)*
-	";"
+	":" <MODE> identifier()
+	[ "(" skipParen() ")" ]
 }
 
-void variable() :
+void moduleBody() :
 {
-	Token variable ;
+	Token	module, inst, iend ;
 }
 {
-	[ "[" skipTo(RBRACKET) ]
-	variable = identifier() [ "[" skipTo(RBRACKET) ]
-	{
-		addVariable( variable.beginLine, variable.image );
-	}
-	(
-		","
-		variable = identifier() [ "[" skipTo(RBRACKET) ]
-		{
-			addVariable( variable.beginLine, variable.image );
-		}
-	)*
-	(
-		";"
-	|	"=" skipTo( EOS )
-	)
-}
-
-void delay() :
-{
-}
-{
-	( "@" | "#" ) ( "(" skipParen() ")" | identifier() )
-}
-
-void statement() :
-{
-}
-{
-	[ delay() ]
-	(	";"
-	|	<STMT_HEAD> skipTo( EOS )
-	|	ifStatement()
-	|	block()
-	|	"$" skipTo( EOS )
-	|	"{" skipTo( EOS )
-	|	identifier() skipTo( EOS )
-	|	caseStatement()
-	|	whileStatement()
-	|	forStatement()
-	)
-}
-
-void block() :
-{
-}
-{
+	( declaration() )*
 	<BEGIN>
 	( statement() )*
 	<END>
 }
-void function() :
+
+Token identifier() :
 {
-	Token name, end ;
+	Token token ;
 }
 {
-	[ "[" skipBracket() "]" ]
-	name = identifier()
-	end = skipTo( ENDFUNCTION )
+	token = <IDENT>
 	{
-		addElement( name.beginLine, end.endLine, "function", name.image );
+		return token ;
 	}
 }
 
-void task() :
+void declaration() :
 {
-	Token name, end ;
+	Token variable;
 }
 {
-	[ "[" skipBracket() "]" ]
-	name = identifier()
-	end = skipTo( ENDTASK )
-	{
-		addElement( name.beginLine, end.endLine, "task", name.image );
-	}
-}
-
-void ifStatement() :
-{
-}
-{
-	<IF> "(" skipParen() ")" statement()
-	[ LOOKAHEAD(1) <ELSE> statement() ]
-}
-
-void caseStatement() :
-{
-}
-{
-	(<CASE>|<CASEX>) "(" skipParen() ")"
 	(
-		identifier() ( "," identifier() )* ":" statement()
-	)*
-	<ENDCASE>
+		( <CONSTANT> | <SIGNAL> | [ <SHARED> ] <VARIABLE> )
+		variable = identifier()
+		{
+			addVariable( variable.beginLine, variable.image );
+		}
+		(
+			","
+			variable = identifier()
+			{
+				addVariable( variable.beginLine, variable.image );
+			}
+		)*
+		":" skipTo( EOS )
+	)
+|	( <TYPE> | <SUBTYPE> | <FILE> | <ALIAS> | <ATTRIBUTE> |
+	  <FOR> | <DISCONNECT> | <GROUP> ) skipTo( EOS )
+|	<COMPONENT> skipTo2( END, COMPONENT ) skipTo( EOS )
+|	( <PROCEDURE> | <FUNCTION> ) skipTo( BEGIN ) skipEnd() <END> <EOS>
 }
 
-void whileStatement() :
+void statement() :
 {
+	Token ident, module, iend;
 }
 {
-	<WHILE> "(" skipParen() ")" statement()
-}
-
-void forStatement() :
-{
-}
-{
-	<FOR> "(" skipParen() ")" statement()
+	(
+		ident = identifier()
+		(
+			":"
+			(
+				[<ENTITY>] module = identifier() iend = skipTo( EOS )
+				{
+					addInstance( ident.beginLine, iend.endLine, module.image, ident.image );
+				}
+			|	( <IF> | <FOR> ) skipTo( GENERATE )
+				<BEGIN> ( statement() )* <END> <GENERATE> [identifier()] <EOS>
+			)
+		|	[ "(" skipParen() ")" ] skipTo( EOS )
+		)
+	|	<WITH> skipTo( EOS )
+	|	<PROCESS> skipTo2( END, PROCESS ) [ identifier() ] <EOS>
+	|	<BLOCK> skipTo2( END, BLOCK ) [ identifier() ] <EOS>
+	|	<ASSERT> skipTo( EOS )
+	)
 }
 
 JAVACODE
@@ -342,6 +271,31 @@ Token skipTo( int skip )
 			break ;
 		}
 		getNextToken();
+	}
+	return token ;
+}
+
+JAVACODE
+Token skipTo2( int skip1, int skip2 )
+{
+	Token token ;
+	for(;;)
+	{
+		token = getToken( 1 );
+		if ( token.kind == EOF )
+			throw new ParseException("unexpected EOF");
+		if ( token.kind == skip1 )
+		{
+			getNextToken();
+			token = getToken( 1 );
+			if ( token.kind == skip2 )
+			{
+				getNextToken();
+				break ;
+			}
+		}
+		else
+			getNextToken();
 	}
 	return token ;
 }
@@ -390,9 +344,8 @@ void skipBracket()
 	}
 }
 
-
 JAVACODE
-void skipToEndcase()
+void skipEnd()
 {
 	Token token ;
 	int nesting = 1 ;
@@ -401,18 +354,18 @@ void skipToEndcase()
 		token = getToken( 1 );
 		if ( token.kind == EOF )
 			throw new ParseException("unexpected EOF");
-		if ( token.kind == CASE )
+		if ( token.kind == BEGIN || token.kind == IF || token.kind == CASE )
 			nesting++;
-		if ( token.kind == ENDCASE )
+		if ( token.kind == END )
 		{
 			nesting--;
 			if ( nesting == 0 )
-			{
-				getNextToken();
 				break;
-			}
+			else
+				getNextToken();	// if or case
 		}
 		getNextToken();
 	}
 }
+
 

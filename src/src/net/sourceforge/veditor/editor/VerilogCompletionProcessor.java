@@ -24,9 +24,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import net.sourceforge.veditor.parser.IParser;
 import net.sourceforge.veditor.parser.Module;
 import net.sourceforge.veditor.parser.ModuleList;
-import net.sourceforge.veditor.parser.VerilogCode;
+import net.sourceforge.veditor.parser.ParserFactory;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.text.BadLocationException;
@@ -54,12 +55,12 @@ public class VerilogCompletionProcessor implements IContentAssistProcessor
 		String match = getMatchingWord(doc.get(), documentOffset);
 		int length = match.length();  // replace length
 
-		int context = VerilogCode.OUT_OF_MODULE;
+		int context = IParser.OUT_OF_MODULE;
 		String moduleName = "";
 		try
 		{
-			VerilogCode parser = new VerilogCode(new StringReader(doc.get(0,
-					documentOffset - length)));
+			IParser parser = ParserFactory.create(new StringReader(doc.get(0,
+					documentOffset - length)), doc.getFile());
 			context = parser.getContext();
 			moduleName = parser.getCurrentModuleName();
 		}
@@ -71,13 +72,13 @@ public class VerilogCompletionProcessor implements IContentAssistProcessor
 
 		switch(context)
 		{
-			case VerilogCode.IN_MODULE:
+			case IParser.IN_MODULE:
 				matchList = getInModuleProprosals(doc, documentOffset, match);
 				break;
-			case VerilogCode.IN_STATEMENT:
+			case IParser.IN_STATEMENT:
 				matchList = getInStatmentProposals(doc, documentOffset, match, moduleName);
 				break;
-			case VerilogCode.OUT_OF_MODULE:
+			case IParser.OUT_OF_MODULE:
 			default:
 				Display.getCurrent().beep();
 				return null;

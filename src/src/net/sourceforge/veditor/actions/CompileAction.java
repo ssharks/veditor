@@ -18,9 +18,12 @@
 //
 package net.sourceforge.veditor.actions;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 
 import net.sourceforge.veditor.VerilogPlugin;
 
@@ -30,7 +33,6 @@ import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.action.IAction;
-import org.eclipse.ui.IWorkbenchWindow;
 
 public class CompileAction extends AbstractActionDelegate
 {
@@ -61,46 +63,35 @@ public class CompileAction extends AbstractActionDelegate
 		}
 		parseMessage(msg, folder);
 
-//		System.out.println(command);
-//		System.out.println(msg);
+		getEditor().update();
+
+		//System.out.println(msg);
 	}
 
 	private String executeCompiler(File dir, String command)
 	{
+		//System.out.println(command);
+
 		Runtime runtime = Runtime.getRuntime();
-		String message = "";
 		try
 		{
 			Process process = runtime.exec(command, null, dir);
-			process.waitFor();
+			MessageThread stderr = new MessageThread(process.getErrorStream());
+			MessageThread stdout = new MessageThread(process.getInputStream());
+			stderr.start();
+			stdout.start();
 
-			int len;
-			InputStream stdout = process.getInputStream();
-			len = stdout.available();
-			if ( len > 0 )
-			{
-				byte msg[] = new byte[len];
-				stdout.read(msg);
-				message += new String(msg);
-			}
-			InputStream stderr = process.getErrorStream();
-			len = stderr.available();
-			if ( len > 0 )
-			{
-				byte msg[] = new byte[len];
-				stderr.read(msg);
-				message += new String(msg);
-			}
+			process.waitFor();
+			
+			return stderr.get() + stdout.get();
 		}
 		catch (IOException e)
 		{
-			e.printStackTrace();
 		}
 		catch (InterruptedException e)
 		{
-			e.printStackTrace();
 		}
-		return message;
+		return "";
 	}
 	
 	private void parseMessage(String msg, IFolder folder)
@@ -130,13 +121,17 @@ public class CompileAction extends AbstractActionDelegate
 	private void setProblemMarker(IResource file, String type, int lineNumber,
 			String msg)
 	{
+		int level;
+		if ( type.equals(" error") )
+			level = IMarker.SEVERITY_ERROR;
+		else if ( type.equals(" warning") )
+			level = IMarker.SEVERITY_WARNING;
+		else
+			return;
 		try
 		{
 			IMarker marker = file.createMarker(MARKER_TYPE);
-			if ( type.equals(" error") )
-				marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
-			else if ( type.equals(" warning") )
-				marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_WARNING);
+			marker.setAttribute(IMarker.SEVERITY, level);
 			marker.setAttribute(IMarker.LINE_NUMBER, lineNumber);
 			marker.setAttribute(IMarker.MESSAGE, msg);
 		}
@@ -144,15 +139,42 @@ public class CompileAction extends AbstractActionDelegate
 		{
 		}
 	}
-
-	public void dispose()
+	
+	private class MessageThread extends Thread
 	{
-	}
+		private Reader reader;
+		private StringBuffer buffer;
 
-	public void init(IWorkbenchWindow window)
-	{
+		public MessageThread( InputStream is )
+		{
+			reader = new InputStreamReader(new BufferedInputStream(is));
+			buffer = new StringBuffer();
+		}
+		
+		public void run()
+		{
+			int c;
+			try
+			{
+				c = reader.read();
+				while( c != -1 )
+				{
+					buffer.append((char)c);
+					c = reader.read();
+				}
+			}
+			catch (IOException e)
+			{
+			}
+		}
+		
+		public String get()
+		{
+			return buffer.toString();
+		}
 	}
 }
+
 
 
 

@@ -66,7 +66,17 @@ public class VerilogScanner extends RuleBasedScanner
 			"wire", "reg", "event", "input", "output", "inout", "time",
 			"if", "else", "for", "while", "case", "endcase",
 			"function", "endfunction", "task", "endtask",
-			"begin", "end", "parameter", "fork", "join", "integer" };
+			"begin", "end", "parameter", "fork", "join", "integer",
+			// VHDL reserved word
+			"library", "use",
+			"entity", "architecture", "is", "of",
+			"generic", "port", "process", "constant", "procedure",
+			"signal", "shared", "variable", "type", "subtype",
+			"file", "alias", "attribute", "component", "disconnect",
+			"group", "block", "assert", "generate", "with", "elsif",
+			"in", "out", "inout", "buffer", "linkage",
+			"return", "when", "then", "and", "or"
+		};
 
 		for (int i = 0; i < words.length; i++)
 		{

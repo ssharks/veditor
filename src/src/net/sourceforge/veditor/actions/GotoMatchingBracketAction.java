@@ -35,8 +35,8 @@ public class GotoMatchingBracketAction extends AbstractAction
 		String text = widget.getText();
 
 		int pos = widget.getCaretOffset();
-		String[] open = { "(", "{", "[", "begin" };
-		String[] close = { ")", "}", "]", "end" };
+		String[] open = { "(", "{", "[", "begin", "fork" };
+		String[] close = { ")", "}", "]", "end", "join" };
 
 		int openIdx = searchWord(open, text, pos);
 		int closeIdx = searchWord(close, text, pos);

@@ -32,15 +32,11 @@ import org.eclipse.core.resources.IProject;
  * implementation class of VerilogParser<p/>
  * for separating definition from JavaCC code
  */
-public class VerilogCode extends VerilogParser
+class VhdlParser extends VhdlParserCore implements IParser
 {
-	public static final int OUT_OF_MODULE = 0;
-	public static final int IN_MODULE = 1;
-	public static final int IN_STATEMENT = 2;
-
-	public VerilogCode(Reader reader)
+	public VhdlParser(Reader reader)
 	{
-		super(new AsciiReader(reader));
+		super(reader);
 	}
 
 	private int context = OUT_OF_MODULE;
@@ -61,7 +57,7 @@ public class VerilogCode extends VerilogParser
 	}
 	private String currentModuleName;
 
-	// called by VerilogParser
+	// called by VhdlParserCore
 	protected void addModule(int begin, String name)
 	{
 		context = IN_MODULE;
@@ -176,9 +172,9 @@ public class VerilogCode extends VerilogParser
 						column = 0;
 						c = reader.read();
 						break;
-					case '/' :
+					case '-' :
 						c = reader.read();
-						if (c == '/' && column == 1)
+						if (c == '-' && column == 1)
 						{
 							String comment = getLineComment(reader);
 							if (comment != null)
@@ -251,41 +247,12 @@ public class VerilogCode extends VerilogParser
 			if (line >= mod.getLine())
 			{
 				// System.out.println(comment);
-				mod.addElement(line, line, "//", comment);
+				mod.addElement(line, line, "--", comment);
 			}
 		}
 	}
 	private int prevCommentLine;
 	
-	/**
-	 *	Wrapper of reader to ignore two bytes code because of JavaCC bug.
-	 *	It may be no problem. The two bytes characters are allowed in comment only.
-	 */
-	private static class AsciiReader extends Reader
-	{
-		private Reader reference;
-
-		public AsciiReader(Reader reference)
-		{
-			this.reference = reference;
-		}
-		
-		public void close() throws IOException
-		{
-			reference.close();
-		}
-
-		public int read(char[] cbuf, int off, int len) throws IOException
-		{
-			int n = reference.read(cbuf, off, len);
-			for (int i = 0; i < n; i++)
-			{
-				if (cbuf[i] >= 0x100)	// convert two bytes code to space
-					cbuf[i] = ' ';
-			}
-			return n;
-		}
-	}
 }
 
 

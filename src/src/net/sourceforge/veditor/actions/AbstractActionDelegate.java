@@ -25,10 +25,8 @@ import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IEditorActionDelegate;
 import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 
-abstract public class AbstractActionDelegate implements IEditorActionDelegate,
-		IWorkbenchWindowActionDelegate
+abstract public class AbstractActionDelegate implements IEditorActionDelegate
 {
 	private VerilogEditor editor;
 

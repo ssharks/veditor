@@ -82,9 +82,11 @@ public class VerilogPartitionScanner extends RuleBasedPartitionScanner
 		
 		// single line comments.
 		rules.add(new EndOfLineRule("//", singleLineComment));
+		rules.add(new EndOfLineRule("--", singleLineComment));  // VHDL comment
 
 		// strings.
 		rules.add(new SingleLineRule("\"", "\"", string, '\\'));
+		rules.add(new SingleLineRule("\'", "\'", string, '\\'));
 
 		// special case word rule.
 		EmptyCommentRule wordRule = new EmptyCommentRule(multiLineComment);

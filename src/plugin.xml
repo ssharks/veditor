@@ -28,7 +28,7 @@
       <editor
             name="Verilog Editor"
             icon="icons/vlog_src.gif"
-            extensions="v"
+            extensions="v, vhd"
             contributorClass="net.sourceforge.veditor.editor.VerilogActionContributor"
             class="net.sourceforge.veditor.editor.VerilogEditor"
             id="net.sourceforge.veditor.editor.VerilogEditor">
