@@ -21,6 +21,11 @@ package net.sourceforge.veditor;
 
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.ui.console.ConsolePlugin;
+import org.eclipse.ui.console.IConsole;
+import org.eclipse.ui.console.IConsoleManager;
+import org.eclipse.ui.console.MessageConsole;
+import org.eclipse.ui.console.MessageConsoleStream;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 /**
@@ -28,35 +33,14 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
  */
 public class VerilogPlugin extends AbstractUIPlugin
 {
+	private static final String CONSOLE_NAME = "veditor";
 	private static VerilogPlugin plugin;
 
-//	for eclipse 2.1
-//	public VerilogPlugin(IPluginDescriptor descriptor)
-//	{
-//		super(descriptor);
-//		plugin = this;
-//	}
-
-//	for eclipse 3.0
 	public VerilogPlugin()
 	{
 		super();
 		plugin = this;
 	}
-
-//	move to VerilogPreferenceInitializer
-//	protected void initializeDefaultPreferences(IPreferenceStore store)
-//	{
-//		super.initializeDefaultPreferences(store);
-//
-//		store.setDefault("Color.DoxygenComment", "404080");
-//		store.setDefault("Color.SingleLineComment", "008080");
-//		store.setDefault("Color.MultiLineComment", "008080");
-//		store.setDefault("Color.String", "000080");
-//		store.setDefault("Color.Default", "000000");
-//		store.setDefault("Color.KeyWord", "800080");
-//		store.setDefault("Compile.command", "iverilog -tnull -y . -Wall");
-//	}
 
 	/**
 	 * Returns the shared instance.
@@ -89,7 +73,31 @@ public class VerilogPlugin extends AbstractUIPlugin
 	{
 		return getPlugin().getPreferenceStore().getBoolean(key);
 	}
+
+	/**
+	 * Show message in console view
+	 */
+	public static void println(String msg)
+	{
+		MessageConsoleStream out = findConsole(CONSOLE_NAME).newMessageStream();
+		out.println(msg);
+	}
 	
+	private static MessageConsole findConsole(String name)
+	{
+		IConsoleManager man = ConsolePlugin.getDefault().getConsoleManager();
+		IConsole[] consoles = man.getConsoles();
+		for (int i = 0; i < consoles.length; i++)
+		{
+			if (consoles[i].getName().equals(name))
+				return (MessageConsole)consoles[i];
+		}
+
+		// if not exists, add new console
+		MessageConsole newConsole = new MessageConsole(name, null);
+		man.addConsoles(new IConsole[]{newConsole});
+		return newConsole;
+	}
 	
 }
 
