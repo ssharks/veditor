@@ -149,7 +149,7 @@ public class VerilogCompletionProcessor extends HdlCompletionProcessor
 				replace.append("." + port + "(" + port + ")");
 
 				if (i < ports.length - 1)
-					replace.append(", ");
+					replace.append(",");
 			}
 			replace.append(indent + ");");
 			return replace.toString();
