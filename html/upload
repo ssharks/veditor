@@ -1,1 +1,4 @@
-scp index.html tadashi-k@shell.sourceforge.net:/home/groups/v/ve/veditor/htdocs
+
+scp -v *.html tadashi-k@shell.sourceforge.net:/home/groups/v/ve/veditor/htdocs
+#scp -v images/* tadashi-k@shell.sourceforge.net:/home/groups/v/ve/veditor/htdocs/images
+
