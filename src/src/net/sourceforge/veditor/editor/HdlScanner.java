@@ -73,7 +73,8 @@ public class HdlScanner extends RuleBasedScanner
 				"initial", "wire", "reg", "event", "input", "output", "inout",
 				"time", "if", "else", "for", "while", "case", "endcase",
 				"function", "endfunction", "task", "endtask", "begin", "end",
-				"parameter", "fork", "join", "integer", "posedge", "negedge"};
+				"parameter", "fork", "join", "integer", "posedge", "negedge",
+				"forever", "repeat"};
 
 		String[] vhdlWords = {"begin", "end", "if", "else", "for", "while",
 				"case", "library", "use", "entity", "architecture", "is", "of",
