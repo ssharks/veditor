@@ -33,16 +33,10 @@ import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.action.IAction;
-import org.eclipse.ui.console.ConsolePlugin;
-import org.eclipse.ui.console.IConsole;
-import org.eclipse.ui.console.IConsoleManager;
-import org.eclipse.ui.console.MessageConsole;
-import org.eclipse.ui.console.MessageConsoleStream;
 
 public class CompileAction extends AbstractActionDelegate
 {
 	private static final String MARKER_TYPE = "org.eclipse.core.resources.problemmarker";
-	private static final String CONSOLE_NAME = "veditor";
 
 	public CompileAction()
 	{
@@ -69,8 +63,8 @@ public class CompileAction extends AbstractActionDelegate
 		{
 		}
 
-		MessageConsoleStream out = findConsole(CONSOLE_NAME).newMessageStream();
-		out.println(msg);
+		// show message in console
+		VerilogPlugin.println(msg);
 
 		parseMessage(msg, folder);
 		getEditor().update();
@@ -154,23 +148,7 @@ public class CompileAction extends AbstractActionDelegate
 		{
 		}
 	}
-	
-	private MessageConsole findConsole(String name)
-	{
-		IConsoleManager man = ConsolePlugin.getDefault().getConsoleManager();
-		IConsole[] consoles = man.getConsoles();
-		for (int i = 0; i < consoles.length; i++)
-		{
-			if (consoles[i].getName().equals(name))
-				return (MessageConsole)consoles[i];
-		}
-
-		// if not exists, add new console
-		MessageConsole newConsole = new MessageConsole(name, null);
-		man.addConsoles(new IConsole[]{newConsole});
-		return newConsole;
-	}
-	
+		
 	private class MessageThread extends Thread
 	{
 		private Reader reader;
