@@ -75,7 +75,7 @@ public class VerilogCompletionProcessor implements IContentAssistProcessor
 				matchList.add(mnames[i]);
 			}
 		}
-		
+
 		ICompletionProposal[] result = new ICompletionProposal[matchList.size()];
 		for (int i = 0; i < matchList.size(); i++)
 		{
@@ -88,16 +88,16 @@ public class VerilogCompletionProcessor implements IContentAssistProcessor
 		}
 		return result;
 	}
-	
+
 	private String getMatchingWord(String text, int offset)
 	{
 		int start = offset;
-		while(start > 0)
+		while (start > 0)
 		{
 			start--;
 			char c = text.charAt(start);
-			if (Character.isJavaIdentifierPart(c) == false)
-				return text.substring(start+1, offset);
+			if (!Character.isJavaIdentifierPart(c))
+				return text.substring(start + 1, offset);
 		}
 		return text.substring(0, offset);
 	}
@@ -191,7 +191,7 @@ public class VerilogCompletionProcessor implements IContentAssistProcessor
 	{
 		return null;
 	}
-	
+
 	private class InstanceCompletionProposal implements ICompletionProposal
 	{
 		private IProject proj;
@@ -216,8 +216,8 @@ public class VerilogCompletionProcessor implements IContentAssistProcessor
 			Module module = mlist.findModule(name);
 			if (module == null)
 				return;
-			
-			StringBuffer replace = new StringBuffer( name + " " + name + "(\n\t" );
+
+			StringBuffer replace = new StringBuffer(name + " " + name + "(\n\t");
 			Iterator i = module.getPortIterator();
 			int column = 0 ;
 			while (i.hasNext())
@@ -236,13 +236,14 @@ public class VerilogCompletionProcessor implements IContentAssistProcessor
 					replace.append(", ");
 			}
 			replace.append("\n);");
-			
+
 			try
 			{
-				document.replace(offset-length, length, replace.toString() );
+				document.replace(offset - length, length, replace.toString());
 			}
 			catch (BadLocationException e)
-			{}
+			{
+			}
 		}
 
 		public Point getSelection(IDocument document)

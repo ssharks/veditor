@@ -27,7 +27,7 @@ public class Element extends Segment
 	private String typeName ;	//  module名またはfunction名
 	private String name ;		//  インスタンス名
 
-	public Element( int line, Segment module, String typeName, String name )
+	public Element(int line, Segment module, String typeName, String name)
 	{
 		super(line);
 		this.module = module ;
@@ -39,7 +39,7 @@ public class Element extends Segment
 	{
 		return module ;
 	}
-	
+
 	public String toString()
 	{
 		return typeName + " " + name ;

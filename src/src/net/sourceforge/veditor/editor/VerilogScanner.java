@@ -67,7 +67,7 @@ public class VerilogScanner extends RuleBasedScanner
 			"if", "else", "for", "while", "case", "endcase",
 			"function", "endfunction", "task", "endtask",
 			"begin", "end", "parameter", "fork", "join", "integer" };
-			
+
 		for (int i = 0; i < words.length; i++)
 		{
 			wordRule.addWord(words[i], keyword);

@@ -32,11 +32,11 @@ import org.eclipse.core.runtime.CoreException;
 /**
  * module database
  */
-public class ModuleList
+public final class ModuleList
 {
 	private static Set projectList = new HashSet();
 	private static ModuleList current ;
-	
+
 	public static void setCurrent(IProject proj)
 	{
 		if (current != null && current.toString().equals(proj.toString()))
@@ -70,7 +70,7 @@ public class ModuleList
 		}
 		return null;
 	}
-	
+
 	private ModuleList(IProject project)
 	{
 		this.project = project ;
@@ -97,7 +97,7 @@ public class ModuleList
 					int len = name.length();
 					if (len >= 3 && name.substring(len - 2).equals(".v"))
 					{
-						name = name.substring(0, len-2);
+						name = name.substring(0, len - 2);
 						Module mod = new Module(name);
 						replaceModule(mod);
 
@@ -109,7 +109,8 @@ public class ModuleList
 			}
 		}
 		catch (CoreException e)
-		{}
+		{
+		}
 	}
 
 
@@ -130,12 +131,12 @@ public class ModuleList
 		return project.toString();
 	}
 
-	
+
 	/**
 	 * refered project
 	 */
 	private IProject project ;
-	
+
 	/**
 	 * Module database
 	 */
@@ -146,7 +147,7 @@ public class ModuleList
 	 */
 	public Module findModule(String name)
 	{
-		Module mod = _findModule(name);
+		Module mod = findModuleSub(name);
 		if (mod == null)
 			return null;
 		else if (mod.isDoneParse())
@@ -154,10 +155,10 @@ public class ModuleList
 		else
 		{
 			readModule(name);
-			return _findModule(name);
+			return findModuleSub(name);
 		}
 	}
-	private Module _findModule(String name)
+	private Module findModuleSub(String name)
 	{
 		Iterator i = list.iterator();
 		while (i.hasNext())
@@ -170,12 +171,12 @@ public class ModuleList
 		}
 		return null;
 	}
-	
+
 	private void readModule(String name)
 	{
 		IFile file = findFile(name + ".v");
 		// System.out.println( "file : " + file );
-		
+
 		try
 		{
 			InputStreamReader reader = new InputStreamReader(file.getContents());
@@ -183,9 +184,10 @@ public class ModuleList
 			parser.parse(project);
 		}
 		catch (CoreException e)
-		{}
+		{
+		}
 	}
-	
+
 	public IFile findFile(String fileName)
 	{
 		return findFile(project, fileName);
@@ -214,16 +216,17 @@ public class ModuleList
 			}
 		}
 		catch (CoreException e)
-		{}
+		{
+		}
 		return null;
 	}
-	
+
 	public String[] getModuleNames()
 	{
 		String[] strs = new String[list.size()];
 		Iterator i = list.iterator();
 		int n = 0 ;
-		while(i.hasNext())
+		while (i.hasNext())
 		{
 			strs[n++] = i.next().toString();
 		}
@@ -232,7 +235,7 @@ public class ModuleList
 
 	/**
 	 * This is called when module is parsed
-	 */	
+	 */
 	public void replaceModule(Module mod)
 	{
 		list.remove(mod);

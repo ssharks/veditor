@@ -36,20 +36,20 @@ public class VerilogDocumentProvider extends FileDocumentProvider
 	{
 		IDocument document = null;
 
-		if ( element instanceof IFileEditorInput )
+		if (element instanceof IFileEditorInput)
 		{
 			// find project
 			IFileEditorInput input = (IFileEditorInput)element;
 			IFile file = input.getFile();
 			IContainer parent = file.getParent();
-			while( parent instanceof IFolder )
+			while (parent instanceof IFolder)
 			{
 				parent = parent.getParent();
 			}
 			if (parent instanceof IProject)
 			{
 				document = new VerilogDocument((IProject)parent);
-				if (setDocumentContent(document, input, getEncoding(element)) == false )
+				if (!setDocumentContent(document, input, getEncoding(element)))
 					document = null;
 			}
 		}

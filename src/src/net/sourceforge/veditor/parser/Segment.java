@@ -23,7 +23,7 @@ package net.sourceforge.veditor.parser;
 /**
  * Segmentation for ContentOutline
  */
-abstract public class Segment
+public abstract class Segment
 {
 	private int line ;
 	private int length ;
@@ -48,7 +48,7 @@ abstract public class Segment
 	{
 		length = line - this.line + 1;
 	}
-	
+
 	public Segment getParent()
 	{
 		return null ;

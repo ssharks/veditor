@@ -38,10 +38,10 @@ import org.eclipse.jface.text.rules.WordRule;
  */
 public class VerilogPartitionScanner extends RuleBasedPartitionScanner
 {
-	public final static String VERILOG_DEFAULT = "__verilog_default";
-	public final static String VERILOG_SINGLE_LINE_COMMENT = "__verilog_singleline_comment";
-	public final static String VERILOG_MULTI_LINE_COMMENT = "__verilog_multiline_comment";
-	public final static String VERILOG_STRING = "__verilog_string";
+	public static final String VERILOG_DEFAULT = "__verilog_default";
+	public static final String VERILOG_SINGLE_LINE_COMMENT = "__verilog_singleline_comment";
+	public static final String VERILOG_MULTI_LINE_COMMENT = "__verilog_multiline_comment";
+	public static final String VERILOG_STRING = "__verilog_string";
 
 	public VerilogPartitionScanner()
 	{

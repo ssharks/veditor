@@ -39,15 +39,15 @@ public class VerilogContentOutlineProvider implements ITreeContentProvider
 	 */
 	public Object[] getChildren(Object parentElement)
 	{
-		if ( parentElement instanceof Module )
+		if (parentElement instanceof Module)
 		{
 			Module mod = (Module)parentElement ;
 			int size = mod.size();
 			Object[] elements = new Object[size] ;
-		
-			for( int i = 0 ; i < size ; i++ )
-				elements[i] = mod.getElement( i );
-			return elements; 
+
+			for (int i = 0; i < size; i++)
+				elements[i] = mod.getElement(i);
+			return elements;
 		}
 		return null ;
 	}
@@ -57,7 +57,7 @@ public class VerilogContentOutlineProvider implements ITreeContentProvider
 	 */
 	public Object getParent(Object element)
 	{
-		if ( element instanceof Segment )
+		if (element instanceof Segment)
 		{
 			Segment mod = (Segment)element;
 			return (Object)mod.getParent();
@@ -70,7 +70,7 @@ public class VerilogContentOutlineProvider implements ITreeContentProvider
 	 */
 	public boolean hasChildren(Object element)
 	{
-		if ( element instanceof Module )
+		if (element instanceof Module)
 		{
 			Module mod = (Module)element ;
 			return mod.size() >= 1 ;
@@ -102,9 +102,6 @@ public class VerilogContentOutlineProvider implements ITreeContentProvider
 		parser = null;
 	}
 
-	/*
-	 * @see org.eclipse.jface.viewers.IContentProvider#inputChanged(org.eclipse.jface.viewers.Viewer, java.lang.Object, java.lang.Object)
-	 */
 	public void inputChanged(Viewer viewer, Object oldInput, Object newInput)
 	{
 	}

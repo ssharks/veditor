@@ -22,7 +22,7 @@ package net.sourceforge.veditor.editor;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
-public class VerilogEditorMessages
+public final class VerilogEditorMessages
 {
 	private static final String RESOURCE_BUNDLE =
 		"net.sourceforge.veditor.editor.VerilogEditorMessages";
@@ -31,7 +31,8 @@ public class VerilogEditorMessages
 		ResourceBundle.getBundle(RESOURCE_BUNDLE);
 
 	private VerilogEditorMessages()
-	{}
+	{
+	}
 
 	public static String getString(String key)
 	{

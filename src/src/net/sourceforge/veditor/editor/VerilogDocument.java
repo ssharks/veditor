@@ -33,7 +33,7 @@ public class VerilogDocument extends Document
 		super();
 		this.project = project;
 	}
-	
+
 	public IProject getProject()
 	{
 		return project;

@@ -39,7 +39,7 @@ public class VerilogPlugin extends AbstractUIPlugin {
 
 	private static VerilogPlugin plugin;
 	private ResourceBundle preferences;
-	
+
 	public VerilogPlugin(IPluginDescriptor descriptor)
 	{
 		super(descriptor);

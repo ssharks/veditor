@@ -38,9 +38,9 @@ public class VerilogActionContributor extends TextEditorActionContributor
 	private RetargetTextEditorAction gotoMatchingBracket;
 	private RetargetTextEditorAction openDeclaration;
 
-	private final String CONTENT_ASSIST_PROPOSAL = "ContentAssistProposal";
-	private final String GOTO_MATCHING_BRACKET = "GotoMatchingBracket";
-	private final String OPEN_DECLARATION = "OpenDeclaration";
+	private static final String CONTENT_ASSIST_PROPOSAL = "ContentAssistProposal";
+	private static final String GOTO_MATCHING_BRACKET = "GotoMatchingBracket";
+	private static final String OPEN_DECLARATION = "OpenDeclaration";
 
 	private ResourceBundle resource;
 
@@ -95,7 +95,10 @@ public class VerilogActionContributor extends TextEditorActionContributor
 		}
 	}
 
-	private void setEditorAction(ITextEditor editor, RetargetTextEditorAction action, String id)
+	private void setEditorAction(
+		ITextEditor editor,
+		final RetargetTextEditorAction action,
+		String id)
 	{
 		action.setAction(getAction(editor, id));
 	}

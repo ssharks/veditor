@@ -94,9 +94,12 @@ public class NonRuleBasedDamagerRepairer implements IPresentationDamager, IPrese
 				IRegion info = document.getLineInformationOfOffset(event.getOffset());
 				int start = Math.max(partition.getOffset(), info.getOffset());
 
-				int end =
-					event.getOffset()
-						+ (event.getText() == null ? event.getLength() : event.getText().length());
+				int len ;
+				if (event.getText() == null)
+					len = event.getLength();
+				else
+					len = event.getText().length();
+				int end = event.getOffset() + len;
 
 				if (info.getOffset() <= end && end <= info.getOffset() + info.getLength())
 				{
@@ -111,7 +114,8 @@ public class NonRuleBasedDamagerRepairer implements IPresentationDamager, IPrese
 
 			}
 			catch (BadLocationException x)
-			{}
+			{
+			}
 		}
 
 		return partition;

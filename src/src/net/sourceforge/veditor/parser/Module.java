@@ -31,9 +31,9 @@ public class Module extends Segment
 
 	/**
 	 * module name - unique in project
-	 */	
+	 */
 	private String name ;
-	
+
 	/**
 	 * flag of parsed or not
 	 */
@@ -59,10 +59,10 @@ public class Module extends Segment
 		doneParse = true ;
 
 		elements = new ArrayList();
-		
+
 		//  replace module in database
 		ModuleList.getCurrent().replaceModule(this);
-		
+
 		// System.out.println("module " + name);
 	}
 

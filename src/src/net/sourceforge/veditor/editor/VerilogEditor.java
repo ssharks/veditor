@@ -73,7 +73,7 @@ public class VerilogEditor extends TextEditor
 	public void updatePartControl(IEditorInput input)
 	{
 		super.updatePartControl(input);
-		if ( outlinePage != null )
+		if (outlinePage != null)
 			outlinePage.setInput(input);
 	}
 
@@ -81,7 +81,6 @@ public class VerilogEditor extends TextEditor
 	{
 		return getDocumentProvider().getDocument(getEditorInput());
 	}
-	
 
 	protected void createActions()
 	{
@@ -113,7 +112,7 @@ public class VerilogEditor extends TextEditor
 //		addAction(menu, "ContentAssistProposal");
 //		addAction(menu, "ContentAssistTip");
 //	}
-	
+
 	public void dispose()
 	{
 		colorManager.dispose();
@@ -121,21 +120,21 @@ public class VerilogEditor extends TextEditor
 			outlinePage.setInput(null);
 		super.dispose();
 	}
-	
+
 	public void doRevertToSaved()
 	{
 		super.doRevertToSaved();
 		if (outlinePage != null)
 			outlinePage.update();
 	}
-	
+
 	public void doSave(IProgressMonitor monitor)
 	{
 		super.doSave(monitor);
 		if (outlinePage != null)
 			outlinePage.update();
 	}
-	
+
 	public void doSaveAs()
 	{
 		super.doSaveAs();
@@ -151,7 +150,7 @@ public class VerilogEditor extends TextEditor
 	}
 	private IProject findProject(IEditorInput input)
 	{
-		if ( input instanceof IFileEditorInput )
+		if (input instanceof IFileEditorInput)
 		{
 			IFile file = ((IFileEditorInput)input).getFile();
 			IContainer parent = file.getParent();
@@ -180,11 +179,11 @@ public class VerilogEditor extends TextEditor
 		}
 		return super.getAdapter(required);
 	}
-	
+
 	public VerilogDocument getVerilogDocument()
 	{
 		IDocument doc = getDocument();
-		if ( doc instanceof VerilogDocument )
+		if (doc instanceof VerilogDocument)
 			return (VerilogDocument)doc;
 		else
 			return null;
@@ -193,7 +192,7 @@ public class VerilogEditor extends TextEditor
 	protected void initializeEditor()
 	{
 		super.initializeEditor();
-		
+
 //		これはコンテンツアシストのためのコードだと思われる
 //		setEditorContextMenuId("#EditorContext");
 //		setRulerContextMenuId("#RulerContext");
@@ -250,7 +249,7 @@ public class VerilogEditor extends TextEditor
 			int pos = widget.getCaretOffset();
 			String[] open = { "(", "{", "[", "begin" };
 			String[] close = {  ")", "}", "]", "end" };
-			
+
 			int openIdx = searchWord(open, text, pos);
 			int closeIdx = searchWord(close, text, pos);
 
@@ -270,7 +269,7 @@ public class VerilogEditor extends TextEditor
 			}
 			beep();
 		}
-		
+
 		/**
 		 * open/closeのキーワードを探す
 		 * @param words	キーワード配列
@@ -288,8 +287,7 @@ public class VerilogEditor extends TextEditor
 			}
 			return -1;
 		}
-		
-		
+
 		/**
 		 * 閉じる括弧を探す（ネストに対応する）
 		 * @param text		参照テキスト
@@ -345,7 +343,7 @@ public class VerilogEditor extends TextEditor
 			}
 			return -1;
 		}
-		
+
 		/**
 		 * 対応する括弧をテストする
 		 * @param text
@@ -389,9 +387,9 @@ public class VerilogEditor extends TextEditor
 		public void run()
 		{
 			StyledText widget = getSourceViewer().getTextWidget();
-			
+
 			String modName = widget.getSelectionText();
-			if ( modName.equals(""))
+			if (modName.equals(""))
 			{
 				beep();
 				return ;
@@ -399,7 +397,7 @@ public class VerilogEditor extends TextEditor
 
 			ModuleList mlist = ModuleList.find(getVerilogDocument().getProject());
 			IFile file = mlist.findFile(modName + ".v");
-			if ( file == null )
+			if (file == null)
 			{
 				beep();
 				return ;
@@ -409,20 +407,21 @@ public class VerilogEditor extends TextEditor
 
 		private void openEditor(String modName, IFile file)
 		{
-			IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+			IWorkbenchPage page =
+				PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
 			try
 			{
 				IEditorPart editorPart = page.openEditor(file);
-				if ( editorPart instanceof VerilogEditor )
+				if (editorPart instanceof VerilogEditor)
 				{
 					VerilogEditor editor = (VerilogEditor)editorPart ;
 					Segment[] modules = editor.parse();
-					if ( modules != null )
+					if (modules != null)
 					{
-						for( int i = 0 ; i < modules.length ; i++ )
+						for (int i = 0; i < modules.length; i++)
 						{
 							Segment mod = modules[i] ;
-							if ( modName.equals(mod.toString()) )
+							if (modName.equals(mod.toString()))
 							{
 								IDocument doc = editor.getDocument();
 								int line = mod.getLine() - 1 ;
@@ -434,9 +433,11 @@ public class VerilogEditor extends TextEditor
 				}
 			}
 			catch (BadLocationException e)
-			{}
+			{
+			}
 			catch (PartInitException e)
-			{}
+			{
+			}
 		}
 	}
 }

@@ -22,15 +22,19 @@ package net.sourceforge.veditor.editor;
 import org.eclipse.swt.graphics.RGB;
 import net.sourceforge.veditor.VerilogPlugin;
 
-public class VerilogColorConstants
+public final class VerilogColorConstants
 {
-	static public RGB SINGLE_LINE_COMMENT = new RGB(0, 0, 0);
-	static public RGB MULTI_LINE_COMMENT = new RGB(0, 0, 0);
-	static public RGB STRING = new RGB(0, 0, 0);
-	static public RGB DEFAULT = new RGB(0, 0, 0);
-	static public RGB KEY_WORD = new RGB(0, 0, 0);
+	public static final RGB SINGLE_LINE_COMMENT = new RGB(0, 0, 0);
+	public static final RGB MULTI_LINE_COMMENT = new RGB(0, 0, 0);
+	public static final RGB STRING = new RGB(0, 0, 0);
+	public static final RGB DEFAULT = new RGB(0, 0, 0);
+	public static final RGB KEY_WORD = new RGB(0, 0, 0);
 
-	static public void init()
+	private VerilogColorConstants()
+	{
+	}
+
+	public static void init()
 	{
 		readColor(SINGLE_LINE_COMMENT, "Color.SingleLineComment");
 		readColor(MULTI_LINE_COMMENT, "Color.MultiLineComment");
@@ -39,7 +43,7 @@ public class VerilogColorConstants
 		readColor(KEY_WORD, "Color.KeyWord");
 	}
 
-	static private void readColor(RGB target, String key)
+	private static void readColor(RGB target, String key)
 	{
 		String value = VerilogPlugin.getPreferenceString(key);
 		try
@@ -50,6 +54,7 @@ public class VerilogColorConstants
 			target.blue = (rgb >> 0) & 0xff;
 		}
 		catch (NumberFormatException ex)
-		{}
+		{
+		}
 	}
 }
