@@ -21,9 +21,7 @@ package net.sourceforge.veditor.parser;
 
 import java.io.IOException;
 import java.io.Reader;
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -39,89 +37,66 @@ class VhdlParser extends VhdlParserCore implements IParser
 		super(reader);
 	}
 
-	private int context = OUT_OF_MODULE;
-
-	//  depend on calling parse or getContext
-	private boolean updateDatabase;
-
-	private Module getCurrentModule()
-	{
-		int n = mods.size() - 1;
-		return (Module)mods.get(n);
-	}
-	private List mods = new ArrayList();
+	ModuleParserManager manager = new ModuleParserManager();
 
 	public String getCurrentModuleName()
 	{
-		return currentModuleName;
+		return manager.getCurrentModuleName();
 	}
-	private String currentModuleName;
 
 	// called by VhdlParserCore
 	protected void addModule(int begin, String name)
 	{
-		context = IN_MODULE;
-		currentModuleName = name;
-		if (updateDatabase)
-		{
-			Module module = ModuleList.getCurrent().newModule(begin, name, file);
-			mods.add(module);
-		}
+		manager.addModule(begin, name, file);
 	}
 	protected void endModule(int line)
 	{
-		context = OUT_OF_MODULE;
-		if (updateDatabase)
-			getCurrentModule().setEndLine(line);
+		manager.endModule(line);
 	}
 	protected void addPort(int line, String portName)
 	{
-		if (updateDatabase)
-		{
-			getCurrentModule().addPort(portName);
-			// addElement(line, line, "port", portName);
-		}
+		manager.addPort(line, portName);
 	}
 	protected void addVariable(int line, String varName)
 	{
-		if (updateDatabase)
-			getCurrentModule().addVariable(varName);
+		manager.addVariable(line, varName);
 	}
 	protected void addElement(int begin, int end, String type, String name)
 	{
-		if (updateDatabase)
-			getCurrentModule().addElement(begin, end, type, name);
+		manager.addElement(begin, end, type, name);
 	}
-	protected void addInstance(int begin, int end, String module, String inst)
+	protected void addInstance(int begin, int end, String moduleName, String inst)
 	{
-		int period = module.lastIndexOf('.');
-		if (period >= 0)
-			module = module.substring(period + 1);
-		if (updateDatabase)
-			getCurrentModule().addInstance(begin, end, module, inst);
+		manager.addInstance(begin, end, moduleName,inst);
 	}
 	protected void beginStatement()
 	{
-		context = IN_STATEMENT;
+		manager.beginStatement();
 	}
 	protected void endStatement()
 	{
-		context = IN_MODULE;
+		manager.endStatement();
 	}
 
 	//  called by editor
 	public Segment getModule(int n)
 	{
-		return (Segment)mods.get(n);
+		return manager.getModule(n);
 	}
 	public int size()
 	{
-		return mods.size();
+		return manager.size();
+	}
+
+	public void dispose()
+	{
+		manager.dispose();
 	}
 
 	public void parse(IProject project, IFile file)
 	{
-		updateDatabase = true;
+		manager.setUpdateDatabase(true);
+		manager.setContext(OUT_OF_MODULE);
 		ModuleList.setCurrent(project);
 		this.file = file;
 		try
@@ -139,8 +114,8 @@ class VhdlParser extends VhdlParserCore implements IParser
 
 	public int getContext()
 	{
-		updateDatabase = false;
-		context = OUT_OF_MODULE;
+		manager.setUpdateDatabase(false);
+		manager.setContext(OUT_OF_MODULE);
 		try
 		{
 			parse();
@@ -148,12 +123,7 @@ class VhdlParser extends VhdlParserCore implements IParser
 		catch (ParseException e)
 		{
 		}
-		return context;
-	}
-
-	public void dispose()
-	{
-		mods = null;
+		return manager.getContext();
 	}
 
 	/**
@@ -242,7 +212,7 @@ class VhdlParser extends VhdlParserCore implements IParser
 
 		prevCommentLine = line;
 
-		Iterator i = mods.iterator();
+		Iterator i = manager.getModuleIterator();
 		while (i.hasNext())
 		{
 			Module mod = (Module)i.next();
