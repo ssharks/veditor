@@ -23,6 +23,8 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.Iterator;
 
+import net.sourceforge.veditor.VerilogPlugin;
+
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 
@@ -109,6 +111,8 @@ class VerilogParser extends VerilogParserCore implements IParser
 				endModule(e.currentToken.endLine);
 			System.out.println(file);
 			System.out.println(e);
+
+			VerilogPlugin.println(file.toString() + e.toString());
 		}
 	}
 	private IFile file;
@@ -126,7 +130,7 @@ class VerilogParser extends VerilogParserCore implements IParser
 		}
 		return manager.getContext();
 	}
-
+	
 	/**
 	 * parse line comment for content outline
 	 */

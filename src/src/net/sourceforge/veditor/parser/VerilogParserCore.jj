@@ -264,7 +264,7 @@ void statement() :
 {
 }
 {
-	[ delay() ]
+	( delay() )*
 	(	";"
 	|	":" identifier()
 	|	<STMT_HEAD> skipTo( EOS )
