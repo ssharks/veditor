@@ -8,7 +8,7 @@
 </HEAD>
 <BODY>
 <H2 align="center">Eclipse Verilog editor</H2>
-<P align="right">Last updated: March 14, 2004</P>
+<P align="right">Last updated: March 28, 2004</P>
 <H4>Introduction</H4>
 <P>Eclipse Verilog editor provides <A href="http://www.verilog.com/">Verilog (IEEE-1364)</A> language specific features on <A href="http://www.eclipse.org/">Eclipse</A> IDE. It helps coding and debugging in hardware development based on Verilog.</P>
 <H4>Screenshot</H4>
@@ -28,7 +28,8 @@ This Verilog source code is referred from <A href="http://pancham.sourceforge.ne
   Select Navigate-&gt;Go to-&gt;Matching Bracket menu.</P>
   <LI>Contents outline view
   <P>The outline view shows module definition, module instantiation, task, function
-  and comment with valid sentence in a Verilog source code.</P>
+  and comment with valid sentence in a Verilog source code.<BR>
+  The version 0.1.1 fixed some bugs for source code parsing. <IMG src="new.gif" width="61" height="13" border="0"></P>
   <LI>Code template
   <P>begin/end pair, always block, function and task<BR>
   Enter Ctrl+space or select Edit-&gt;Content Assist menu.</P>
@@ -37,18 +38,22 @@ This Verilog source code is referred from <A href="http://pancham.sourceforge.ne
   It is valid when you defined a same module name with file name, e.g. module
   &quot;adder&quot; is defined in file &quot;adder.v&quot;.<BR>
   Select Navigate-&gt;Open Declaration menu.</P>
+  <LI>Automatic port connection for instantiation<IMG src="new.gif" width="61" height="13" border="0">
+  <P>Enter first character of module name which you want to instantiate.<BR>
+  Enter Ctrl+space or select Edit-&gt;Content Assist menu.<BR>
+  Select module from the list.</P>
 </UL>
 <H4>Install</H4>
-<P>Download <A href="https://sourceforge.net/project/showfiles.php?group_id=103963&package_id=111746">net.sourceforge.veditor_0.1.0.zip</A> and unzip.<BR>
+<P>Download <A href="https://sourceforge.net/project/showfiles.php?group_id=103963&package_id=111746">net.sourceforge.veditor_0.1.1.zip</A> and unzip.<BR>
 Copy your Eclipse plugin directory.<BR>
 - It is same manner with other Eclipse plug-in.<BR>
 <BR>
-You can also get the source code from <A href="http://sourceforge.net/project/showfiles.php?group_id=103963&package_id=112277">net.sourceforge.veditor_source_0.1.0.zip</A></P>
+Eclipse Verilog editor is licensed by GPL.<BR>
+You can also get the source code from <A href="http://sourceforge.net/project/showfiles.php?group_id=103963&package_id=112277">net.sourceforge.veditor_source_0.1.1.zip</A></P>
 <H4>Future plan</H4>
 <UL>
   <LI>add code template
   <LI>hierarchical view of module instantiation
-  <LI>automatic port connection for instantiation
   <LI>code formatter
   <LI>lint tool
   <LI>context depended code assist
