@@ -50,6 +50,7 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.TextEditor;
+import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.eclipse.ui.texteditor.TextOperationAction;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
@@ -414,7 +415,8 @@ public class VerilogEditor extends TextEditor
 				PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
 			try
 			{
-				IEditorPart editorPart = page.openEditor(file);
+				IEditorPart editorPart = page.openEditor(new FileEditorInput(
+						file), "net.sourceforge.veditor.editor.VerilogEditor");
 				if (editorPart instanceof VerilogEditor)
 				{
 					VerilogEditor editor = (VerilogEditor)editorPart;

@@ -2,3 +2,4 @@ _generated
 bin
 *.zip
 *.jar
+.externalToolBuilders

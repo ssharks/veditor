@@ -69,5 +69,3 @@ public class VerilogDocumentProvider extends FileDocumentProvider
 	}
 }
 
-
-

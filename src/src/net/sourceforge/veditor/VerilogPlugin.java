@@ -35,8 +35,8 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 /**
  * The main plugin class
  */
-public class VerilogPlugin extends AbstractUIPlugin {
-
+public class VerilogPlugin extends AbstractUIPlugin
+{
 	private static VerilogPlugin plugin;
 	private ResourceBundle preferences;
 

@@ -3,12 +3,12 @@
 <project name="veditor" default="compile" basedir=".">
 
 	<!-- Eclipse & JavaCC installation directry -->
-	<property name="eclipse_plugin_dir" value="d:/prog/eclipse212/plugins"/>
-	<property name="javacc_dir" value="d:/prog/javacc"/>
+	<property name="eclipse_plugin_dir" value="${eclipse_home}/plugins"/>
+	<property name="javacc_dir" value="${javacc_home}"/>
 
 	<!-- must be linked with plugin.xml -->
 	<property name="project" value="net.sourceforge.veditor"/>
-	<property name="version" value="0.1.2"/>
+	<property name="version" value="0.1.3"/>
 
 	<property name="src" value="src"/>
 	<property name="dst" value="bin"/>
@@ -37,7 +37,7 @@
 	 		outputdirectory="${javacc_dst}" />
 	</target>
 
-	<target name="compile" depends="javacc">
+	<target name="compile" depends="clean,javacc">
 		<mkdir dir="${dst}" />
 		<javac
 			srcdir="${src};${javacc_generated}"
