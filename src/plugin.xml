@@ -3,7 +3,7 @@
 <plugin
    id="net.sourceforge.veditor"
    name="verilog plugin"
-   version="0.2.3"
+   version="0.2.4"
    provider-name="tadashi"
    class="net.sourceforge.veditor.VerilogPlugin">
 
@@ -18,10 +18,10 @@
       <import plugin="org.eclipse.core.runtime"/>
       <import plugin="org.eclipse.jface.text"/>
       <import plugin="org.eclipse.core.resources"/>
-      <import plugin="org.eclipse.jdt.core"/>
       <import plugin="org.eclipse.jdt.ui"/>
       <import plugin="org.eclipse.ui.views"/>
       <import plugin="org.eclipse.ui.ide"/>
+      <import plugin="org.eclipse.ui.console"/>
    </requires>
    
    <extension
