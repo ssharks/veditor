@@ -19,12 +19,22 @@ eclipse-SDK-&lt;platform&gt;.zip, such as eclipse-SDK-win32.zip on Windows.<BR>
 After downloading, you can simply unzip to any directory where you like.
 Then you can start eclipse from your installed directory.</BLOCKQUOTE>
 <H4>Install Eclipse Verilog editor</H4>
-<BLOCKQUOTE>You can download <A href="https://sourceforge.net/project/showfiles.php?group_id=103963&package_id=111746">net.sourceforge.veditor_0.2.0.zip</A>. Then you should unzip it to Eclipse plugins directory. If you installed
+<BLOCKQUOTE>You should download <A href="https://sourceforge.net/project/showfiles.php?group_id=103963&package_id=111746">net.sourceforge.veditor_0.2.0.zip</A>. Then you should unzip it to Eclipse plugins directory. If you installed
 Eclipse in c:\eclipse, the plugins directory is c:\eclipse\plugins. You
 will see many plug-ins in it, such as &quot;org.eclipse.ant.core_3.0.0&quot;.
 Eclipse Verilog editor is installed correctly if you see net.sourceforge.veditor_0.2.0
 in plugins directory. -- It is same manner with other Eclipse plug-in.<BR>
 <BR>
+NOTE: Please check Window-&gt;Preference after installing the plug-in.
+If you cannot see &quot;Verilog Editor&quot; directory in the Preference
+dialog, you meet a bug of Eclipse 3.0. You have to do this to avoid the
+bug.<BR>
+<OL>
+  <LI>Exit Eclipse.
+  <LI>Delete or rename &quot;configuration&quot; directory. It is in Eclipse
+  installation directory, e.g. c:\eclipse\configuration.
+  <LI>Start Eclipse and check Window-&gt;Preference.
+</OL>
 If you need source code of Eclipse Verilog editor, You can download <A href="http://sourceforge.net/project/showfiles.php?group_id=103963&package_id=112277">net.sourceforge.veditor_source_0.2.0.zip</A></BLOCKQUOTE>
 <P><A href="index.html">Return to top page</A></P>
 </BODY>
