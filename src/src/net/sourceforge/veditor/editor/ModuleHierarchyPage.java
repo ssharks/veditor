@@ -138,9 +138,15 @@ public class ModuleHierarchyPage extends Page implements ISelectionChangedListen
 			IStructuredSelection elements = (IStructuredSelection)selection;
 			if (elements.size() == 1)
 			{
-				Element element = (Element)elements.getFirstElement();
-				// System.out.println("open " + element.getTypeName());
-				editor.openPage(element.getTypeName());
+				Object element = elements.getFirstElement();
+				if (element instanceof Element)
+				{
+					editor.openPage(((Element)element).getTypeName());
+				}
+				else if (element instanceof Module)
+				{
+					editor.openPage(element.toString());
+				}
 			}
 		}
 	}
