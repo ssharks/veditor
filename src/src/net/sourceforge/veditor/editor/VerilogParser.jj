@@ -163,7 +163,7 @@ void modules() :
 	(
 		<LINE_COMMENT>
 	|
-		<MODULE> name = <IDENT> <LPAREN> skipParen() <RPAREN> <EOS>
+		<MODULE> name = <IDENT> [ <LPAREN> skipParen() <RPAREN> ] <EOS>
 		{
 			addModule( name.beginLine, name.image );
 		}
@@ -268,7 +268,7 @@ void caseStatement() :
 {
 }
 {
-	<CASE> skipTo( ENDCASE ) 
+	<CASE> skipToEndcase()
 }
 
 void whileStatement() :
@@ -303,7 +303,6 @@ Token skipTo( int skip )
 	}
 	return token ;
 }
-
 
 JAVACODE
 void skipParen()
@@ -349,4 +348,29 @@ void skipBracket()
 	}
 }
 
+
+JAVACODE
+void skipToEndcase()
+{
+	Token token ;
+	int nesting = 1 ;
+	for(;;)
+	{
+		token = getToken( 1 );
+		if ( token.kind == EOF )
+			break ;
+		if ( token.kind == CASE )
+			nesting++;
+		if ( token.kind == ENDCASE )
+		{
+			nesting--;
+			if ( nesting == 0 )
+			{
+				getNextToken();
+				break;
+			}
+		}
+		getNextToken();
+	}
+}
 
