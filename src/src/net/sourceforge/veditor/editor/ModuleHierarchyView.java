@@ -33,7 +33,7 @@ import org.eclipse.ui.part.PageBookView;
 public class ModuleHierarchyView extends PageBookView
 {
 	private TreeViewer viewer;
-	private static String defaultMessage = "ModuleTree is not available";
+	private static String defaultMessage = "Module Hierarchy is not available";
 
 	public ModuleHierarchyView()
 	{
