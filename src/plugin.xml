@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin
+   id="net.sourceforge.veditor"
+   name="verilog plugin"
+   version="0.1.0"
+   provider-name="tadashi"
+   class="net.sourceforge.veditor.VerilogPlugin">
+
+   <runtime>
+      <library name="veditor.jar"/>
+   </runtime>
+   <requires>
+      <import plugin="org.eclipse.core.resources"/>
+      <import plugin="org.eclipse.ui"/>
+      <import plugin="org.eclipse.jdt.ui"/>
+      <import plugin="org.eclipse.core.runtime"/>
+   </requires>
+
+
+   <extension
+         point="org.eclipse.ui.editors">
+      <editor
+            name="Verilog Editor"
+            icon="icons/vlog_src.gif"
+            extensions="v"
+            contributorClass="net.sourceforge.veditor.editor.VerilogActionContributor"
+            class="net.sourceforge.veditor.editor.VerilogEditor"
+            id="net.sourceforge.veditor.editor.VerilogEditor">
+      </editor>
+   </extension>
+
+</plugin>

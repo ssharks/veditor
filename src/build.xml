@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="veditor" default="compile" basedir=".">
+
+	<!-- Eclipse & JavaCC installation directry -->
+	<property name="eclipse_plugin_dir" value="d:/prog/eclipse212/plugins"/>
+	<property name="javacc_dir" value="d:/prog/javacc"/>
+
+	<!-- must be linked with plugin.xml -->
+	<property name="project" value="net.sourceforge.veditor"/>
+	<property name="version" value="0.1.0"/>
+
+	<property name="src" value="src"/>
+	<property name="dst" value="bin"/>
+
+	<property name="javacc_generated" value="_generated"/>
+	<property name="javacc_file_dir" value="net/sourceforge/veditor/editor"/>
+	<property name="javacc_src" value="${src}/${javacc_file_dir}/VerilogParser.jj"/>
+	<property name="javacc_dst" value="${javacc_generated}/${javacc_file_dir}"/>
+
+	<property name="jar" value="veditor.jar"/>
+	<property name="project_version" value="${project}_${version}"/>
+	<property name="plugin_dir" value="plugins/${project_version}"/>
+	<property name="zip" value="${project_version}.zip"/>
+
+	<path id="compile.classpath">
+		<fileset dir="${eclipse_plugin_dir}/">
+            <include name="**/*.jar"/>
+        </fileset>
+	</path>
+
+	<target name="javacc">	
+		<mkdir dir="${javacc_dst}" />
+		<javacc
+			javacchome="${javacc_dir}" 
+	 		target="${javacc_src}"
+	 		outputdirectory="${javacc_dst}" />
+	</target>
+
+	<target name="compile" depends="javacc">
+		<mkdir dir="${dst}" />
+		<javac
+			srcdir="${src};${javacc_generated}"
+			destdir="${dst}">
+			<classpath refid="compile.classpath"/>
+		</javac>
+		<copy todir="${dst}" >
+			<fileset dir="${src}" includes="**/*.properties"/>
+		</copy>
+	</target>
+
+	<target name="jar" depends="compile">
+		<jar
+			jarfile="${jar}"
+		  	basedir="${dst}">
+		</jar>
+	</target>
+	
+	<target name="export" depends="jar">
+		<mkdir dir="plugins"/>
+		<mkdir dir="${plugin_dir}"/>
+		<copydir src="icons" dest="${plugin_dir}/icons"/>
+		<copy file="plugin.xml" todir="${plugin_dir}"/>
+		<copy file="preferences.properties" todir="${plugin_dir}"/>
+		<copy file="${jar}" todir="${plugin_dir}"/>
+		<zip
+			zipfile="${zip}"
+			basedir="."
+			includes="plugins/**">
+		</zip>
+		<delete dir="plugins"/>
+	</target>
+
+	<target name="clean">
+		<delete dir="${dst}"/>
+		<delete dir="${javacc_generated}"/>
+		<delete file="${jar}"/>
+		<delete file="${zip}"/>
+	</target>
+	
+</project>
+
