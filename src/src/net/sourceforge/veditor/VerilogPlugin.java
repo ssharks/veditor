@@ -19,17 +19,12 @@
 
 package net.sourceforge.veditor;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.util.MissingResourceException;
-import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
 
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPluginDescriptor;
-import org.eclipse.core.runtime.Path;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 /**
@@ -44,17 +39,18 @@ public class VerilogPlugin extends AbstractUIPlugin
 	{
 		super(descriptor);
 		plugin = this;
-		try
-		{
-			URL url = find(new Path("preferences.properties"));
-			InputStream input;
-			input = url.openStream();
-			preferences = new PropertyResourceBundle(input);
-		}
-		catch (IOException e)
-		{
-			preferences = null;
-		}
+	}
+
+	protected void initializeDefaultPreferences(IPreferenceStore store)
+	{
+		super.initializeDefaultPreferences(store);
+
+		store.setDefault("Encoding", "");
+		store.setDefault("Color.SingleLineComment", "008080");
+		store.setDefault("Color.SingleLineComment", "008080");
+		store.setDefault("Color.MultiLineComment", "008000");
+		store.setDefault("Color.Default", "000000");
+		store.setDefault("Color.KeyWord", "800080");
 	}
 
 	/**
@@ -78,23 +74,7 @@ public class VerilogPlugin extends AbstractUIPlugin
 	 */
 	public static String getPreferenceString(String key)
 	{
-		ResourceBundle bundle = VerilogPlugin.getDefault().getPreferences();
-		try
-		{
-			return bundle.getString(key);
-		}
-		catch (MissingResourceException e)
-		{
-			return key;
-		}
-	}
-
-	/**
-	 * Returns the plugin's resource bundle,
-	 */
-	public ResourceBundle getPreferences()
-	{
-		return preferences;
+		return VerilogPlugin.getDefault().getPreferenceStore().getString(key);
 	}
 }
 

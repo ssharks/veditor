@@ -19,6 +19,8 @@
 
 package net.sourceforge.veditor.editor;
 
+import net.sourceforge.veditor.VerilogPlugin;
+
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -66,6 +68,11 @@ public class VerilogDocumentProvider extends FileDocumentProvider
 			document.setDocumentPartitioner(partitioner);
 		}
 		return document;
+	}
+
+	protected String getPersistedEncoding(Object element)
+	{
+		return VerilogPlugin.getPreferenceString("Encoding");
 	}
 }
 

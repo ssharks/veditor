@@ -4,6 +4,6 @@
 	<classpathentry kind="src" path="_generated"/>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="D:/Prog/eclipse30M8/plugins/org.eclipse.ui.ide_3.0.0/ide.jar"/>
+	<classpathentry kind="lib" path="C:/Prog/eclipse30/plugins/org.eclipse.ui.ide_3.0.0/ide.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

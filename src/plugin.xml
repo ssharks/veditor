@@ -32,6 +32,7 @@
             id="net.sourceforge.veditor.editor.VerilogEditor">
       </editor>
    </extension>
+
    <extension
          point="org.eclipse.ui.views">
       <category
@@ -47,4 +48,13 @@
       </view>
    </extension>
 
+   <extension
+         point = "org.eclipse.ui.preferencePages">
+      <page
+            id="net.sourceforge.veditor.editor.VerilogPreferencePage"
+	        class="net.sourceforge.veditor.editor.VerilogPreferencePage"
+            name="Verilog Editor">
+      </page>
+   </extension>
 </plugin>
+
