@@ -1,23 +1,12 @@
 
 ToDo
 
-- インスタンス参照の階層表示
-- alwaysブロックの"="に警告を出す
-- アウトライン用スペシャルコメント
-- インスタンス参照の自動化
-- formatterを追加
+- hierarchical view for instantiation
+- waring blocking assignment in always block
+- automatic instantiation using content assist
+- formatter
 
 done
 
-- 簡単なコンテンツアシスト
-  begin/end
-  always @(posedge clk) begin/end
-  function/endfunction
-  task/endtask
-- initial, task, functionの構文解析
-- 予約語が足りない
-- content assistでインデントを認識しないバグの修正
-- 対応括弧、対応begin/endにジャンプするコマンドを追加
-- preferences.propertiesでエディタの色を変えることができるように
-- インスタンスの宣言先を開く
-- インスタンス参照から定義ファイルへのジャンプ
+- module database
+
