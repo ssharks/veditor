@@ -8,11 +8,12 @@
 </HEAD>
 <BODY>
 <H2 align="center">Eclipse Verilog editor</H2>
-<P align="right">Last updated: March 28, 2004</P>
+<P align="right">Last updated: April 04, 2004</P>
 <H4>News</H4>
-<P>The version 0.1.1 released.<BR>
-It supported a new feature which is automatic port connection for instantiation.
-And it fixed bugs about source code parsing for content outline view.</P>
+<P>The version 0.1.2 released.<BR>
+It supported content assist, which depends on Verilog context. The proposals
+are code templates, signals and module instances. The signals include &quot;wire&quot;,
+&quot;reg&quot; and &quot;integer&quot;.</P>
 <H4>Introduction</H4>
 <P>Eclipse Verilog editor provides <A href="http://www.verilog.com/">Verilog (IEEE-1364)</A> language specific features on <A href="http://www.eclipse.org/">Eclipse IDE</A>. It helps coding and debugging in hardware development based on Verilog.<BR>
 <A href="http://sourceforge.net/projects/veditor/">Here</A> is the project summary page in SourceForge.<BR>
@@ -36,17 +37,19 @@ This is a screenshot:</P>
   and comment with valid sentence in a Verilog source code.<BR>
   The version 0.1.1 fixed some bugs of source code parsing.</P>
   <LI>Code template
-  <P>begin/end pair, always block, function and task<BR>
-  Enter Ctrl+space or select Edit-&gt;Content Assist menu.</P>
+  <P>begin/end pair, always/initial block, function and task<BR>
+  Enter Ctrl+space or select Edit-&gt;Content Assist menu.<BR>
+  It is implemented as a part of the content assist.</P>
   <LI>Open declaration
   <P>Go to module declaration of selected word by searching a project hierarchy.<BR>
   It is valid when you defined a same module name with file name, e.g. module
   &quot;adder&quot; is defined in file &quot;adder.v&quot;.<BR>
   Select Navigate-&gt;Open Declaration menu.</P>
-  <LI>Automatic port connection for instantiation<IMG src="new.gif" width="61" height="13" border="0">
+  <LI>Automatic port connection for instantiation
   <P>Enter first character of module name which you want to instantiate.<BR>
   Enter Ctrl+space or select Edit-&gt;Content Assist menu.<BR>
-  Select module from the list.<BR>
+  Select module from the list. It is implemented as a part of the content
+  assist.<BR>
   <BR>
   e.g.<BR>
   If you have already defined adder.v:</P>
@@ -57,22 +60,41 @@ This is a screenshot:</P>
   endmodule</BLOCKQUOTE>
   <P>When you enter 'a' and Ctrl+space then select 'adder', you can see this:</P>
   <BLOCKQUOTE>adder adder( .a(a), .b(b), .sum(b) );</BLOCKQUOTE>
-  It is more effective when you are using more complicated modules.
+  <P>It is more effective when you are using more complicated modules.</P>
+  <LI>Content assist<IMG src="new.gif" width="61" height="13" border="0">
+  <P>Content Assist completes a whole phrase which you want.<BR>
+  Enter a few character and enter Ctrl+space or Edit-&gt;Content Assist menu.<BR>
+  Select word from a proposal list.<BR>
+  <BR>
+  The proposal list can include code templates, signals and module instances.
+  But it depend on Verilog context. Now there are three contexts.</P>
+  <OL>
+    <LI>outside module
+    <LI>inside module, but outside statement
+    <LI>inside statement
+  </OL>
+  <P>There are always no proposals in 1. The proposals in 2 includes some templates
+  and module instances. The proposal in 3 includes &quot;begin/end&quot;
+  template and signals, which defined in same module.</P>
+  
 </UL>
+
 <H4>Install</H4>
-<P>Download <A href="https://sourceforge.net/project/showfiles.php?group_id=103963&package_id=111746">net.sourceforge.veditor_0.1.1.zip</A> and unzip.<BR>
+<P>Download <A href="https://sourceforge.net/project/showfiles.php?group_id=103963&package_id=111746">net.sourceforge.veditor_0.1.2.zip</A> and unzip.<BR>
 Copy your Eclipse plugin directory.<BR>
 - It is same manner with other Eclipse plug-in.<BR>
 <BR>
 Eclipse Verilog editor is licensed by GPL.<BR>
-You can also get the source code from <A href="http://sourceforge.net/project/showfiles.php?group_id=103963&package_id=112277">net.sourceforge.veditor_source_0.1.1.zip</A></P>
+You can also get the source code from <A href="http://sourceforge.net/project/showfiles.php?group_id=103963&package_id=112277">net.sourceforge.veditor_source_0.1.2.zip</A></P>
 <H4>Update log</H4>
 <DL>
   <DT>0.1.0
-  <DD>the first release
+  <DD>is the first release
   <DT>0.1.1
   <DD>supported automatic port connection for instantiation
   <DD>fixed bugs about source code parsing
+  <DT>0.1.2
+  <DD>supported content assist
 </DL>
 <H4>Future plan</H4>
 <UL>
@@ -81,7 +103,6 @@ You can also get the source code from <A href="http://sourceforge.net/project/sh
   <LI>preference
   <LI>code formatter
   <LI>lint tool
-  <LI>context depended code assist
   <LI>wave form view - Signals are selected from source code view
 </UL>
 <H4>Report and comment</H4>
