@@ -9,12 +9,17 @@
 <BODY>
 <H2 align="center">Eclipse Verilog editor</H2>
 <P align="right">Last updated: March 28, 2004</P>
+<H4>News</H4>
+<P>The version 0.1.1 released.<BR>
+It supported a new feature which is automatic port connection for instantiation.
+And it fixed bugs about source code parsing for content outline view.</P>
 <H4>Introduction</H4>
-<P>Eclipse Verilog editor provides <A href="http://www.verilog.com/">Verilog (IEEE-1364)</A> language specific features on <A href="http://www.eclipse.org/">Eclipse</A> IDE. It helps coding and debugging in hardware development based on Verilog.</P>
-<H4>Screenshot</H4>
-<P><A href="screenshot.jpg"><IMG src="screenshot.gif" width="256" height="204" border="0"></A><BR>
+<P>Eclipse Verilog editor provides <A href="http://www.verilog.com/">Verilog (IEEE-1364)</A> language specific features on <A href="http://www.eclipse.org/">Eclipse IDE</A>. It helps coding and debugging in hardware development based on Verilog.<BR>
+<A href="http://sourceforge.net/projects/veditor/">Here</A> is the project summary page in SourceForge.<BR>
 <BR>
-This Verilog source code is referred from <A href="http://pancham.sourceforge.net/">pancham</A> project in <A href="http://sourceforge.net">SourceForge</A>.</P>
+This is a screenshot:</P>
+<BLOCKQUOTE><A href="screenshot.jpg"><IMG src="screenshot.gif" width="256" height="204" border="0"></A><BR>
+- These Verilog source code are from <A href="http://pancham.sourceforge.net/">pancham</A> project in <A href="http://sourceforge.net">SourceForge</A>.</BLOCKQUOTE>
 <H4>Features</H4>
 <UL>
   <LI>High lighting Verilog reserved words
@@ -29,7 +34,7 @@ This Verilog source code is referred from <A href="http://pancham.sourceforge.ne
   <LI>Contents outline view
   <P>The outline view shows module definition, module instantiation, task, function
   and comment with valid sentence in a Verilog source code.<BR>
-  The version 0.1.1 fixed some bugs for source code parsing. <IMG src="new.gif" width="61" height="13" border="0"></P>
+  The version 0.1.1 fixed some bugs of source code parsing.</P>
   <LI>Code template
   <P>begin/end pair, always block, function and task<BR>
   Enter Ctrl+space or select Edit-&gt;Content Assist menu.</P>
@@ -41,7 +46,18 @@ This Verilog source code is referred from <A href="http://pancham.sourceforge.ne
   <LI>Automatic port connection for instantiation<IMG src="new.gif" width="61" height="13" border="0">
   <P>Enter first character of module name which you want to instantiate.<BR>
   Enter Ctrl+space or select Edit-&gt;Content Assist menu.<BR>
-  Select module from the list.</P>
+  Select module from the list.<BR>
+  <BR>
+  e.g.<BR>
+  If you have already defined adder.v:</P>
+  <BLOCKQUOTE>module adder( a, b, sum );<BR>
+  input[15:0] a, b ;<BR>
+  output[15:0] sum ;<BR>
+  ...<BR>
+  endmodule</BLOCKQUOTE>
+  <P>When you enter 'a' and Ctrl+space then select 'adder', you can see this:</P>
+  <BLOCKQUOTE>adder adder( .a(a), .b(b), .sum(b) );</BLOCKQUOTE>
+  It is more effective when you are using more complicated modules.
 </UL>
 <H4>Install</H4>
 <P>Download <A href="https://sourceforge.net/project/showfiles.php?group_id=103963&package_id=111746">net.sourceforge.veditor_0.1.1.zip</A> and unzip.<BR>
@@ -50,10 +66,19 @@ Copy your Eclipse plugin directory.<BR>
 <BR>
 Eclipse Verilog editor is licensed by GPL.<BR>
 You can also get the source code from <A href="http://sourceforge.net/project/showfiles.php?group_id=103963&package_id=112277">net.sourceforge.veditor_source_0.1.1.zip</A></P>
+<H4>Update log</H4>
+<DL>
+  <DT>0.1.0
+  <DD>the first release
+  <DT>0.1.1
+  <DD>supported automatic port connection for instantiation
+  <DD>fixed bugs about source code parsing
+</DL>
 <H4>Future plan</H4>
 <UL>
-  <LI>add code template
+  <LI>add code templates
   <LI>hierarchical view of module instantiation
+  <LI>preference
   <LI>code formatter
   <LI>lint tool
   <LI>context depended code assist
