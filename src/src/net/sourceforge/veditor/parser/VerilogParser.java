@@ -127,6 +127,7 @@ class VerilogParser extends VerilogParserCore implements IParser
 		}
 		catch (ParseException e)
 		{
+			endModule(e.currentToken.endLine);
 			System.out.println(file);
 			System.out.println(e);
 		}
@@ -253,10 +254,5 @@ class VerilogParser extends VerilogParserCore implements IParser
 	}
 	private int prevCommentLine;
 }
-
-
-
-
-
 
 

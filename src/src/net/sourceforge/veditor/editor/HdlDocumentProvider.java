@@ -30,7 +30,7 @@ import org.eclipse.jface.text.rules.DefaultPartitioner;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.editors.text.FileDocumentProvider;
 
-public class VerilogDocumentProvider extends FileDocumentProvider
+public class HdlDocumentProvider extends FileDocumentProvider
 {
 	protected IDocument createDocument(Object element) throws CoreException
 	{
@@ -49,19 +49,26 @@ public class VerilogDocumentProvider extends FileDocumentProvider
 			}
 			if (parent instanceof IProject)
 			{
-				document = new VerilogDocument((IProject)parent, file);
+				document = new HdlDocument((IProject)parent, file);
 				if (!setDocumentContent(document, input, getEncoding(element)))
 					document = null;
 			}
-		}
-		if (document != null)
-		{
-			IDocumentPartitioner partitioner =
-				new DefaultPartitioner(
-					new VerilogPartitionScanner(),
-					VerilogPartitionScanner.getContentTypes());
-			partitioner.connect(document);
-			document.setDocumentPartitioner(partitioner);
+			if (document != null)
+			{
+				HdlPartitionScanner scanner;
+				String ext = file.getFileExtension();
+				if (ext.equals("v"))
+					scanner = HdlPartitionScanner.createVerilogPartitionScanner();
+				else if (ext.equals("vhd") || ext.equals("VHD"))
+					scanner = HdlPartitionScanner.createVhdlPartitionScanner();
+				else
+					return null;
+				
+				IDocumentPartitioner partitioner = new DefaultPartitioner(scanner,
+						HdlPartitionScanner.getContentTypes());
+				partitioner.connect(document);
+				document.setDocumentPartitioner(partitioner);
+			}
 		}
 		return document;
 	}

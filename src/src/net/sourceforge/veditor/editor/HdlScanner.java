@@ -33,18 +33,27 @@ import org.eclipse.jface.text.rules.WordRule;
 /**
  * find reserved word
  */
-public class VerilogScanner extends RuleBasedScanner
+public class HdlScanner extends RuleBasedScanner
 {
-	public VerilogScanner(ColorManager manager)
+	public static HdlScanner createForVerilog(ColorManager manager)
+	{
+		return new HdlScanner(manager, true);
+	}
+	public static HdlScanner createForVhdl(ColorManager manager)
+	{
+		return new HdlScanner(manager, false);
+	}
+	
+	private HdlScanner(ColorManager manager, boolean isVerilog)
 	{
 		IToken keyword =
 			new Token(
 				new TextAttribute(
-					manager.getColor(VerilogColorConstants.KEY_WORD)));
+					manager.getColor(ColorConstants.KEY_WORD)));
 		IToken other =
 			new Token(
 				new TextAttribute(
-					manager.getColor(VerilogColorConstants.DEFAULT)));
+					manager.getColor(ColorConstants.DEFAULT)));
 
 		List rules = new ArrayList();
 
@@ -60,27 +69,33 @@ public class VerilogScanner extends RuleBasedScanner
 			}
 		}, other);
 
-		String[] words = {
-			"module", "endmodule",
-			"assign", "always", "initial",
-			"wire", "reg", "event", "input", "output", "inout", "time",
-			"if", "else", "for", "while", "case", "endcase",
-			"function", "endfunction", "task", "endtask",
-			"begin", "end", "parameter", "fork", "join", "integer",
-			// VHDL reserved word
-			"library", "use",
-			"entity", "architecture", "is", "of",
-			"generic", "port", "process", "constant", "procedure",
-			"signal", "shared", "variable", "type", "subtype",
-			"file", "alias", "attribute", "component", "disconnect",
-			"group", "block", "assert", "generate", "with", "elsif",
-			"in", "out", "inout", "buffer", "linkage",
-			"return", "when", "then", "and", "or"
-		};
+		String[] verilogWords = {"module", "endmodule", "assign", "always",
+				"initial", "wire", "reg", "event", "input", "output", "inout",
+				"time", "if", "else", "for", "while", "case", "endcase",
+				"function", "endfunction", "task", "endtask", "begin", "end",
+				"parameter", "fork", "join", "integer", "posedge", "negedge"};
 
-		for (int i = 0; i < words.length; i++)
+		String[] vhdlWords = {"begin", "end", "if", "else", "for", "while",
+				"case", "library", "use", "entity", "architecture", "is", "of",
+				"generic", "port", "process", "constant", "procedure",
+				"signal", "shared", "variable", "type", "subtype", "file",
+				"alias", "attribute", "component", "disconnect", "group",
+				"block", "assert", "generate", "with", "elsif", "in", "out",
+				"inout", "buffer", "linkage", "return", "when", "then", "and",
+				"or", "to", "downto", "map"};
+
+		if (isVerilog)
 		{
-			wordRule.addWord(words[i], keyword);
+			for (int i = 0; i < verilogWords.length; i++)
+				wordRule.addWord(verilogWords[i], keyword);
+		}
+		else
+		{
+			for (int i = 0; i < vhdlWords.length; i++)
+				wordRule.addWord(vhdlWords[i], keyword);
+			// it is possible to use upper case in VHDL
+			for (int i = 0; i < vhdlWords.length; i++)
+				wordRule.addWord(vhdlWords[i].toUpperCase(), keyword);
 		}
 
 		rules.add(wordRule);
@@ -90,3 +105,4 @@ public class VerilogScanner extends RuleBasedScanner
 		setRules(result);
 	}
 }
+

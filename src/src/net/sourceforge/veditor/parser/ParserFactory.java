@@ -26,7 +26,7 @@ import org.eclipse.core.resources.IFile;
 /**
  * generate Verilog or VHDL parser
  */
-public class ParserFactory
+abstract public class ParserFactory
 {
 	// don't instatiate
 	private ParserFactory()
@@ -38,7 +38,7 @@ public class ParserFactory
 		String extension = file.getFileExtension();
 		if (extension.equals("v"))
 			return new VerilogParser(new AsciiReader(reader));
-		else if (extension.equals("vhd"))
+		else if (extension.equals("vhd") || extension.equals("VHD"))
 			return new VhdlParser(new AsciiReader(reader));
 		else
 			return null;
@@ -67,12 +67,12 @@ public class ParserFactory
 			int n = reference.read(cbuf, off, len);
 			for (int i = 0; i < n; i++)
 			{
-				if (cbuf[i] >= 0x100)	// convert two bytes code to space
+				if (cbuf[i] >= 0x100)	// convert from two bytes code to space
 					cbuf[i] = ' ';
 			}
 			return n;
 		}
 	}
-
-	
 }
+
+

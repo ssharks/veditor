@@ -33,12 +33,12 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.views.contentoutline.ContentOutline;
 import org.eclipse.ui.views.contentoutline.ContentOutlinePage;
 
-public class VerilogContentOutlinePage extends ContentOutlinePage
+public class HdlContentOutlinePage extends ContentOutlinePage
 {
-	private VerilogEditor editor;
+	private HdlEditor editor;
 	private ContentOutline outline;
 
-	public VerilogContentOutlinePage(VerilogEditor editor)
+	public HdlContentOutlinePage(HdlEditor editor)
 	{
 		super();
 		this.editor = editor;
@@ -49,7 +49,7 @@ public class VerilogContentOutlinePage extends ContentOutlinePage
 		super.createControl(parent);
 
 		TreeViewer viewer = getTreeViewer();
-		viewer.setContentProvider(new VerilogContentOutlineProvider());
+		viewer.setContentProvider(new HdlContentOutlineProvider());
 		viewer.setLabelProvider(new LabelProvider());
 		viewer.addSelectionChangedListener(this);
 

@@ -49,11 +49,11 @@ public class ModuleHierarchyPage extends Page implements ISelectionChangedListen
 		IDoubleClickListener
 {
 	private TreeViewer treeViewer;
-	private VerilogEditor editor;
+	private HdlEditor editor;
 	private Clipboard clipboard;
 	private ISelection selection;
 
-	public ModuleHierarchyPage(VerilogEditor editor)
+	public ModuleHierarchyPage(HdlEditor editor)
 	{
 		super();
 		this.editor = editor;
@@ -219,7 +219,7 @@ public class ModuleHierarchyPage extends Page implements ISelectionChangedListen
 				if (ary[i] instanceof Element)
 				{
 					Element element = (Element)ary[i];
-					IProject proj = editor.getVerilogDocument().getProject();
+					IProject proj = editor.getHdlDocument().getProject();
 					module = ModuleList.find(proj).findModule(element.getTypeName());
 				}
 				else if (ary[i] instanceof Module)

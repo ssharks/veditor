@@ -32,7 +32,7 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.eclipse.ui.texteditor.RetargetTextEditorAction;
 
-public class VerilogActionContributor extends TextEditorActionContributor
+public class HdlActionContributor extends TextEditorActionContributor
 {
 	private RetargetTextEditorAction contentAssistProposal;
 	private RetargetTextEditorAction gotoMatchingBracket;
@@ -46,11 +46,11 @@ public class VerilogActionContributor extends TextEditorActionContributor
 
 	private ResourceBundle resource;
 
-	public VerilogActionContributor()
+	public HdlActionContributor()
 	{
 		super();
 
-		resource = VerilogEditorMessages.getResourceBundle();
+		resource = EditorMessages.getResourceBundle();
 
 		contentAssistProposal =
 			createAction(

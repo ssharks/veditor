@@ -44,7 +44,7 @@ public class CompileAction extends AbstractActionDelegate
 	
 	public void run(IAction action)
 	{
-		IFile file = getEditor().getVerilogDocument().getFile();
+		IFile file = getEditor().getHdlDocument().getFile();
 		IFolder folder = (IFolder)file.getParent();
 		File dir = folder.getLocation().toFile();
 
@@ -122,12 +122,10 @@ public class CompileAction extends AbstractActionDelegate
 			String msg)
 	{
 		int level;
-		if ( type.equals(" error") )
-			level = IMarker.SEVERITY_ERROR;
-		else if ( type.equals(" warning") )
+		if ( type.equals(" warning") )
 			level = IMarker.SEVERITY_WARNING;
 		else
-			return;
+			level = IMarker.SEVERITY_ERROR;
 		try
 		{
 			IMarker marker = file.createMarker(MARKER_TYPE);

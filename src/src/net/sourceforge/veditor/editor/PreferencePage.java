@@ -28,11 +28,11 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 /**
  * Preference page
  */
-public class VerilogPreferencePage extends FieldEditorPreferencePage implements
+public class PreferencePage extends FieldEditorPreferencePage implements
 		IWorkbenchPreferencePage
 {
 
-	public VerilogPreferencePage()
+	public PreferencePage()
 	{
 		super(GRID);
 		setPreferenceStore(VerilogPlugin.getPlugin().getPreferenceStore());

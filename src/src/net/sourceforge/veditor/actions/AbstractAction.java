@@ -20,8 +20,8 @@ package net.sourceforge.veditor.actions;
 
 import java.util.ResourceBundle;
 
-import net.sourceforge.veditor.editor.VerilogEditor;
-import net.sourceforge.veditor.editor.VerilogEditorMessages;
+import net.sourceforge.veditor.editor.HdlEditor;
+import net.sourceforge.veditor.editor.EditorMessages;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.text.source.ISourceViewer;
@@ -29,20 +29,20 @@ import org.eclipse.jface.text.source.ISourceViewer;
 
 public abstract class AbstractAction extends Action
 {
-	private VerilogEditor editor;
+	private HdlEditor editor;
 
 	public AbstractAction(String name)
 	{
-		editor = VerilogEditor.current();
+		editor = HdlEditor.current();
 		setEnabled(true);
 		setId("net.sourceforge.veditor.veditor." + name);
-		ResourceBundle resource = VerilogEditorMessages.getResourceBundle();
+		ResourceBundle resource = EditorMessages.getResourceBundle();
 		setText(resource.getString(name + ".label"));
 	}
 
 	public abstract void run();
 
-	protected VerilogEditor getEditor()
+	protected HdlEditor getEditor()
 	{
 		return editor;
 	}

@@ -18,7 +18,7 @@
 //
 package net.sourceforge.veditor.actions;
 
-import net.sourceforge.veditor.editor.VerilogEditor;
+import net.sourceforge.veditor.editor.HdlEditor;
 
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.text.source.ISourceViewer;
@@ -28,18 +28,18 @@ import org.eclipse.ui.IEditorPart;
 
 abstract public class AbstractActionDelegate implements IEditorActionDelegate
 {
-	private VerilogEditor editor;
+	private HdlEditor editor;
 
 	public void setActiveEditor(IAction action, IEditorPart targetEditor)
 	{
-		editor = (VerilogEditor)targetEditor;
+		editor = (HdlEditor)targetEditor;
 	}
 
 	public void selectionChanged(IAction action, ISelection selection)
 	{
 	}
 	
-	protected VerilogEditor getEditor()
+	protected HdlEditor getEditor()
 	{
 		return editor;
 	}

@@ -2,7 +2,7 @@
 <plugin
    id="net.sourceforge.veditor"
    name="verilog plugin"
-   version="0.1.4"
+   version="0.1.6"
    provider-name="tadashi"
    class="net.sourceforge.veditor.VerilogPlugin">
 
@@ -28,10 +28,22 @@
       <editor
             name="Verilog Editor"
             icon="icons/vlog_src.gif"
-            extensions="v, vhd"
-            contributorClass="net.sourceforge.veditor.editor.VerilogActionContributor"
+            extensions="v"
+            contributorClass="net.sourceforge.veditor.editor.HdlActionContributor"
             class="net.sourceforge.veditor.editor.VerilogEditor"
             id="net.sourceforge.veditor.editor.VerilogEditor">
+      </editor>
+   </extension>
+
+   <extension
+         point="org.eclipse.ui.editors">
+      <editor
+            name="Verilog Editor"
+            icon="icons/vlog_src.gif"
+            extensions="vhd"
+            contributorClass="net.sourceforge.veditor.editor.HdlActionContributor"
+            class="net.sourceforge.veditor.editor.VhdlEditor"
+            id="net.sourceforge.veditor.editor.VhdlEditor">
       </editor>
    </extension>
 

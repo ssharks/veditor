@@ -16,35 +16,38 @@
 //  along with this program; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
+
 package net.sourceforge.veditor.editor;
 
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.jface.text.Document;
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
 
-public class VerilogDocument extends Document
+public final class EditorMessages
 {
-	/**
-	 * project which has this verilog source file
-	 */
-	private IProject project;
-	private IFile file;
+	private static final String RESOURCE_BUNDLE =
+		"net.sourceforge.veditor.editor.EditorMessages";
 
-	public VerilogDocument(IProject project, IFile file)
+	private static ResourceBundle resourceBundle =
+		ResourceBundle.getBundle(RESOURCE_BUNDLE);
+
+	private EditorMessages()
 	{
-		super();
-		this.project = project;
-		this.file = file;
 	}
 
-	public IProject getProject()
+	public static String getString(String key)
 	{
-		return project;
+		try
+		{
+			return resourceBundle.getString(key);
+		}
+		catch (MissingResourceException e)
+		{
+			return "!" + key + "!";
+		}
 	}
 
-	public IFile getFile()
+	public static ResourceBundle getResourceBundle()
 	{
-		return file;
+		return resourceBundle;
 	}
-
 }

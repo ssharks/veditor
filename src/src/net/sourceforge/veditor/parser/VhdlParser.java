@@ -94,6 +94,9 @@ class VhdlParser extends VhdlParserCore implements IParser
 	}
 	protected void addInstance(int begin, int end, String module, String inst)
 	{
+		int period = module.lastIndexOf('.');
+		if (period >= 0)
+			module = module.substring(period + 1);
 		if (updateDatabase)
 			getCurrentModule().addInstance(begin, end, module, inst);
 	}
@@ -127,6 +130,7 @@ class VhdlParser extends VhdlParserCore implements IParser
 		}
 		catch (ParseException e)
 		{
+			endModule(e.currentToken.endLine);
 			System.out.println(file);
 			System.out.println(e);
 		}

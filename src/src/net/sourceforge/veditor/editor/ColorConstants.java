@@ -22,7 +22,7 @@ package net.sourceforge.veditor.editor;
 import org.eclipse.swt.graphics.RGB;
 import net.sourceforge.veditor.VerilogPlugin;
 
-public final class VerilogColorConstants
+public final class ColorConstants
 {
 	public static final RGB SINGLE_LINE_COMMENT = new RGB(0, 128, 128);
 	public static final RGB MULTI_LINE_COMMENT = new RGB(0, 128, 128);
@@ -31,7 +31,7 @@ public final class VerilogColorConstants
 	public static final RGB KEY_WORD = new RGB(128, 0, 128);
 	public static final RGB DOXYGEN_COMMENT = new RGB(64, 64, 128);
 
-	private VerilogColorConstants()
+	private ColorConstants()
 	{
 	}
 

@@ -34,37 +34,79 @@ import org.eclipse.swt.graphics.RGB;
 /**
  * parse verilog source code
  */
-public class VerilogSourceViewerConfiguration extends SourceViewerConfiguration
+abstract public class HdlSourceViewerConfiguration extends
+		SourceViewerConfiguration
 {
-	private VerilogScanner scanner;
+	private HdlScanner scanner;
 	private ColorManager colorManager;
 
-	public VerilogSourceViewerConfiguration(ColorManager colorManager)
+	public static HdlSourceViewerConfiguration createForVerilog(
+			ColorManager colorManager)
+	{
+		return new HdlSourceViewerConfiguration(colorManager)
+		{
+			public HdlScanner createScanner()
+			{
+				return HdlScanner.createForVerilog(getColorManager());
+			}
+			public HdlCompletionProcessor createCompletionProcessor()
+			{
+				return new VerilogCompletionProcessor();
+			}
+		};
+	}
+	public static HdlSourceViewerConfiguration createForVhdl(
+			ColorManager colorManager)
+	{
+		return new HdlSourceViewerConfiguration(colorManager)
+		{
+			public HdlScanner createScanner()
+			{
+				return HdlScanner.createForVhdl(getColorManager());
+			}
+			public HdlCompletionProcessor createCompletionProcessor()
+			{
+				return new VhdlCompletionProcessor();
+			}
+		};
+	}
+	
+	public HdlSourceViewerConfiguration(ColorManager colorManager)
 	{
 		this.colorManager = colorManager;
 	}
+
+	abstract HdlScanner createScanner();
+	abstract HdlCompletionProcessor createCompletionProcessor();
+	
+	public ColorManager getColorManager()
+	{
+		return colorManager;
+	}
+
 	public String[] getConfiguredContentTypes(ISourceViewer sourceViewer)
 	{
-		String[] types = VerilogPartitionScanner.getContentTypes();
+		String[] types = HdlPartitionScanner.getContentTypes();
 		String[] ret = new String[types.length+1];
 		ret[0] = IDocument.DEFAULT_CONTENT_TYPE; 
 		for( int i = 0 ; i < types.length ; i++ )
 			ret[i+1] = types[i];
 		return ret;
 	}
-
-	protected VerilogScanner getVerilogScanner()
+	
+	private HdlScanner getVerilogScanner()
 	{
 		if (scanner == null)
 		{
-			scanner = new VerilogScanner(colorManager);
-			scanner.setDefaultReturnToken(
-				new Token(new TextAttribute(colorManager.getColor(VerilogColorConstants.DEFAULT))));
+			scanner = createScanner();
+			scanner.setDefaultReturnToken(new Token(new TextAttribute(
+					colorManager.getColor(ColorConstants.DEFAULT))));
 		}
 		return scanner;
 	}
 
-	public IPresentationReconciler getPresentationReconciler(ISourceViewer sourceViewer)
+	public IPresentationReconciler getPresentationReconciler(
+			ISourceViewer sourceViewer)
 	{
 		PresentationReconciler reconciler = new PresentationReconciler();
 
@@ -73,11 +115,11 @@ public class VerilogSourceViewerConfiguration extends SourceViewerConfiguration
 		reconciler.setDamager(dr, IDocument.DEFAULT_CONTENT_TYPE);
 		reconciler.setRepairer(dr, IDocument.DEFAULT_CONTENT_TYPE);
 
-		String[] contentTypes = VerilogPartitionScanner.getContentTypes();
-		RGB[] colors = VerilogPartitionScanner.getContentTypeColors();
-		for(int i = 0; i < contentTypes.length; i++)
+		String[] contentTypes = HdlPartitionScanner.getContentTypes();
+		RGB[] colors = HdlPartitionScanner.getContentTypeColors();
+		for (int i = 0; i < contentTypes.length; i++)
 		{
-			addRepairer(reconciler,colors[i],contentTypes[i]);
+			addRepairer(reconciler, colors[i], contentTypes[i]);
 		}
 		return reconciler;
 	}
@@ -95,15 +137,19 @@ public class VerilogSourceViewerConfiguration extends SourceViewerConfiguration
 	public IContentAssistant getContentAssistant(ISourceViewer sourceViewer)
 	{
 		ContentAssistant assistant = new ContentAssistant();
-		assistant.setContentAssistProcessor(new VerilogCompletionProcessor(),
+		assistant.setContentAssistProcessor(createCompletionProcessor(),
 				IDocument.DEFAULT_CONTENT_TYPE);
 
 		assistant.enableAutoActivation(true);
 		assistant.setAutoActivationDelay(500);
-		assistant.setProposalPopupOrientation(IContentAssistant.PROPOSAL_OVERLAY);
-		assistant.setContextInformationPopupOrientation(IContentAssistant.CONTEXT_INFO_ABOVE);
+		assistant
+				.setProposalPopupOrientation(IContentAssistant.PROPOSAL_OVERLAY);
+		assistant
+				.setContextInformationPopupOrientation(IContentAssistant.CONTEXT_INFO_ABOVE);
 
 		return assistant;
 	}
 }
+
+
 

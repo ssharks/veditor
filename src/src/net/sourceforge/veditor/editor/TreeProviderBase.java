@@ -58,7 +58,7 @@ public abstract class TreeProviderBase implements ITreeContentProvider
 	public Object[] getElements(Object inputElement)
 	{
 		// parse source code and get instance list
-		VerilogDocument doc = (VerilogDocument)inputElement;
+		HdlDocument doc = (HdlDocument)inputElement;
 		IParser parser = parse(doc);
 		int size = parser.size();
 		Object[] elements = new Object[size];
@@ -68,7 +68,7 @@ public abstract class TreeProviderBase implements ITreeContentProvider
 		return elements;
 	}
 
-	protected IParser parse(VerilogDocument doc)
+	protected IParser parse(HdlDocument doc)
 	{
 		String text = doc.get();
 
@@ -79,3 +79,4 @@ public abstract class TreeProviderBase implements ITreeContentProvider
 	}
 	private IParser parser;
 }
+

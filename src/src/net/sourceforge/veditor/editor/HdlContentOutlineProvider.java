@@ -24,7 +24,7 @@ import net.sourceforge.veditor.parser.Module;
 /**
  * parse source code for ContentOutline
  */
-public class VerilogContentOutlineProvider extends TreeProviderBase
+public class HdlContentOutlineProvider extends TreeProviderBase
 {
 	public Object[] getChildren(Object parentElement)
 	{

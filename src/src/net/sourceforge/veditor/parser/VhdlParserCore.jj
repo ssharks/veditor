@@ -153,7 +153,7 @@ void modules() :
 		<GENERIC> "(" skipParen() ")" <EOS>
 	|	<PORT> "(" port() ( ";" port() )* ")" <EOS>
 	)*
-	<END> identifier() <EOS>
+	<END> [ <ENTITY> ] identifier() <EOS>
 	<ARCHITECTURE> identifier() <OF> identifier() <IS>
 	moduleBody()
 	end = <EOS>
@@ -238,7 +238,7 @@ void statement() :
 	(
 		ident = identifier()
 		(
-			":"
+			":" {beginStatement();}
 			(
 				[<ENTITY>] module = identifier() iend = skipTo( EOS )
 				{
@@ -247,13 +247,23 @@ void statement() :
 			|	( <IF> | <FOR> ) skipTo( GENERATE )
 				<BEGIN> ( statement() )* <END> <GENERATE> [identifier()] <EOS>
 			)
-		|	[ "(" skipParen() ")" ] skipTo( EOS )
+			{endStatement();}
+		|	{beginStatement();} [ "(" skipParen() ")" ] skipTo( EOS )
+			{endStatement();}
 		)
-	|	<WITH> skipTo( EOS )
-	|	<PROCESS> skipTo2( END, PROCESS ) [ identifier() ] <EOS>
-	|	<BLOCK> skipTo2( END, BLOCK ) [ identifier() ] <EOS>
-	|	<ASSERT> skipTo( EOS )
+	|	<WITH> {beginStatement();} skipTo( EOS ) {endStatement();}
+	|	<PROCESS> {beginStatement();} process() {endStatement();}
+	|	<BLOCK> {beginStatement();}
+			skipTo2( END, BLOCK ) [ identifier() ] <EOS> {endStatement();}
+	|	<ASSERT> {beginStatement();} skipTo( EOS ) {endStatement();}
 	)
+}
+
+void process() :
+{
+}
+{
+	skipTo2( END, PROCESS ) [ identifier() ] <EOS>
 }
 
 JAVACODE
