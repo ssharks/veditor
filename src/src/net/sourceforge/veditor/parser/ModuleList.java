@@ -196,14 +196,23 @@ public final class ModuleList
 	private void readModule(String name)
 	{
 		IFile file = findFile(name + ".v");
+		boolean isVerilog = true;
+
 		if ( file == null )
+		{
 			file = findFile(name + ".vhd");
+			isVerilog = false;
+		}
 		// System.out.println( "file : " + file );
 
 		try
 		{
 			InputStreamReader reader = new InputStreamReader(file.getContents());
-			IParser parser = ParserFactory.create(reader, file);
+			IParser parser;
+			if (isVerilog)
+				parser = ParserFactory.createVerilogParser(reader);
+			else
+				parser = ParserFactory.createVhdlParser(reader);
 			parser.parse(project, file);
 			parser.dispose();
 		}

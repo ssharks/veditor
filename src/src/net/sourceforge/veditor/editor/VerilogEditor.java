@@ -23,6 +23,7 @@ public class VerilogEditor extends HdlEditor
 	public VerilogEditor()
 	{
 		super();
+		setDocumentProvider(new VerilogDocumentProvider());
 		setSourceViewerConfiguration(HdlSourceViewerConfiguration
 				.createForVerilog(getColorManager()));
 	}

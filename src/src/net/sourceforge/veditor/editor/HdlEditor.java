@@ -27,7 +27,6 @@ import net.sourceforge.veditor.actions.OpenDeclarationAction;
 import net.sourceforge.veditor.parser.IParser;
 import net.sourceforge.veditor.parser.Module;
 import net.sourceforge.veditor.parser.ModuleList;
-import net.sourceforge.veditor.parser.ParserFactory;
 import net.sourceforge.veditor.parser.Segment;
 
 import org.eclipse.core.resources.IContainer;
@@ -78,7 +77,7 @@ abstract public class HdlEditor extends TextEditor
 
 		current = this;
 		colorManager = new ColorManager();
-		setDocumentProvider(new HdlDocumentProvider());
+		// setDocumentProvider(new HdlDocumentProvider());
 		HdlTextAttribute.init();
 	}
 
@@ -281,8 +280,7 @@ abstract public class HdlEditor extends TextEditor
 		HdlDocument doc = getHdlDocument();
 		if (doc != null)
 		{
-			IParser parser = ParserFactory.create(new StringReader(doc.get()), doc
-					.getFile());
+			IParser parser = doc.createParser(new StringReader(doc.get()));
 			parser.parse(doc.getProject(), doc.getFile());
 
 			int size = parser.size();

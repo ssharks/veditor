@@ -21,7 +21,6 @@ package net.sourceforge.veditor.editor;
 import java.io.StringReader;
 
 import net.sourceforge.veditor.parser.IParser;
-import net.sourceforge.veditor.parser.ParserFactory;
 import net.sourceforge.veditor.parser.Segment;
 
 import org.eclipse.jface.viewers.ITreeContentProvider;
@@ -72,7 +71,7 @@ public abstract class TreeProviderBase implements ITreeContentProvider
 	{
 		String text = doc.get();
 
-		parser = ParserFactory.create(new StringReader(text), doc.getFile());
+		parser = doc.createParser(new StringReader(text));
 		parser.parse(doc.getProject(), doc.getFile());
 		parser.parseLineComment(new StringReader(text));
 		return parser;

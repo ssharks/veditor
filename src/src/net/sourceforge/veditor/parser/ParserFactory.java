@@ -21,8 +21,6 @@ package net.sourceforge.veditor.parser;
 import java.io.IOException;
 import java.io.Reader;
 
-import org.eclipse.core.resources.IFile;
-
 /**
  * generate Verilog or VHDL parser
  */
@@ -33,15 +31,25 @@ abstract public class ParserFactory
 	{
 	}
 	
-	public static IParser create(Reader reader, IFile file)
+//	public static IParser create(Reader reader, IFile file)
+//	{
+//		String extension = file.getFileExtension();
+//		if (extension.equals("v"))
+//			return new VerilogParser(new AsciiReader(reader));
+//		else if (extension.equals("vhd") || extension.equals("VHD"))
+//			return new VhdlParser(new AsciiReader(reader));
+//		else
+//			return null;
+//	}
+	
+	public static IParser createVerilogParser(Reader reader)
 	{
-		String extension = file.getFileExtension();
-		if (extension.equals("v"))
-			return new VerilogParser(new AsciiReader(reader));
-		else if (extension.equals("vhd") || extension.equals("VHD"))
-			return new VhdlParser(new AsciiReader(reader));
-		else
-			return null;
+		return new VerilogParser(new AsciiReader(reader));
+	}
+
+	public static IParser createVhdlParser(Reader reader)
+	{
+		return new VhdlParser(new AsciiReader(reader));
 	}
 	
 	/**

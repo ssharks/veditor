@@ -18,19 +18,29 @@
 //
 package net.sourceforge.veditor.editor;
 
-public class VhdlEditor extends HdlEditor
+import java.io.Reader;
+
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
+
+import net.sourceforge.veditor.parser.IParser;
+import net.sourceforge.veditor.parser.ParserFactory;
+
+public class VhdlDocument extends HdlDocument
 {
-	public VhdlEditor()
+	public VhdlDocument(IProject project, IFile file)
 	{
-		super();
-		setDocumentProvider(new VhdlDocumentProvider());
-		setSourceViewerConfiguration(HdlSourceViewerConfiguration
-				.createForVhdl(getColorManager()));
+		super(project, file);
+	}
+
+	public HdlPartitionScanner createPartitionScanner()
+	{
+		return HdlPartitionScanner.createVhdlPartitionScanner();
 	}
 	
-	public String getEditorId()
+	public IParser createParser(Reader reader)
 	{
-		return "net.sourceforge.veditor.editor.VhdlEditor"; 
+		return ParserFactory.createVhdlParser(reader);
 	}
 
 }

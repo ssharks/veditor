@@ -18,11 +18,15 @@
 //
 package net.sourceforge.veditor.editor;
 
+import java.io.Reader;
+
+import net.sourceforge.veditor.parser.IParser;
+
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.text.Document;
 
-public class HdlDocument extends Document
+abstract public class HdlDocument extends Document
 {
 	/**
 	 * project which has this verilog source file
@@ -47,4 +51,9 @@ public class HdlDocument extends Document
 		return file;
 	}
 
+	abstract public HdlPartitionScanner createPartitionScanner();
+	abstract public IParser createParser(Reader reader);
 }
+
+
+

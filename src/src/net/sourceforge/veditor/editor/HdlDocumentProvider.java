@@ -30,11 +30,11 @@ import org.eclipse.jface.text.rules.DefaultPartitioner;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.editors.text.FileDocumentProvider;
 
-public class HdlDocumentProvider extends FileDocumentProvider
+public abstract class HdlDocumentProvider extends FileDocumentProvider
 {
 	protected IDocument createDocument(Object element) throws CoreException
 	{
-		IDocument document = null;
+		HdlDocument document = null;
 
 		if (element instanceof IFileEditorInput)
 		{
@@ -49,21 +49,13 @@ public class HdlDocumentProvider extends FileDocumentProvider
 			}
 			if (parent instanceof IProject)
 			{
-				document = new HdlDocument((IProject)parent, file);
+				document = createHdlDocument((IProject)parent, file);
 				if (!setDocumentContent(document, input, getEncoding(element)))
 					document = null;
 			}
 			if (document != null)
 			{
-				HdlPartitionScanner scanner;
-				String ext = file.getFileExtension();
-				if (ext.equals("v"))
-					scanner = HdlPartitionScanner.createVerilogPartitionScanner();
-				else if (ext.equals("vhd") || ext.equals("VHD"))
-					scanner = HdlPartitionScanner.createVhdlPartitionScanner();
-				else
-					return null;
-				
+				HdlPartitionScanner scanner = document.createPartitionScanner();
 				IDocumentPartitioner partitioner = new DefaultPartitioner(scanner,
 						HdlPartitionScanner.getContentTypes());
 				partitioner.connect(document);
@@ -72,6 +64,9 @@ public class HdlDocumentProvider extends FileDocumentProvider
 		}
 		return document;
 	}
+	
+	abstract HdlDocument createHdlDocument(IProject project, IFile file);
+	
 
 //	Don't use special encoding.
 //	Set encoding in Project Properties page

@@ -18,19 +18,14 @@
 //
 package net.sourceforge.veditor.editor;
 
-public class VhdlEditor extends HdlEditor
-{
-	public VhdlEditor()
-	{
-		super();
-		setDocumentProvider(new VhdlDocumentProvider());
-		setSourceViewerConfiguration(HdlSourceViewerConfiguration
-				.createForVhdl(getColorManager()));
-	}
-	
-	public String getEditorId()
-	{
-		return "net.sourceforge.veditor.editor.VhdlEditor"; 
-	}
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
 
+public class VerilogDocumentProvider extends HdlDocumentProvider
+{
+	public HdlDocument createHdlDocument(IProject project, IFile file)
+	{
+		return new VerilogDocument(project, file);
+	}
 }
+
