@@ -19,8 +19,11 @@
 package net.sourceforge.veditor.parser;
 
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 import org.eclipse.core.resources.IContainer;
@@ -35,19 +38,19 @@ import org.eclipse.core.runtime.CoreException;
 public final class ModuleList
 {
 	private static Set projectList = new HashSet();
-	private static ModuleList current ;
+	private static ModuleList current;
 
 	public static void setCurrent(IProject proj)
 	{
 		if (current != null && current.toString().equals(proj.toString()))
-			return ;
+			return;
 
 		// System.out.println( "set current project " + proj );
 		ModuleList mods = find(proj);
 		if (mods != null)
 		{
-			current = mods ;
-			return ;
+			current = mods;
+			return;
 		}
 
 		// System.out.println( "new project " + proj );
@@ -66,14 +69,14 @@ public final class ModuleList
 		{
 			ModuleList mods = (ModuleList)i.next();
 			if (mods.toString().equals(proj.toString()))
-				return mods ;
+				return mods;
 		}
 		return null;
 	}
 
 	private ModuleList(IProject project)
 	{
-		this.project = project ;
+		this.project = project;
 	}
 
 	/**
@@ -98,12 +101,8 @@ public final class ModuleList
 					if (len >= 3 && name.substring(len - 2).equals(".v"))
 					{
 						name = name.substring(0, len - 2);
-						Module mod = new Module(name);
+						Module mod = new ModuleReference(name);
 						replaceModule(mod);
-
-//						InputStreamReader reader = new InputStreamReader(file.getContents());
-//						VerilogParser parser = new VerilogParser(reader);
-//						parser.parse(project);
 					}
 				}
 			}
@@ -135,30 +134,41 @@ public final class ModuleList
 	/**
 	 * refered project
 	 */
-	private IProject project ;
+	private IProject project;
 
 	/**
 	 * Module database
 	 */
 	private Set list = new HashSet();
 
+	public Module newModule(int line, String name, IFile file)
+	{
+		Module module = new ModuleDefinition(line, name, file);
+		replaceModule(module);
+		return module;
+	}
+
 	/**
 	 * find from module database
 	 */
 	public Module findModule(String name)
 	{
-		Module mod = findModuleSub(name);
+		Module mod = findModuleImmediate(name);
 		if (mod == null)
 			return null;
-		else if (mod.isDoneParse())
-			return mod ;
+		else if (mod instanceof ModuleDefinition)
+			return mod;
 		else
 		{
 			readModule(name);
-			return findModuleSub(name);
+			mod = findModuleImmediate(name);
+			if (mod instanceof ModuleDefinition)
+				return mod;
+			else
+				return null;
 		}
 	}
-	private Module findModuleSub(String name)
+	private Module findModuleImmediate(String name)
 	{
 		Iterator i = list.iterator();
 		while (i.hasNext())
@@ -181,14 +191,14 @@ public final class ModuleList
 		{
 			InputStreamReader reader = new InputStreamReader(file.getContents());
 			VerilogParser parser = new VerilogParser(reader);
-			parser.parse(project);
+			parser.parse(project, file);
 		}
 		catch (CoreException e)
 		{
 		}
 	}
 
-	public IFile findFile(String fileName)
+	private IFile findFile(String fileName)
 	{
 		return findFile(project, fileName);
 	}
@@ -225,7 +235,7 @@ public final class ModuleList
 	{
 		String[] strs = new String[list.size()];
 		Iterator i = list.iterator();
-		int n = 0 ;
+		int n = 0;
 		while (i.hasNext())
 		{
 			strs[n++] = i.next().toString();
@@ -236,11 +246,133 @@ public final class ModuleList
 	/**
 	 * This is called when module is parsed
 	 */
-	public void replaceModule(Module mod)
+	private void replaceModule(Module mod)
 	{
 		list.remove(mod);
 		list.add(mod);
 		// System.out.println( "number of modules : " + list.size());
 	}
+
+	/**
+	 * reference of module<p/>
+	 * It has only file name (*.v)
+	 */
+	private class ModuleReference extends Module
+	{
+		public ModuleReference(String name)
+		{
+			super(name);
+		}
+	}
+
+	/**
+	 * definition of module<p/>
+	 * it has file name, line number, ports and elements etc.
+	 */
+	private class ModuleDefinition extends Module
+	{
+		public ModuleDefinition(int line, String name, IFile file)
+		{
+			super(line, name);
+			this.file = file;
+		}
+		private IFile file;
+		public IFile getFile()
+		{
+			return file;
+		}
+
+		/**
+		 * instance, function, task, comment
+		 */
+		private List elements = new ArrayList();
+		public Object[] getElements()
+		{
+			int size = elements.size();
+			if (size == 0)
+				return null;
+			else
+			{
+				Collections.sort(elements);
+				Object[] eary = new Object[size];
+				for (int i = 0; i < size; i++)
+					eary[i] = elements.get(i);
+				return eary;
+			}
+		}
+
+		/**
+		 * input/output prots
+		 */
+		private List ports = new ArrayList();
+		public Iterator getPortIterator()
+		{
+			return ports.iterator();
+		}
+
+		//  called by parser
+		public void addPort(String name)
+		{
+			ports.add(name);
+		}
+		public void addElement(int begin, int end, String typeName, String name)
+		{
+			Element child = new Element(begin, this, typeName, name);
+			child.setEndLine(end);
+			elements.add(child);
+		}
+		public void addComment(int begin, String str)
+		{
+			if (!isValidComment(str))
+				return;
+
+			//  コメント行が連続している場合は最初で代表させる
+			if (begin == lastCommentLine + 1)
+			{
+				lastCommentLine = begin;
+				return;
+			}
+
+			//  行の最初の"//"と無駄な文字を削除する
+			for (int i = 0; i < str.length(); i++)
+			{
+				char ch = str.charAt(i);
+				if (Character.isLetterOrDigit(ch))
+				{
+					str = str.substring(i);
+					break;
+				}
+			}
+			//  行の最後の無駄な文字を削除する
+			for (int i = str.length() - 1; i >= 0; i--)
+			{
+				char ch = str.charAt(i);
+				if (Character.isLetterOrDigit(ch))
+				{
+					str = str.substring(0, i + 1);
+					break;
+				}
+			}
+
+			Element comment = new Element(begin, this, "//", str);
+			elements.add(comment);
+
+			lastCommentLine = begin;
+		}
+		private int lastCommentLine;
+		private boolean isValidComment(String str)
+		{
+			for (int i = 0; i < str.length(); i++)
+			{
+				char ch = str.charAt(i);
+				if (Character.isLetterOrDigit(ch))
+					return true;
+			}
+			return false;
+		}
+
+	}
 }
+
+
 

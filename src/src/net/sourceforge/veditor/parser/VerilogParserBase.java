@@ -19,9 +19,13 @@
 
 package net.sourceforge.veditor.parser;
 
+import java.io.IOException;
+import java.io.Reader;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 
 /**
@@ -30,18 +34,17 @@ import org.eclipse.core.resources.IProject;
  */
 public abstract class VerilogParserBase
 {
-	private List mods = new ArrayList();
-
 	private Module getCurrentModule()
 	{
-		int n = mods.size() - 1 ;
+		int n = mods.size() - 1;
 		return (Module)mods.get(n);
 	}
+	private List mods = new ArrayList();
 
 	// called by VerilogParser
 	protected void addModule(int begin, String name)
 	{
-		Module module = new Module(begin, name);
+		Module module = ModuleList.getCurrent().newModule(begin, name, file);
 		mods.add(module);
 	}
 	protected void endModule(int line)
@@ -58,10 +61,6 @@ public abstract class VerilogParserBase
 	{
 		getCurrentModule().addElement(begin, end, module, inst);
 	}
-	protected void addComment(int begin, String comment)
-	{
-		getCurrentModule().addComment(begin, comment);
-	}
 
 	//  called by editor
 	public Segment getModule(int n)
@@ -73,9 +72,10 @@ public abstract class VerilogParserBase
 		return mods.size();
 	}
 
-	public void parse(IProject project)
+	public void parse(IProject project, IFile file)
 	{
 		ModuleList.setCurrent(project);
+		this.file = file;
 		try
 		{
 			parse();
@@ -85,6 +85,7 @@ public abstract class VerilogParserBase
 			System.out.println(e);
 		}
 	}
+	private IFile file;
 
 	public void dispose()
 	{
@@ -92,7 +93,110 @@ public abstract class VerilogParserBase
 	}
 
 	protected abstract void parse() throws ParseException;
+
+	/**
+	 * parse line comment for content outline
+	 */
+	public void parseLineComment(Reader reader)
+	{
+		try
+		{
+			int line = 1;
+			int column = 0;
+			int c = reader.read();
+			while (c != -1)
+			{
+				column++;
+				switch (c)
+				{
+					case '\n' :
+						line++;
+						column = 0;
+						c = reader.read();
+						break;
+					case '/' :
+						c = reader.read();
+						if (c == '/' && column == 1)
+						{
+							String comment = getLineComment(reader);
+							if (comment != null)
+								addComment(line, comment);
+							line++;
+							column = 0;
+						}
+						break;
+					default :
+						c = reader.read();
+						break;
+				}
+			}
+		}
+		catch (IOException e)
+		{
+		}
+	}
+
+	private String getLineComment(Reader reader) throws IOException
+	{
+		StringBuffer str = new StringBuffer();
+		boolean enable = false;
+
+		//  copy to StringBuffer
+		int c = reader.read();
+		while (c != '\n' && c != -1)
+		{
+			if (Character.isLetterOrDigit((char)c) || enable)
+			{
+				str.append((char)c);
+				enable = true;
+			}
+			c = reader.read();
+		}
+
+		// delete tail
+		for (int i = str.length() - 1; i >= 0; i--)
+		{
+			char ch = str.charAt(i);
+			if (Character.isLetterOrDigit(ch))
+				break;
+			else
+				str.deleteCharAt(i);
+		}
+
+		if (str.length() != 0)
+			return str.toString();
+		else
+			return null;
+	}
+
+	private void addComment(int line, String comment)
+	{
+		// ignore continuous comments
+		if (prevCommentLine + 1 == line)
+		{
+			prevCommentLine = line;
+			return;
+		}
+
+		prevCommentLine = line;
+
+		Iterator i = mods.iterator();
+		while (i.hasNext())
+		{
+			Module mod = (Module)i.next();
+			if (line >= mod.getLine() + mod.getLength())
+				break;
+			if (line >= mod.getLine())
+			{
+				System.out.println(comment);
+				mod.addElement(line, line, "//", comment);
+			}
+		}
+	}
+	private static int prevCommentLine;
 }
+
+
 
 
 

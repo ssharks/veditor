@@ -19,56 +19,36 @@
 
 package net.sourceforge.veditor.parser;
 
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
+
+import org.eclipse.core.resources.IFile;
 
 /**
- * Module definition
+ * Module definition<p/>
+ * Only ModuleList can instantiate
  */
-public class Module extends Segment
+public abstract class Module extends Segment
 {
-
 	/**
 	 * module name - unique in project
 	 */
-	private String name ;
-
-	/**
-	 * flag of parsed or not
-	 */
-	private boolean doneParse ;
-	public boolean isDoneParse()
-	{
-		return doneParse;
-	}
+	private String name;
 
 	public Module(String name)
 	{
-		super(-1);
-		this.name = name ;	// file name
-		doneParse = false ;
-
-		ModuleList.getCurrent().replaceModule(this);
+		this.name = name;
 	}
 
 	public Module(int line, String name)
 	{
 		super(line);
-		this.name = name ;  // module name
-		doneParse = true ;
+		this.name = name;
 
-		elements = new ArrayList();
-
-		//  replace module in database
-		ModuleList.getCurrent().replaceModule(this);
-
-		// System.out.println("module " + name);
 	}
 
 	public String toString()
 	{
-		return name ;
+		return name;
 	}
 
 	//  for module datebase
@@ -84,92 +64,25 @@ public class Module extends Segment
 		return name.hashCode();
 	}
 
-
-	/**
-	 * instance, function, task, comment
-	 */
-	private List elements ;
-	public Segment getElement(int n)
+	public Object[] getElements()
 	{
-		return (Segment)elements.get(n);
+		return null;
 	}
-	public int size()
+	public IFile getFile()
 	{
-		if (elements != null)
-			return elements.size();
-		else
-			return 0;
+		return null;
 	}
-
-	/**
-	 * input/output prots
-	 */
-	private List ports = new ArrayList();
 	public Iterator getPortIterator()
 	{
-		return ports.iterator();
+		return null;
 	}
-
-
-	//  called by parser
 	public void addPort(String name)
 	{
-		ports.add(name);
 	}
 	public void addElement(int begin, int end, String typeName, String name)
 	{
-		Element child = new Element(begin, this, typeName, name);
-		child.setEndLine(end);
-		elements.add(child);
 	}
 	public void addComment(int begin, String str)
 	{
-		if (!isValidComment(str))
-			return;
-
-		//  コメント行が連続している場合は最初で代表させる
-		if (begin == lastCommentLine + 1)
-		{
-			lastCommentLine = begin;
-			return;
-		}
-
-		//  行の最初の"//"と無駄な文字を削除する
-		for (int i = 0; i < str.length(); i++)
-		{
-			char ch = str.charAt(i);
-			if (Character.isLetterOrDigit(ch))
-			{
-				str = str.substring(i);
-				break;
-			}
-		}
-		//  行の最後の無駄な文字を削除する
-		for (int i = str.length() - 1; i >= 0; i--)
-		{
-			char ch = str.charAt(i);
-			if (Character.isLetterOrDigit(ch))
-			{
-				str = str.substring(0, i + 1);
-				break;
-			}
-		}
-
-		Element comment = new Element(begin, this, "//", str);
-		elements.add(comment);
-
-		lastCommentLine = begin;
 	}
-	private int lastCommentLine;
-	private boolean isValidComment(String str)
-	{
-		for (int i = 0; i < str.length(); i++)
-		{
-			char ch = str.charAt(i);
-			if (Character.isLetterOrDigit(ch))
-				return true;
-		}
-		return false;
-	}
-
 }

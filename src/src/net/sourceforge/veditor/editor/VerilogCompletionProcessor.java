@@ -36,6 +36,7 @@ import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.text.contentassist.IContextInformationValidator;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.widgets.Display;
 
 /**
  * content assist<p/>
@@ -215,11 +216,14 @@ public class VerilogCompletionProcessor implements IContentAssistProcessor
 			ModuleList mlist = ModuleList.find(proj);
 			Module module = mlist.findModule(name);
 			if (module == null)
+			{
+				Display.getCurrent().beep();
 				return;
+			}
 
 			StringBuffer replace = new StringBuffer(name + " " + name + "(\n\t");
 			Iterator i = module.getPortIterator();
-			int column = 0 ;
+			int column = 0;
 			while (i.hasNext())
 			{
 				String port = i.next().toString();
@@ -258,7 +262,7 @@ public class VerilogCompletionProcessor implements IContentAssistProcessor
 
 		public String getDisplayString()
 		{
-			return name ;
+			return name;
 		}
 
 		public Image getImage()

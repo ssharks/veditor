@@ -23,27 +23,25 @@ package net.sourceforge.veditor.parser;
  */
 public class Element extends Segment
 {
-	private Segment module ;
-	private String typeName ;	//  module名またはfunction名
-	private String name ;		//  インスタンス名
+	private Segment module;
+	private String typeName; //  module名またはfunction名
+	private String name; //  インスタンス名
 
 	public Element(int line, Segment module, String typeName, String name)
 	{
 		super(line);
-		this.module = module ;
-		this.typeName = typeName ;
-		this.name = name ;
+		this.module = module;
+		this.typeName = typeName;
+		this.name = name;
 	}
 
 	public Segment getParent()
 	{
-		return module ;
+		return module;
 	}
 
 	public String toString()
 	{
-		return typeName + " " + name ;
+		return typeName + " " + name;
 	}
-
-
 }

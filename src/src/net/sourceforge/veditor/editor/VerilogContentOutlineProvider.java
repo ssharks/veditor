@@ -33,7 +33,6 @@ import org.eclipse.jface.viewers.Viewer;
  */
 public class VerilogContentOutlineProvider implements ITreeContentProvider
 {
-
 	/*
 	 * @see org.eclipse.jface.viewers.ITreeContentProvider#getChildren(java.lang.Object)
 	 */
@@ -41,15 +40,10 @@ public class VerilogContentOutlineProvider implements ITreeContentProvider
 	{
 		if (parentElement instanceof Module)
 		{
-			Module mod = (Module)parentElement ;
-			int size = mod.size();
-			Object[] elements = new Object[size] ;
-
-			for (int i = 0; i < size; i++)
-				elements[i] = mod.getElement(i);
-			return elements;
+			Module mod = (Module)parentElement;
+			return mod.getElements();
 		}
-		return null ;
+		return null;
 	}
 
 	/*
@@ -72,8 +66,8 @@ public class VerilogContentOutlineProvider implements ITreeContentProvider
 	{
 		if (element instanceof Module)
 		{
-			Module mod = (Module)element ;
-			return mod.size() >= 1 ;
+			Module mod = (Module)element;
+			return mod.getElements() != null;
 		}
 		return false;
 	}
@@ -106,13 +100,16 @@ public class VerilogContentOutlineProvider implements ITreeContentProvider
 	{
 	}
 
-	private VerilogParser parser ;
+	private VerilogParser parser;
 
 	private void parse(VerilogDocument doc)
 	{
 		String text = doc.get();
+
 		parser = new VerilogParser(new StringReader(text));
-		parser.parse(doc.getProject());
+		parser.parse(doc.getProject(), doc.getFile());
+
+		parser.parseLineComment(new StringReader(text));
 	}
 }
 

@@ -23,27 +23,31 @@ package net.sourceforge.veditor.parser;
 /**
  * Segmentation for ContentOutline
  */
-public abstract class Segment
+public abstract class Segment implements Comparable
 {
-	private int line ;
-	private int length ;
+	private int line;
+	private int length;
 
+	protected Segment()
+	{
+		this(-1);
+	}
 	protected Segment(int line)
+	{
+		setLine(line);
+	}
+	public void setLine(int line)
 	{
 		this.line = line;
 		length = 1;
 	}
 
-//	public void setLine(int line)
-//	{
-//		this.line = line;
-//		length = 1;
-//	}
 //	public void setLine(int begin, int end)
 //	{
 //		setLine(begin);
 //		setEndLine(end);
 //	}
+
 	public void setEndLine(int line)
 	{
 		length = line - this.line + 1;
@@ -51,7 +55,7 @@ public abstract class Segment
 
 	public Segment getParent()
 	{
-		return null ;
+		return null;
 	}
 
 	public int getLine()
@@ -63,4 +67,17 @@ public abstract class Segment
 		return length;
 	}
 
+	/**
+	 * used by Collectoins.sort
+	 */
+	public int compareTo(Object arg)
+	{
+		if (arg instanceof Segment)
+			return line - ((Segment)arg).line;
+		else
+			return -1;
+	}
 }
+
+
+

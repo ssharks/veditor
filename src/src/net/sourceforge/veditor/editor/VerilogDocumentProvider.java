@@ -48,7 +48,7 @@ public class VerilogDocumentProvider extends FileDocumentProvider
 			}
 			if (parent instanceof IProject)
 			{
-				document = new VerilogDocument((IProject)parent);
+				document = new VerilogDocument((IProject)parent, file);
 				if (!setDocumentContent(document, input, getEncoding(element)))
 					document = null;
 			}

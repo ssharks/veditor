@@ -94,7 +94,7 @@ public class NonRuleBasedDamagerRepairer implements IPresentationDamager, IPrese
 				IRegion info = document.getLineInformationOfOffset(event.getOffset());
 				int start = Math.max(partition.getOffset(), info.getOffset());
 
-				int len ;
+				int len;
 				if (event.getText() == null)
 					len = event.getLength();
 				else

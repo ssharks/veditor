@@ -18,6 +18,7 @@
 //
 package net.sourceforge.veditor.editor;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.text.Document;
 
@@ -27,16 +28,23 @@ public class VerilogDocument extends Document
 	 * project which has this verilog source file
 	 */
 	private IProject project;
+	private IFile file;
 
-	public VerilogDocument(IProject project)
+	public VerilogDocument(IProject project, IFile file)
 	{
 		super();
 		this.project = project;
+		this.file = file;
 	}
 
 	public IProject getProject()
 	{
 		return project;
+	}
+
+	public IFile getFile()
+	{
+		return file;
 	}
 
 }

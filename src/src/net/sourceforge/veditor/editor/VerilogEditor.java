@@ -22,6 +22,7 @@ package net.sourceforge.veditor.editor;
 import java.io.StringReader;
 import java.util.ResourceBundle;
 
+import net.sourceforge.veditor.parser.Module;
 import net.sourceforge.veditor.parser.ModuleList;
 import net.sourceforge.veditor.parser.Segment;
 import net.sourceforge.veditor.parser.VerilogParser;
@@ -216,7 +217,7 @@ public class VerilogEditor extends TextEditor
 		if (doc != null)
 		{
 			VerilogParser parser = new VerilogParser(new StringReader(doc.get()));
-			parser.parse(((VerilogDocument)doc).getProject());
+			parser.parse(doc.getProject(), doc.getFile());
 
 			int size = parser.size();
 			Segment[] elements = new Segment[size];
@@ -392,17 +393,17 @@ public class VerilogEditor extends TextEditor
 			if (modName.equals(""))
 			{
 				beep();
-				return ;
+				return;
 			}
 
 			ModuleList mlist = ModuleList.find(getVerilogDocument().getProject());
-			IFile file = mlist.findFile(modName + ".v");
-			if (file == null)
+			Module mod = mlist.findModule(modName);
+			if (mod == null)
 			{
 				beep();
-				return ;
+				return;
 			}
-			openEditor(modName, file);
+			openEditor(modName, mod.getFile());
 		}
 
 		private void openEditor(String modName, IFile file)
@@ -414,19 +415,21 @@ public class VerilogEditor extends TextEditor
 				IEditorPart editorPart = page.openEditor(file);
 				if (editorPart instanceof VerilogEditor)
 				{
-					VerilogEditor editor = (VerilogEditor)editorPart ;
+					VerilogEditor editor = (VerilogEditor)editorPart;
 					Segment[] modules = editor.parse();
 					if (modules != null)
 					{
 						for (int i = 0; i < modules.length; i++)
 						{
-							Segment mod = modules[i] ;
+							Segment mod = modules[i];
 							if (modName.equals(mod.toString()))
 							{
 								IDocument doc = editor.getDocument();
-								int line = mod.getLine() - 1 ;
+								int line = mod.getLine() - 1;
 								int start = doc.getLineOffset(line);
-								editor.getSourceViewer().getTextWidget().setSelection(start);
+								ISourceViewer viewer = editor.getSourceViewer();
+								viewer.setTopIndex(start);
+								viewer.getTextWidget().setSelection(start);
 							}
 						}
 					}
