@@ -73,10 +73,6 @@ public class VerilogEditor extends TextEditor
 	public VerilogEditor()
 	{
 		super();
-		if ( this instanceof IFileEditorInput )
-		{
-			System.out.println("aaa");
-		}
 
 		current = this;
 		colorManager = new ColorManager();
@@ -113,21 +109,17 @@ public class VerilogEditor extends TextEditor
 		action.setActionDefinitionId(ITextEditorActionDefinitionIds.CONTENT_ASSIST_PROPOSALS);
 		setAction("ContentAssistProposal", action);
 
-		action = new GotoMatchingBracketAction(this);
+		action = new GotoMatchingBracketAction();
 		action.setActionDefinitionId(IJavaEditorActionDefinitionIds.GOTO_MATCHING_BRACKET);
 		setAction("GotoMatchingBracket", action);
 
-		action = new OpenDeclarationAction(this);
+		action = new OpenDeclarationAction();
 		action.setActionDefinitionId(IJavaEditorActionDefinitionIds.OPEN_EDITOR);
 		setAction("OpenDeclaration", action);
 
-		action = new FormatAction(this);
+		action = new FormatAction();
 		action.setActionDefinitionId(IJavaEditorActionDefinitionIds.FORMAT);
 		setAction("Format", action);
-		
-//		action = new CompileAction(this);
-//		action.setActionDefinitionId(CompileAction.ID);
-//		setAction("Compile", action);
 	}
 
 //	これはコンテンツアシストのためのコードだと思われるが不要か？
@@ -181,7 +173,7 @@ public class VerilogEditor extends TextEditor
 		if (modulePage != null)
 			modulePage.setInput(input);
 	}
-
+	
 	public void doSetInput(IEditorInput input) throws CoreException
 	{
 		super.doSetInput(input);
@@ -198,7 +190,7 @@ public class VerilogEditor extends TextEditor
 				parent = parent.getParent();
 			}
 			if (parent instanceof IProject)
-			return (IProject)parent;
+				return (IProject) parent;
 		}
 		return null;
 	}

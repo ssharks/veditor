@@ -18,8 +18,6 @@
 //
 package net.sourceforge.veditor.actions;
 
-import net.sourceforge.veditor.editor.VerilogEditor;
-
 import org.eclipse.swt.custom.StyledText;
 
 /**
@@ -27,9 +25,9 @@ import org.eclipse.swt.custom.StyledText;
  */
 public class GotoMatchingBracketAction extends AbstractAction
 {
-	public GotoMatchingBracketAction(VerilogEditor editor)
+	public GotoMatchingBracketAction()
 	{
-		super(editor, "GotoMatchingBracket");
+		super("GotoMatchingBracket");
 	}
 	public void run()
 	{

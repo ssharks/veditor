@@ -163,7 +163,7 @@ void moduleBody() :
 	Token	module, inst, iend ;
 }
 {
-		LOOKAHEAD( 5 )
+//		LOOKAHEAD( 5 )
 		<PORT_HEAD> {beginStatement();} port() {endStatement();}
 	|	<VARIABLE_HEAD> {beginStatement();} variable() {endStatement();}
 	|	<STMT_HEAD> {beginStatement();} skipTo( EOS ) {endStatement();}
@@ -197,10 +197,7 @@ void port() :
 	Token port ;
 }
 {
-//	cannot generate correct code in Ant JavaCC. Why?
-//	[ "[" skipTo(RBRACKET) ]
-
-	[ "[" <IDENT> ":" <IDENT> "]" ]
+	[ "[" skipTo(RBRACKET) ]
 	port = identifier()
 	{
 		addPort( port.beginLine, port.image );

@@ -40,13 +40,13 @@ public class VerilogPreferencePage extends FieldEditorPreferencePage implements
 
 	protected void createFieldEditors()
 	{
-		// addStringField("Encoding", "Default encoding");
 		addStringField("Color.Default", "Default color");
 		addStringField("Color.SingleLineComment", "Single line comment color");
 		addStringField("Color.MultiLineComment", "Multi line comment color");
 		addStringField("Color.DoxygenComment", "Doxygen comment color");
 		addStringField("Color.KeyWord", "Reserved word color");
 		addStringField("Color.String", "String color");
+		addStringField("Compile.command", "Compile command");
 	}
 
 	private void addStringField(String name, String label)

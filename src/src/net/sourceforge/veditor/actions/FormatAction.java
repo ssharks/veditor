@@ -18,17 +18,17 @@
 //
 package net.sourceforge.veditor.actions;
 
-import net.sourceforge.veditor.editor.VerilogEditor;
 
 public class FormatAction extends AbstractAction
 {
-	public FormatAction(VerilogEditor editor)
+	public FormatAction()
 	{
-		super(editor, "Format");
+		super("Format");
 	}
 
 	public void run()
 	{
+		System.out.println("format Action is not implemented yet.");
 		// not implemented
 	}
 }

@@ -56,6 +56,7 @@ public class VerilogPlugin extends AbstractUIPlugin
 		store.setDefault("Color.String", "000080");
 		store.setDefault("Color.Default", "000000");
 		store.setDefault("Color.KeyWord", "800080");
+		store.setDefault("Compile.command", "iverilog -tnull -y . -Wall");
 	}
 
 	/**

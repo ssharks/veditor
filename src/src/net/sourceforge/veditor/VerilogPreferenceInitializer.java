@@ -21,6 +21,10 @@ package net.sourceforge.veditor;
 import org.eclipse.core.runtime.Preferences;
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 
+/**
+ *	default preference for Eclipse 3.0<p/>
+ *	It is NOT used now.
+ */
 public class VerilogPreferenceInitializer extends AbstractPreferenceInitializer
 {
 	public VerilogPreferenceInitializer()

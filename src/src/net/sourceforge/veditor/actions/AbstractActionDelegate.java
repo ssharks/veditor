@@ -18,30 +18,29 @@
 //
 package net.sourceforge.veditor.actions;
 
-import java.util.ResourceBundle;
-
 import net.sourceforge.veditor.editor.VerilogEditor;
-import net.sourceforge.veditor.editor.VerilogEditorMessages;
 
-import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.text.source.ISourceViewer;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.ui.IEditorActionDelegate;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 
-
-public abstract class AbstractAction extends Action
+abstract public class AbstractActionDelegate implements IEditorActionDelegate,
+		IWorkbenchWindowActionDelegate
 {
 	private VerilogEditor editor;
 
-	public AbstractAction(String name)
+	public void setActiveEditor(IAction action, IEditorPart targetEditor)
 	{
-		editor = VerilogEditor.current();
-		setEnabled(true);
-		setId("net.sourceforge.veditor.veditor." + name);
-		ResourceBundle resource = VerilogEditorMessages.getResourceBundle();
-		setText(resource.getString(name + ".label"));
+		editor = (VerilogEditor)targetEditor;
 	}
 
-	public abstract void run();
-
+	public void selectionChanged(IAction action, ISelection selection)
+	{
+	}
+	
 	protected VerilogEditor getEditor()
 	{
 		return editor;
@@ -55,3 +54,5 @@ public abstract class AbstractAction extends Action
 		editor.beep();
 	}
 }
+
+

@@ -8,6 +8,7 @@
 
    <runtime>
       <library name="veditor.jar"/>
+      <export name="*"/>
    </runtime>
    <requires>
       <import plugin="org.eclipse.ui"/>
@@ -59,9 +60,26 @@
    </extension>
 
    <extension
+         point="org.eclipse.ui.editorActions">
+      <editorContribution
+         id="net.sourceforge.veditor.actions"
+         targetID="net.sourceforge.veditor.editor.VerilogEditor">
+         <action
+            id="net.sourceforge.veditor.actions.compile"
+            label="&amp;Compile"
+            accelerator="Ctrl+0"
+            menubarPath="edit/additions"
+            class="net.sourceforge.veditor.actions.CompileAction">
+         </action> 
+      </editorContribution> 
+   </extension>
+
+<!--
+   <extension
          point="org.eclipse.core.runtime.preferences">
       <initializer class="net.sourceforge.veditor.VerilogPreferenceInitializer"/>
    </extension>
+-->
 
 </plugin>
 

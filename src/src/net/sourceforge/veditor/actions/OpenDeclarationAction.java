@@ -18,8 +18,6 @@
 //
 package net.sourceforge.veditor.actions;
 
-import net.sourceforge.veditor.editor.VerilogEditor;
-
 import org.eclipse.swt.custom.StyledText;
 
 
@@ -29,9 +27,9 @@ import org.eclipse.swt.custom.StyledText;
  */
 public class OpenDeclarationAction extends AbstractAction
 {
-	public OpenDeclarationAction(VerilogEditor editor)
+	public OpenDeclarationAction()
 	{
-		super(editor, "OpenDeclaration");
+		super("OpenDeclaration");
 	}
 	public void run()
 	{
