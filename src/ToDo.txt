@@ -3,10 +3,10 @@ ToDo
 
 - hierarchical view for instantiation
 - waring blocking assignment in always block
-- automatic instantiation using content assist
 - formatter
 
 done
 
 - module database
+- automatic instantiation using content assist
 
