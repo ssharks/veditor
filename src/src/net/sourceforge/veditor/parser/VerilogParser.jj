@@ -1,0 +1,382 @@
+//
+//  Copyright 2004, KOBAYASHI Tadashi
+//  $Id$
+//
+//  This program is free software; you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation; either version 2 of the License, or
+//  (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//
+
+options {
+	JAVA_UNICODE_ESCAPE = true ;
+	STATIC = false ;
+}
+
+PARSER_BEGIN(VerilogParser)
+
+package net.sourceforge.veditor.parser;
+
+public class VerilogParser extends VerilogParserBase
+{
+	protected void parse() throws ParseException
+	{
+		modules();
+	}
+}
+
+PARSER_END(VerilogParser)
+
+// operation for /* */
+MORE :
+{
+	"/*" : IN_MULTI_LINE_COMMENT
+}
+
+<IN_MULTI_LINE_COMMENT>
+SKIP :
+{
+	<MULTI_LINE_COMMENT: "*/" > : DEFAULT
+}
+
+<IN_MULTI_LINE_COMMENT>
+MORE :
+{
+	< ~[] >
+}
+
+SKIP :
+{
+	" " | "\t" | "\r" | "\n" | "\f"
+}
+
+SPECIAL_TOKEN :
+{
+	<SINGLE_LINE_COMMENT: (~["\n"]) "//" (~["\n"])* ("\n")>
+|	<DIRECTIVE: "`" ["a"-"z"] (~["\n"])* ("\n")>  // directive must be lower case
+}
+
+TOKEN :
+{
+	<LINE_COMMENT: "//" (~["\n"])* ("\n")>
+|	<MODULE:	"module">
+|	<ENDMODULE: "endmodule">
+|	<BEGIN: 	"begin">
+|	<END:		"end">
+|	<SPECIFY:	"specify">
+|	<ENDSPECIFY:"endspecify">
+|	<IF:		"if">
+|	<ELSE:		"else">
+|	<WHILE:		"while">
+|	<FOR:		"for">
+|	<CASE:		"case">
+|	<CASEX:		"casex">
+|	<ENDCASE:	"endcase">
+|	<FUNCTION:	"function">
+|	<ENDFUNCTION: "endfunction">
+|	<TASK:		"task">
+|	<ENDTASK:	"endtask">
+|	<PORT_HEAD: ( "input" | "output" | "inout") >
+|	<STMT_HEAD: (
+		"parameter" | "integer" | "real" | "wire" | "reg" | "time" |
+		"assign" | "defparam" | "tri0" | "tri1" | "pullup" | "pulldown" |
+		"buf"
+	)>
+|	<BLOCK_HEAD: ( "always" | "initial" )>
+|	<LPAREN:	"(">
+|	<RPAREN:	")">
+|	<LBRACE: 	"{" >
+|	<RBRACE: 	"}" >
+|	<LBRACKET:	"[" >
+|	<RBRACKET:	"]" >
+|	<EOS:		";">
+|	<PARA:		"#">
+|	<AT:		"@">
+|	<BQ:		"`">
+|	<DOLLAR:	"$">
+|	<COMMA:		",">
+|	<IDENT: 	([ "a"-"z", "A"-"Z", "0"-"9", "_"])+>
+|	<SPC_CHAR:	~[]>
+|	<OTHER:		"[.]">
+}
+
+void modules() :
+{
+	Token name ;
+	Token end ;
+}
+{
+	(
+		<LINE_COMMENT>
+	|
+		<MODULE> name = identifier() [ <LPAREN> skipParen() <RPAREN> ] <EOS>
+		{
+			addModule( name.beginLine, name.image );
+		}
+		( moduleBody() )*
+		end = <ENDMODULE>
+		{
+			endModule( end.beginLine );
+		}
+	)*
+}
+
+void moduleBody() :
+{
+	Token	module, inst, iend ;
+}
+{
+		LOOKAHEAD( 5 )
+		lineComment()
+	|	<PORT_HEAD> port()
+	|	<STMT_HEAD> skipTo( EOS )
+	|	<BLOCK_HEAD> statement()
+	|	<SPECIFY> skipTo( ENDSPECIFY )
+	|	<FUNCTION> function()
+	|	<TASK> task()
+	|	module = identifier() [ "#" ( identifier() | <LPAREN> skipParen() <RPAREN> ) ]
+		inst = identifier() "(" skipParen() ")" iend = ";"
+		{
+			addElement( module.beginLine, iend.endLine, module.image, inst.image );
+		}
+}
+
+Token identifier() :
+{
+	Token token ;
+}
+{
+	[ "`" ] token = <IDENT>
+	{
+		return token ;
+	}
+}
+
+void lineComment() :
+{
+	Token comment ;
+}
+{
+	comment = <LINE_COMMENT>
+	{
+		addComment( comment.beginLine, comment.image );
+	}
+}
+
+void port() :
+{
+	Token port ;
+}
+{
+	[ "[" skipTo(RBRACKET) ]
+	port = identifier()
+	{
+		addPort( port.beginLine, port.image );
+	}
+	(
+		","
+		port = identifier()
+		{
+			addPort( port.beginLine, port.image );
+		}
+	)*
+	";"
+	
+}
+
+void delay() :
+{
+}
+{
+	( "@" | "#" ) ( "(" skipParen() ")" | identifier() )
+}
+
+void statement() :
+{
+}
+{
+	( <LINE_COMMENT> )*
+	pureStatement()
+	( LOOKAHEAD(1) <LINE_COMMENT> )*
+}
+
+void pureStatement() :
+{
+}
+{
+	[ delay() ]
+	(	";"
+	|	<STMT_HEAD> skipTo( EOS )
+	|	ifStatement()
+	|	block()
+	|	"$" skipTo( EOS )
+	|	"{" skipTo( EOS )
+	|	identifier() skipTo( EOS )
+	|	caseStatement()
+	|	whileStatement()
+	|	forStatement()
+	)
+}
+
+void block() :
+{
+}
+{
+	<BEGIN>
+	( LOOKAHEAD(1) <LINE_COMMENT> )* 
+	( pureStatement() ( LOOKAHEAD(1) <LINE_COMMENT> )* )*
+	<END>
+}
+void function() :
+{
+	Token name, end ;
+}
+{
+	[ "[" skipBracket() "]" ]
+	name = identifier()
+	end = skipTo( ENDFUNCTION )
+	{
+		addElement( name.beginLine, end.endLine, "function", name.image );
+	}
+}
+
+void task() :
+{
+	Token name, end ;
+}
+{
+	[ "[" skipBracket() "]" ]
+	name = identifier()
+	end = skipTo( ENDTASK )
+	{
+		addElement( name.beginLine, end.endLine, "task", name.image );
+	}
+}
+
+void ifStatement() :
+{
+}
+{
+	<IF> "(" skipParen() ")" statement()
+	[ LOOKAHEAD(1) <ELSE> statement() ]
+}
+
+void caseStatement() :
+{
+}
+{
+	(<CASE>|<CASEX>) skipToEndcase()
+}
+
+void whileStatement() :
+{
+}
+{
+	<WHILE> "(" skipParen() ")" statement()
+}
+
+void forStatement() :
+{
+}
+{
+	<FOR> "(" skipParen() ")" statement()
+}
+
+JAVACODE
+Token skipTo( int skip )
+{
+	Token token ;
+	for(;;)
+	{
+		token = getToken( 1 );
+		if ( token.kind == EOF )
+			break ;
+		if ( token.kind == skip )
+		{
+			getNextToken();
+			break ;
+		}
+		getNextToken();
+	}
+	return token ;
+}
+
+JAVACODE
+void skipParen()
+{
+	Token token ;
+	int nesting = 1 ;
+	for(;;)
+	{
+		token = getToken( 1 );
+		if ( token.kind == EOF )
+			break ;
+		if ( token.kind == LPAREN )
+			nesting++;
+		if ( token.kind == RPAREN )
+		{
+			nesting--;
+			if ( nesting == 0 )
+				break;
+		}
+		getNextToken();
+	}
+}
+
+JAVACODE
+void skipBracket()
+{
+	Token token ;
+	int nesting = 1 ;
+	for(;;)
+	{
+		token = getToken( 1 );
+		if ( token.kind == EOF )
+			break ;
+		if ( token.kind == LBRACKET )
+			nesting++;
+		if ( token.kind == RBRACKET )
+		{
+			nesting--;
+			if ( nesting == 0 )
+				break;
+		}
+		getNextToken();
+	}
+}
+
+
+JAVACODE
+void skipToEndcase()
+{
+	Token token ;
+	int nesting = 1 ;
+	for(;;)
+	{
+		token = getToken( 1 );
+		if ( token.kind == EOF )
+			break ;
+		if ( token.kind == CASE )
+			nesting++;
+		if ( token.kind == ENDCASE )
+		{
+			nesting--;
+			if ( nesting == 0 )
+			{
+				getNextToken();
+				break;
+			}
+		}
+		getNextToken();
+	}
+}
+
