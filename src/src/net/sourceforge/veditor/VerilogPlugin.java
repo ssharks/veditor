@@ -39,11 +39,12 @@ public class VerilogPlugin extends AbstractUIPlugin
 		plugin = this;
 	}
 
-	public VerilogPlugin()
-	{
-		super();
-		plugin = this;
-	}
+//	for eclipse 3.0
+//	public VerilogPlugin()
+//	{
+//		super();
+//		plugin = this;
+//	}
 
 //	move to VerilogPreferenceInitializer
 	protected void initializeDefaultPreferences(IPreferenceStore store)
