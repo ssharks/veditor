@@ -88,9 +88,9 @@ SKIP :
 
 SPECIAL_TOKEN :
 {
-	<SINGLE_LINE_COMMENT: "//" (~["\n"])* ("\n")>
-|	<DELSE:     "`else" (~["\n"])* ("\n")> : IN_ELSE_BLOCK
-|	<DIRECTIVE: "`" ["a"-"z"] (~["\n"])* ("\n")>  // directive must be lower case
+	<SINGLE_LINE_COMMENT: "//" (~["\n"])* >
+|	<DELSE:     "\n`else" > : IN_ELSE_BLOCK
+|	<DIRECTIVE: "\n`" ["a"-"z"] (~["\n"])* >  // directive must be lower case
 }
 
 TOKEN :
