@@ -32,23 +32,26 @@ import org.eclipse.ui.editors.text.FileDocumentProvider;
 
 public class VerilogDocumentProvider extends FileDocumentProvider
 {
-	private static IProject currentProject ;
-
 	protected IDocument createDocument(Object element) throws CoreException
 	{
-		IDocument document = super.createDocument(element);
+		IDocument document = null;
 
 		if ( element instanceof IFileEditorInput )
 		{
-			// カレントのプロジェクトを検索する
-			IFile file = ((IFileEditorInput)element).getFile();
+			// find project
+			IFileEditorInput input = (IFileEditorInput)element;
+			IFile file = input.getFile();
 			IContainer parent = file.getParent();
 			while( parent instanceof IFolder )
 			{
 				parent = parent.getParent();
 			}
-			if ( parent instanceof IProject )
-				currentProject = (IProject)parent ;
+			if (parent instanceof IProject)
+			{
+				document = new VerilogDocument((IProject)parent);
+				if (setDocumentContent(document, input, getEncoding(element)) == false )
+					document = null;
+			}
 		}
 		if (document != null)
 		{
@@ -64,13 +67,7 @@ public class VerilogDocumentProvider extends FileDocumentProvider
 		}
 		return document;
 	}
-
-	/**
-	 * @return	カレントのプロジェクト
-	 */
-	public static IProject getCurrentProject()
-	{
-		return currentProject;
-	}
-
 }
+
+
+

@@ -21,7 +21,10 @@ package net.sourceforge.veditor.editor;
 
 import java.io.StringReader;
 
-import org.eclipse.jface.text.IDocument;
+import net.sourceforge.veditor.parser.Module;
+import net.sourceforge.veditor.parser.Segment;
+import net.sourceforge.veditor.parser.VerilogParser;
+
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 
@@ -36,14 +39,14 @@ public class VerilogContentOutlineProvider implements ITreeContentProvider
 	 */
 	public Object[] getChildren(Object parentElement)
 	{
-		if ( parentElement instanceof VerilogSegment )
+		if ( parentElement instanceof Module )
 		{
-			VerilogSegment mod = (VerilogSegment)parentElement ;
+			Module mod = (Module)parentElement ;
 			int size = mod.size();
 			Object[] elements = new Object[size] ;
 		
 			for( int i = 0 ; i < size ; i++ )
-				elements[i] = mod.getInstance( i );
+				elements[i] = mod.getElement( i );
 			return elements; 
 		}
 		return null ;
@@ -54,9 +57,9 @@ public class VerilogContentOutlineProvider implements ITreeContentProvider
 	 */
 	public Object getParent(Object element)
 	{
-		if ( element instanceof VerilogSegment )
+		if ( element instanceof Segment )
 		{
-			VerilogSegment mod = (VerilogSegment)element;
+			Segment mod = (Segment)element;
 			return (Object)mod.getParent();
 		}
 		return null;
@@ -67,9 +70,9 @@ public class VerilogContentOutlineProvider implements ITreeContentProvider
 	 */
 	public boolean hasChildren(Object element)
 	{
-		if ( element instanceof VerilogSegment )
+		if ( element instanceof Module )
 		{
-			VerilogSegment mod = (VerilogSegment)element ;
+			Module mod = (Module)element ;
 			return mod.size() >= 1 ;
 		}
 		return false;
@@ -80,8 +83,8 @@ public class VerilogContentOutlineProvider implements ITreeContentProvider
 	 */
 	public Object[] getElements(Object inputElement)
 	{
-		IDocument doc = (IDocument)inputElement;
-		parse(doc.get());
+		VerilogDocument doc = (VerilogDocument)inputElement;
+		parse(doc);
 		int size = parser.size();
 		Object[] elements = new Object[size];
 
@@ -95,6 +98,8 @@ public class VerilogContentOutlineProvider implements ITreeContentProvider
 	 */
 	public void dispose()
 	{
+		parser.dispose();
+		parser = null;
 	}
 
 	/*
@@ -106,17 +111,11 @@ public class VerilogContentOutlineProvider implements ITreeContentProvider
 
 	private VerilogParser parser ;
 
-	public void parse(String text)
+	private void parse(VerilogDocument doc)
 	{
-		parser = new VerilogParser( new StringReader(text) );
-		try
-		{
-			parser.parse();
-		}
-		catch (ParseException e)
-		{
-			System.out.println( e );
-		}
+		String text = doc.get();
+		parser = new VerilogParser(new StringReader(text));
+		parser.parse(doc.getProject());
 	}
 }
 

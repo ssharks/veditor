@@ -19,55 +19,110 @@
 
 package net.sourceforge.veditor.editor;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+
+import net.sourceforge.veditor.parser.Module;
+import net.sourceforge.veditor.parser.ModuleList;
+
+import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextViewer;
-import org.eclipse.jface.text.contentassist.*;
+import org.eclipse.jface.text.contentassist.CompletionProposal;
+import org.eclipse.jface.text.contentassist.ICompletionProposal;
+import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
+import org.eclipse.jface.text.contentassist.IContextInformation;
+import org.eclipse.jface.text.contentassist.IContextInformationValidator;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
 
 /**
- * コンテンツアシスト<p>
- * とりあえずごく簡単なパターンのみ
+ * content assist<p/>
+ * simple templates and module instantiation
  */
 public class VerilogCompletionProcessor implements IContentAssistProcessor
 {
-	public ICompletionProposal[] computeCompletionProposals(ITextViewer viewer, int documentOffset)
+	public ICompletionProposal[] computeCompletionProposals(
+		ITextViewer viewer,
+		int documentOffset)
 	{
-		ICompletionProposal[] result = new ICompletionProposal[4];
-		IDocument doc = viewer.getDocument();
+		VerilogDocument doc = (VerilogDocument)viewer.getDocument();
 
-		result[0] = createBeginEnd(doc, documentOffset);
-		result[1] = createAlways(doc, documentOffset);
-		result[2] = createFunction(doc, documentOffset);
-		result[3] = createTask(doc, documentOffset);
+		String match = getMatchingWord(doc.get(), documentOffset);
+		int length = match.length();  // replace length
 
+		//  simple template
+		if (length == 0)
+		{
+			ICompletionProposal[] result = new ICompletionProposal[4];
+			result[0] = createBeginEnd(doc, documentOffset);
+			result[1] = createAlways(doc, documentOffset);
+			result[2] = createFunction(doc, documentOffset);
+			result[3] = createTask(doc, documentOffset);
+			return result;
+		}
+
+		//  module instantiation
+		ModuleList mlist = ModuleList.find(doc.getProject());
+		String[] mnames = mlist.getModuleNames();
+		ArrayList matchList = new ArrayList();
+		for (int i = 0; i < mnames.length; i++)
+		{
+			if (mnames[i].length() >= length
+				&& mnames[i].substring(0, length).equals(match))
+			{
+				matchList.add(mnames[i]);
+			}
+		}
+		
+		ICompletionProposal[] result = new ICompletionProposal[matchList.size()];
+		for (int i = 0; i < matchList.size(); i++)
+		{
+			result[i] =
+				new InstanceCompletionProposal(
+					doc.getProject(),
+					(String)matchList.get(i),
+					documentOffset,
+					length);
+		}
 		return result;
 	}
+	
+	private String getMatchingWord(String text, int offset)
+	{
+		int start = offset;
+		while(start > 0)
+		{
+			start--;
+			char c = text.charAt(start);
+			if (Character.isJavaIdentifierPart(c) == false)
+				return text.substring(start+1, offset);
+		}
+		return text.substring(0, offset);
+	}
 
-	/*** begin/endのコンテンツアシストを作る */
+
+	//  code templates
 	private ICompletionProposal createBeginEnd(IDocument doc, int offset)
 	{
-		// カレント行のインデント
-		String indent;
-		indent = getIndent(doc, offset);
+		String indent = getIndent(doc, offset);
 		String str = "begin\n" + indent + "\t\n" + indent + "end";
 		int cursor = 7 + indent.length();
 		return getCompletionProposal(str, offset, cursor, "begin/end");
 	}
-
 	private ICompletionProposal createAlways(IDocument doc, int offset)
 	{
 		String first = "always @(posedge clk) begin\n\t";
 		String second = "\nend\n";
 		return getCompletionProposal(first + second, offset, first.length(), "always");
 	}
-
 	private ICompletionProposal createFunction(IDocument doc, int offset)
 	{
 		String first = "function ";
 		String second = ";\nbegin\n\t\nend\nendfunction\n";
 		return getCompletionProposal(first + second, offset, first.length(), "function");
 	}
-
 	private ICompletionProposal createTask(IDocument doc, int offset)
 	{
 		String first = "task ";
@@ -75,7 +130,9 @@ public class VerilogCompletionProcessor implements IContentAssistProcessor
 		return getCompletionProposal(first + second, offset, first.length(), "task");
 	}
 
-	/** インデントの文字列を得る */
+	/**
+	 * get indent string
+	 */
 	private String getIndent(IDocument doc, int documentOffset)
 	{
 		try
@@ -119,10 +176,7 @@ public class VerilogCompletionProcessor implements IContentAssistProcessor
 		return null;
 	}
 
-	//
-	//  ContentInformationはサポートしない
-	//
-
+	//  ContentInformation is not supported
 	public IContextInformation[] computeContextInformation(ITextViewer viewer, int documentOffset)
 	{
 		return null;
@@ -137,4 +191,90 @@ public class VerilogCompletionProcessor implements IContentAssistProcessor
 	{
 		return null;
 	}
+	
+	private class InstanceCompletionProposal implements ICompletionProposal
+	{
+		private IProject proj;
+		private String name;
+		private int offset, length;
+
+		public InstanceCompletionProposal(
+			IProject proj,
+			String name,
+			int offset,
+			int length)
+		{
+			this.proj = proj;
+			this.name = name;
+			this.offset = offset;
+			this.length = length;
+		}
+
+		public void apply(IDocument document)
+		{
+			ModuleList mlist = ModuleList.find(proj);
+			Module module = mlist.findModule(name);
+			if (module == null)
+				return;
+			
+			StringBuffer replace = new StringBuffer( name + " " + name + "(\n\t" );
+			Iterator i = module.getPortIterator();
+			int column = 0 ;
+			while (i.hasNext())
+			{
+				String port = i.next().toString();
+				String append = "." + port + "(" + port + ")";
+				if (column + append.length() >= 80)
+				{
+					column = 0;
+					replace.append("\n\t");
+				}
+				replace.append(append);
+				column += append.length();
+
+				if (i.hasNext())
+					replace.append(", ");
+			}
+			replace.append("\n);");
+			
+			try
+			{
+				document.replace(offset-length, length, replace.toString() );
+			}
+			catch (BadLocationException e)
+			{}
+		}
+
+		public Point getSelection(IDocument document)
+		{
+			return null;
+		}
+
+		public String getAdditionalProposalInfo()
+		{
+			return null;
+		}
+
+		public String getDisplayString()
+		{
+			return name ;
+		}
+
+		public Image getImage()
+		{
+			return null;
+		}
+
+		public IContextInformation getContextInformation()
+		{
+			return null;
+		}
+	}
 }
+
+
+
+
+
+
+

@@ -19,6 +19,8 @@
 
 package net.sourceforge.veditor.editor;
 
+import net.sourceforge.veditor.parser.Segment;
+
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.viewers.ISelection;
@@ -66,8 +68,8 @@ public class VerilogContentOutlinePage extends ContentOutlinePage
 		//  emptyÇÃèÍçáÇÕresetHighlightRangeÇµÇ»Ç¢
 		if (!selection.isEmpty())
 		{
-			VerilogSegment mod =
-				(VerilogSegment) ((IStructuredSelection)selection).getFirstElement();
+			Segment mod =
+				(Segment) ((IStructuredSelection)selection).getFirstElement();
 			IDocument doc = editor.getDocument();
 
 			int line = mod.getLine() - 1;

@@ -63,7 +63,7 @@ public class VerilogScanner extends RuleBasedScanner
 		String[] words = {
 			"module", "endmodule",
 			"assign", "always", "initial",
-			"wire", "reg", "input", "output", "inout",
+			"wire", "reg", "input", "output", "inout", "time",
 			"if", "else", "for", "while", "case", "endcase",
 			"function", "endfunction", "task", "endtask",
 			"begin", "end", "parameter", "fork", "join", "integer" };
