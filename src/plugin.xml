@@ -3,7 +3,7 @@
 <plugin
    id="net.sourceforge.veditor"
    name="verilog plugin"
-   version="0.2.4"
+   version="0.3.0"
    provider-name="tadashi"
    class="net.sourceforge.veditor.VerilogPlugin">
 
