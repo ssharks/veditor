@@ -52,6 +52,7 @@ public class Element extends Segment implements Comparable
 
 	public int compareTo(Object arg)
 	{
-		return toString().compareTo(arg);
+		String str = toString();
+		return str.compareTo(arg.toString());
 	}
 }
