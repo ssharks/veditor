@@ -30,13 +30,11 @@ import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.ui.views.contentoutline.ContentOutline;
 import org.eclipse.ui.views.contentoutline.ContentOutlinePage;
 
 public class HdlContentOutlinePage extends ContentOutlinePage
 {
 	private HdlEditor editor;
-	private ContentOutline outline;
 
 	public HdlContentOutlinePage(HdlEditor editor)
 	{

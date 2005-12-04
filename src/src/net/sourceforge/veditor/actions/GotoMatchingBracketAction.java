@@ -93,7 +93,7 @@ public class GotoMatchingBracketAction extends AbstractAction
 		int closeLen = close.length();
 		while (pos < len)
 		{
-			String ref = text.substring(pos, pos + 1);
+			// String ref = text.substring(pos, pos + 1);
 			if (testBracket(text, pos, open, openLen))
 				level++;
 			if (testBracket(text, pos, close, closeLen))
