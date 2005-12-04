@@ -9,7 +9,6 @@
 
    <runtime>
       <library name="veditor.jar"/>
-      <export name="*"/>
    </runtime>
    <requires>
       <import plugin="org.eclipse.ui"/>
