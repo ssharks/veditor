@@ -62,14 +62,19 @@ public class HdlScanner extends RuleBasedScanner
 			"wait", "wand", "weak0", "weak1", "while", "wire", "wor", "xnor",
 			"xor"};
 
-	private static final String[] vhdlWords = {"begin", "end", "if", "else",
-			"for", "while", "case", "library", "use", "entity", "architecture",
-			"is", "of", "generic", "port", "process", "constant", "procedure",
-			"signal", "shared", "variable", "type", "subtype", "file", "alias",
-			"attribute", "component", "disconnect", "group", "block", "assert",
-			"generate", "with", "elsif", "in", "out", "inout", "buffer",
-			"linkage", "return", "when", "then", "and", "or", "to", "downto",
-			"map"};
+	private static final String[] vhdlWords = { "abs", "access", "after",
+			"alias", "all", "and", "architecture", "array", "assert",
+			"attribute", "begin", "block", "body", "buffer", "bus", "case",
+			"component", "configuration", "constant", "disconnect", "downto",
+			"else", "elsif", "end", "entity", "exit", "file", "for",
+			"function", "generate", "generic", "guarded", "if", "in", "inout",
+			"is", "label", "library", "linkage", "loop", "map", "mod", "nand",
+			"new", "next", "nor", "not", "null", "of", "on", "open", "or",
+			"others", "out", "pakage", "port", "procedure", "process", "range",
+			"record", "register", "rem", "report", "return", "select",
+			"severity", "signal", "subtype", "then", "to", "transport", "type",
+			"units", "until", "use", "variable ", "wait", "when", "while",
+			"with", "xor" };
 
 	private HdlScanner(ColorManager manager, boolean isVerilog)
 	{

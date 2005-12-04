@@ -113,6 +113,8 @@ TOKEN :
 |	<BLOCK:		"block">
 |	<ASSERT:	"assert">
 |	<GENERATE:	"generate">
+|	<TO:		"to">
+|	<RANGE:		"range">
 |	<WITH:		"with">
 |	<MODE:		( "in" | "out" | "inout" | "buffer" | "linkage" )>
 |	<LPAREN:	"(" >
@@ -154,9 +156,10 @@ void modules() :
 		<GENERIC> "(" skipParen() ")" <EOS>
 	|	<PORT> "(" port() ( ";" port() )* ")" <EOS>
 	)*
-	<END> [ <ENTITY> ] identifier() <EOS>
+	<END> [ <ENTITY> ] [ identifier() ] <EOS>
 	<ARCHITECTURE> identifier() <OF> identifier() <IS>
 	moduleBody()
+	[ identifier() ]
 	end = <EOS>
 	{
 		endModule( end.beginLine );
@@ -180,7 +183,10 @@ void port() :
 		}
 	)*
 	":" <MODE> identifier()
-	[ "(" skipParen() ")" ]
+	(
+		<RANGE> identifier() <TO> identifier()
+	|	[ "(" skipParen() ")" ]
+	)
 }
 
 void moduleBody() :
@@ -246,7 +252,11 @@ void statement() :
 					addInstance( ident.beginLine, iend.endLine, module.image, ident.image );
 				}
 			|	( <IF> | <FOR> ) skipTo( GENERATE )
-				<BEGIN> ( statement() )* <END> <GENERATE> [identifier()] <EOS>
+				(
+					<BEGIN> ( statement() )* 
+				|	statement()
+				)
+				<END> <GENERATE> [identifier()] <EOS>
 			)
 			{endStatement();}
 		|	{beginStatement();} [ "(" skipParen() ")" ] skipTo( EOS )

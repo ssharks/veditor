@@ -31,6 +31,7 @@ import org.eclipse.jface.text.rules.MultiLineRule;
 import org.eclipse.jface.text.rules.RuleBasedPartitionScanner;
 import org.eclipse.jface.text.rules.SingleLineRule;
 import org.eclipse.jface.text.rules.Token;
+import org.eclipse.jface.text.rules.WordPatternRule;
 import org.eclipse.jface.text.rules.WordRule;
 
 /**
@@ -39,45 +40,42 @@ import org.eclipse.jface.text.rules.WordRule;
 abstract public class HdlPartitionScanner extends RuleBasedPartitionScanner
 {
 	public static final String DOXYGEN_COMMENT = "__hdl_doxygen_comment";
+
 	public static final String SINGLE_LINE_COMMENT = "__hdl_singleline_comment";
+
 	public static final String MULTI_LINE_COMMENT = "__hdl_multiline_comment";
+
 	public static final String STRING = "__hdl_string";
-	
+
 	public static HdlPartitionScanner createVerilogPartitionScanner()
 	{
 		return new VerilogPartitionScanner();
 	}
-	
+
 	public static HdlPartitionScanner createVhdlPartitionScanner()
 	{
 		return new VhdlPartitionScanner();
 	}
-	
+
 	public static String[] getContentTypes()
 	{
-		return new String[] {
-				DOXYGEN_COMMENT,
-				SINGLE_LINE_COMMENT,
-				MULTI_LINE_COMMENT,
-				STRING
-		};
+		return new String[] { DOXYGEN_COMMENT, SINGLE_LINE_COMMENT, MULTI_LINE_COMMENT,
+				STRING };
 	}
+
 	public static HdlTextAttribute[] getContentTypeAttributes()
 	{
 		// must be same sequence with getContentTypes
-		return new HdlTextAttribute[] {
-				HdlTextAttribute.DOXYGEN_COMMENT,
+		return new HdlTextAttribute[] { HdlTextAttribute.DOXYGEN_COMMENT,
 				HdlTextAttribute.SINGLE_LINE_COMMENT,
-				HdlTextAttribute.MULTI_LINE_COMMENT,
-				HdlTextAttribute.STRING
-		};
+				HdlTextAttribute.MULTI_LINE_COMMENT, HdlTextAttribute.STRING };
 	}
 
 	private HdlPartitionScanner()
 	{
 		super();
 	}
-	
+
 	private static class VerilogPartitionScanner extends HdlPartitionScanner
 	{
 		public VerilogPartitionScanner()
@@ -113,6 +111,48 @@ abstract public class HdlPartitionScanner extends RuleBasedPartitionScanner
 			rules.toArray(result);
 			setPredicateRules(result);
 		}
+
+		/**
+		 * Word rule for empty comments.
+		 */
+		private static class EmptyCommentRule extends WordRule implements IPredicateRule
+		{
+			private IToken successToken;
+
+			public EmptyCommentRule(IToken successToken)
+			{
+				super(new EmptyCommentDetector());
+				this.successToken = successToken;
+				addWord("/**/", this.successToken);
+			}
+
+			public IToken evaluate(ICharacterScanner scanner, boolean resume)
+			{
+				return evaluate(scanner);
+			}
+
+			public IToken getSuccessToken()
+			{
+				return successToken;
+			}
+
+			/**
+			 * Detector for empty comments.
+			 */
+			private static class EmptyCommentDetector implements IWordDetector
+			{
+				public boolean isWordStart(char c)
+				{
+					return (c == '/');
+				}
+
+				public boolean isWordPart(char c)
+				{
+					return (c == '*' || c == '/');
+				}
+			}
+
+		}
 	}
 
 	private static class VhdlPartitionScanner extends HdlPartitionScanner
@@ -131,51 +171,26 @@ abstract public class HdlPartitionScanner extends RuleBasedPartitionScanner
 
 			// strings.
 			rules.add(new SingleLineRule("\"", "\"", string, '\\'));
-			rules.add(new SingleLineRule("\'", "\'", string, '\\'));
+			rules.add(new WordPatternRule(new StdLogicDetector(), "\'", "\'", string));
 
 			IPredicateRule[] result = new IPredicateRule[rules.size()];
 			rules.toArray(result);
 			setPredicateRules(result);
 		}
-	}
-	
-	/**
-	 * Detector for empty comments.
-	 */
-	private static class EmptyCommentDetector implements IWordDetector
-	{
-		public boolean isWordStart(char c)
-		{
-			return (c == '/');
-		}
 
-		public boolean isWordPart(char c)
+		private static class StdLogicDetector implements IWordDetector
 		{
-			return (c == '*' || c == '/');
+			public boolean isWordStart(char c)
+			{
+				return (c == '\'');
+			}
+
+			public boolean isWordPart(char c)
+			{
+				String words = "UX01ZWLH-";
+				return (c == '\'') || (words.indexOf(c) != -1);
+			}
 		}
 	}
 
-	/**
-	 * Word rule for empty comments.
-	 */
-	private static class EmptyCommentRule extends WordRule implements IPredicateRule
-	{
-		private IToken successToken;
-		public EmptyCommentRule(IToken successToken)
-		{
-			super(new EmptyCommentDetector());
-			this.successToken = successToken;
-			addWord("/**/", this.successToken); //$NON-NLS-1$
-		}
-
-		public IToken evaluate(ICharacterScanner scanner, boolean resume)
-		{
-			return evaluate(scanner);
-		}
-
-		public IToken getSuccessToken()
-		{
-			return successToken;
-		}
-	}
 }
