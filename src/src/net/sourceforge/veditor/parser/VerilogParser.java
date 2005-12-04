@@ -112,7 +112,7 @@ class VerilogParser extends VerilogParserCore implements IParser
 			System.out.println(file);
 			System.out.println(e);
 
-			VerilogPlugin.println(file.toString() + e.toString());
+			VerilogPlugin.println(file.toString() + "\n" + e.toString());
 		}
 	}
 	private IFile file;
