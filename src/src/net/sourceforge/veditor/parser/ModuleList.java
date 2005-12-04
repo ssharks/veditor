@@ -40,9 +40,16 @@ public final class ModuleList
 {
 	private static Set projectList = new HashSet();
 	private static ModuleList current;
+	private static ModuleList nullList = new ModuleList(null);
 
 	public static void setCurrent(IProject proj)
 	{
+		if (proj == null)
+		{
+			current = nullList;
+			return;
+		}
+			
 		if (current != null && current.toString().equals(proj.toString()))
 			return;
 
@@ -65,10 +72,12 @@ public final class ModuleList
 	}
 	public static ModuleList find(IProject proj)
 	{
+		if (proj == null)
+			return null;
 		Iterator i = projectList.iterator();
 		while (i.hasNext())
 		{
-			ModuleList mods = (ModuleList)i.next();
+			ModuleList mods = (ModuleList) i.next();
 			if (mods.toString().equals(proj.toString()))
 				return mods;
 		}

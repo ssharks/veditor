@@ -19,6 +19,9 @@
 
 package net.sourceforge.veditor.editor;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -26,8 +29,9 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentPartitioner;
-import org.eclipse.jface.text.rules.DefaultPartitioner;
+import org.eclipse.jface.text.rules.FastPartitioner;
 import org.eclipse.ui.IFileEditorInput;
+import org.eclipse.ui.IPathEditorInput;
 import org.eclipse.ui.editors.text.FileDocumentProvider;
 
 public abstract class HdlDocumentProvider extends FileDocumentProvider
@@ -53,14 +57,30 @@ public abstract class HdlDocumentProvider extends FileDocumentProvider
 				if (!setDocumentContent(document, input, getEncoding(element)))
 					document = null;
 			}
-			if (document != null)
+		}
+		else if (element instanceof IPathEditorInput)
+		{
+			IPathEditorInput input = (IPathEditorInput) element;
+			document = createHdlDocument(null, null);
+			FileInputStream contentStream = null;
+			try
 			{
-				HdlPartitionScanner scanner = document.createPartitionScanner();
-				IDocumentPartitioner partitioner = new DefaultPartitioner(scanner,
-						HdlPartitionScanner.getContentTypes());
-				partitioner.connect(document);
-				document.setDocumentPartitioner(partitioner);
+				contentStream = new FileInputStream(input.getPath().toFile());
+				setDocumentContent(document, contentStream, getEncoding(element));
 			}
+			catch (FileNotFoundException e)
+			{
+				e.printStackTrace();
+				document = null;
+			}
+		}
+		if (document != null)
+		{
+			HdlPartitionScanner scanner = document.createPartitionScanner();
+			IDocumentPartitioner partitioner = new FastPartitioner(scanner,
+					HdlPartitionScanner.getContentTypes());
+			partitioner.connect(document);
+			document.setDocumentPartitioner(partitioner);
 		}
 		return document;
 	}

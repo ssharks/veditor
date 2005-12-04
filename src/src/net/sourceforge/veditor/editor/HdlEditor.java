@@ -29,10 +29,7 @@ import net.sourceforge.veditor.parser.Module;
 import net.sourceforge.veditor.parser.ModuleList;
 import net.sourceforge.veditor.parser.Segment;
 
-import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.ui.actions.IJavaEditorActionDefinitionIds;
@@ -46,7 +43,6 @@ import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
@@ -198,21 +194,6 @@ abstract public class HdlEditor extends TextEditor
 		super.doSetInput(input);
 		setInputPages(input);
 	}
-	private IProject findProject(IEditorInput input)
-	{
-		if (input instanceof IFileEditorInput)
-		{
-			IFile file = ((IFileEditorInput)input).getFile();
-			IContainer parent = file.getParent();
-			while (parent instanceof IFolder)
-			{
-				parent = parent.getParent();
-			}
-			if (parent instanceof IProject)
-				return (IProject) parent;
-		}
-		return null;
-	}
 
 	public Object getAdapter(Class required)
 	{
@@ -231,13 +212,15 @@ abstract public class HdlEditor extends TextEditor
 		{
 			if (modulePage == null)
 			{
-				modulePage = new ModuleHierarchyPage(this);
-				if (getEditorInput() != null)
-					modulePage.setInput(getEditorInput());
+				if (getHdlDocument().getProject() != null)
+				{
+					modulePage = new ModuleHierarchyPage(this);
+					if (getEditorInput() != null)
+						modulePage.setInput(getEditorInput());
+				}
 			}
 			return modulePage;
 		}
-
 		return super.getAdapter(required);
 	}
 
