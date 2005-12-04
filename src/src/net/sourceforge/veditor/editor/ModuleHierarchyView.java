@@ -18,7 +18,6 @@
 //
 package net.sourceforge.veditor.editor;
 
-import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
@@ -32,7 +31,6 @@ import org.eclipse.ui.part.PageBookView;
  */
 public class ModuleHierarchyView extends PageBookView
 {
-	private TreeViewer viewer;
 	private static String defaultMessage = "Module Hierarchy is not available";
 
 	public ModuleHierarchyView()
