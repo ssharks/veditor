@@ -49,14 +49,6 @@ public final class HdlTextAttribute
 		return new TextAttribute(colorManager.getColor(color), null, style);
 	}
 	
-	private RGB getColor()
-	{
-		if (color == null)
-			return new RGB(0,0,0);
-		else
-			return color;
-	}
-
 	public static void init()
 	{
 		readColor(SINGLE_LINE_COMMENT, "SingleLineComment");
