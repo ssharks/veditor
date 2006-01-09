@@ -40,6 +40,6 @@ public class VerilogDocument extends HdlDocument
 	
 	public IParser createParser(Reader reader)
 	{
-		return ParserFactory.createVerilogParser(reader);
+		return ParserFactory.createVerilogParser(reader, getFile());
 	}
 }

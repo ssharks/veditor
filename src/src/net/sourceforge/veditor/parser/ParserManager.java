@@ -18,23 +18,33 @@
 //
 package net.sourceforge.veditor.parser;
 
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import net.sourceforge.veditor.VerilogPlugin;
+
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
 
 /**
  * manage module port and instance,
  * It is owned by VerilogParser or VhdlParser
  */
-public class ModuleParserManager 
+public class ParserManager 
 {
 	private int context = IParser.OUT_OF_MODULE;
+	private IParser parser;
 
 	//  depend on calling parse or getContext
 	private boolean updateDatabase;
 
+	public ParserManager(IParser parser)
+	{
+		this.parser = parser;
+	}
+	
 	private Module getCurrentModule()
 	{
 		int size = mods.size();
@@ -55,7 +65,7 @@ public class ModuleParserManager
 	}
 	private String currentModuleName;
 
-	// called by VerilogParserCore or VhdlParserCore 
+	// called by VerilogParser or VhdlParser
 	protected void addModule(int begin, String name, IFile file)
 	{
 		context = IParser.IN_MODULE;
@@ -149,13 +159,53 @@ public class ModuleParserManager
 		this.updateDatabase = updateDatabase;
 	}
 
-	public int getContext()
+	private int getContext()
 	{
 		return context;
 	}
 
-	public void setContext(int context)
+	private void setContext(int context)
 	{
 		this.context = context;
 	}
+
+	public int parseContext()
+	{
+		setUpdateDatabase(false);
+		setContext(IParser.OUT_OF_MODULE);
+		try
+		{
+			parser.parse();
+		}
+		catch (ParseException e)
+		{
+		}
+		return getContext();
+	}
+
+	public void parse(IProject project, IFile file)
+	{
+		setUpdateDatabase(true);
+		setContext(IParser.OUT_OF_MODULE);
+		ModuleList.setCurrent(project);
+		try
+		{
+			parser.parse();
+		}
+		catch (ParseException e)
+		{
+			if (e.currentToken != null)
+				endModule(e.currentToken.endLine);
+			//System.out.println(file);
+			//System.out.println(e);
+
+			VerilogPlugin.println(file.toString() + "\n" + e.toString());
+		}
+	}
+	
+	public void parseLineComment(Reader reader)
+	{
+		parser.parseLineComment(reader);
+	}
+
 }

@@ -21,6 +21,8 @@ package net.sourceforge.veditor.parser;
 import java.io.IOException;
 import java.io.Reader;
 
+import org.eclipse.core.resources.IFile;
+
 /**
  * generate Verilog or VHDL parser
  */
@@ -42,16 +44,17 @@ abstract public class ParserFactory
 //			return null;
 //	}
 	
-	public static IParser createVerilogParser(Reader reader)
+	public static IParser createVerilogParser(Reader reader, IFile file)
 	{
-		return new VerilogParser(new AsciiReader(reader));
+		return new VerilogParser(new AsciiReader(reader), file);
 	}
 
-	public static IParser createVhdlParser(Reader reader)
+	public static IParser createVhdlParser(Reader reader, IFile file)
 	{
-		return new VhdlParser(new AsciiReader(reader));
+		return new VhdlParser(new AsciiReader(reader), file);
 	}
-	
+
+
 	/**
 	 *	Wrapper of reader to ignore two bytes code because of JavaCC bug.
 	 *	It may be no problem. The two bytes characters are allowed in comment only.

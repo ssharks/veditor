@@ -24,9 +24,9 @@ import java.io.StringReader;
 import net.sourceforge.veditor.actions.FormatAction;
 import net.sourceforge.veditor.actions.GotoMatchingBracketAction;
 import net.sourceforge.veditor.actions.OpenDeclarationAction;
-import net.sourceforge.veditor.parser.IParser;
 import net.sourceforge.veditor.parser.Module;
 import net.sourceforge.veditor.parser.ModuleList;
+import net.sourceforge.veditor.parser.ParserManager;
 import net.sourceforge.veditor.parser.Segment;
 
 import org.eclipse.core.resources.IFile;
@@ -258,20 +258,20 @@ abstract public class HdlEditor extends TextEditor
 		return getSourceViewer();
 	}
 
-	public Segment[] parse()
+	private Segment[] parse()
 	{
 		HdlDocument doc = getHdlDocument();
 		if (doc != null)
 		{
-			IParser parser = doc.createParser(new StringReader(doc.get()));
-			parser.parse(doc.getProject(), doc.getFile());
+			ParserManager manager = doc.createParserManager(new StringReader(doc.get()));
+			manager.parse(doc.getProject(), doc.getFile());
 
-			int size = parser.size();
+			int size = manager.size();
 			Segment[] elements = new Segment[size];
 			for (int i = 0; i < size; i++)
-				elements[i] = parser.getModule(i);
+				elements[i] = manager.getModule(i);
 
-			parser.dispose();
+			manager.dispose();
 			return elements;
 		}
 		return null;

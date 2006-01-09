@@ -37,7 +37,7 @@ public abstract class VerilogParserCore
 	protected abstract void beginStatement();
 	protected abstract void endStatement();
 
-	protected void parse() throws ParseException
+	public void parse() throws ParseException
 	{
 		modules();
 	}

@@ -44,6 +44,8 @@ public class VerilogCompletionProcessor extends HdlCompletionProcessor
 			matchList.add(createFunction(doc, offset, length));
 		if (isMatch(replace, "task"))
 			matchList.add(createTask(doc, offset, length));
+		if (isMatch(replace, "generate"))
+			matchList.add(createGenerate(doc, offset, length));
 
 		//  reserved word
 		String[] rwords = {"assign ", "integer ", "parameter "};
@@ -90,7 +92,8 @@ public class VerilogCompletionProcessor extends HdlCompletionProcessor
 		return matchList;
 	}
 
-	//  code templates
+	// code templates
+	// TODO: must refactor
 	private ICompletionProposal createBeginEnd(IDocument doc, int offset, int length)
 	{
 		String indent = getIndent(doc, offset);
@@ -121,6 +124,12 @@ public class VerilogCompletionProcessor extends HdlCompletionProcessor
 		String first = "task ";
 		String second = ";\nbegin\n\t\nend\nendtask\n";
 		return getCompletionProposal(first + second, offset, length, first.length(), "task");
+	}
+	private ICompletionProposal createGenerate(IDocument doc, int offset, int length)
+	{
+		String first = "generate\n";
+		String second = "\nendgenerate\n";
+		return getCompletionProposal(first + second, offset, length, first.length(), "generate");
 	}
 
 	private class VerilogInstanceCompletionProposal extends

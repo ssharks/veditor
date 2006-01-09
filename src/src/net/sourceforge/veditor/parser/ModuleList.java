@@ -219,11 +219,12 @@ public final class ModuleList
 			InputStreamReader reader = new InputStreamReader(file.getContents());
 			IParser parser;
 			if (isVerilog)
-				parser = ParserFactory.createVerilogParser(reader);
+				parser = ParserFactory.createVerilogParser(reader, file);
 			else
-				parser = ParserFactory.createVhdlParser(reader);
-			parser.parse(project, file);
-			parser.dispose();
+				parser = ParserFactory.createVhdlParser(reader, file);
+			ParserManager manager = parser.getManager();
+			manager.parse(project, file);
+			manager.dispose();
 		}
 		catch (CoreException e)
 		{

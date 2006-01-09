@@ -26,6 +26,7 @@ import java.util.List;
 import net.sourceforge.veditor.parser.IParser;
 import net.sourceforge.veditor.parser.Module;
 import net.sourceforge.veditor.parser.ModuleList;
+import net.sourceforge.veditor.parser.ParserManager;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.text.BadLocationException;
@@ -57,10 +58,10 @@ abstract public class HdlCompletionProcessor implements IContentAssistProcessor
 		String moduleName = "";
 		try
 		{
-			IParser parser = doc.createParser(new StringReader(doc.get(0,
+			ParserManager manager = doc.createParserManager(new StringReader(doc.get(0,
 					documentOffset - length)));
-			context = parser.getContext();
-			moduleName = parser.getCurrentModuleName();
+			context = manager.parseContext();
+			moduleName = manager.getCurrentModuleName();
 		}
 		catch (BadLocationException e)
 		{

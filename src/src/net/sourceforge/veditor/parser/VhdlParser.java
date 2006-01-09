@@ -23,27 +23,27 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.Iterator;
 
-import net.sourceforge.veditor.VerilogPlugin;
-
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IProject;
 
 /**
- * implementation class of VerilogParser<p/>
+ * implementation class of VhdlParserCore<p/>
  * for separating definition from JavaCC code
  */
 class VhdlParser extends VhdlParserCore implements IParser
 {
-	public VhdlParser(Reader reader)
+	private IFile file;
+	private ParserManager manager;
+
+	public VhdlParser(Reader reader, IFile file)
 	{
 		super(reader);
+		this.file = file;
+		manager = new ParserManager(this);
 	}
 
-	ModuleParserManager manager = new ModuleParserManager();
-
-	public String getCurrentModuleName()
+	public ParserManager getManager()
 	{
-		return manager.getCurrentModuleName();
+		return manager;
 	}
 
 	// called by VhdlParserCore
@@ -78,55 +78,6 @@ class VhdlParser extends VhdlParserCore implements IParser
 	protected void endStatement()
 	{
 		manager.endStatement();
-	}
-
-	//  called by editor
-	public Segment getModule(int n)
-	{
-		return manager.getModule(n);
-	}
-	public int size()
-	{
-		return manager.size();
-	}
-
-	public void dispose()
-	{
-		manager.dispose();
-	}
-
-	public void parse(IProject project, IFile file)
-	{
-		manager.setUpdateDatabase(true);
-		manager.setContext(OUT_OF_MODULE);
-		ModuleList.setCurrent(project);
-		this.file = file;
-		try
-		{
-			parse();
-		}
-		catch (ParseException e)
-		{
-			endModule(e.currentToken.endLine);
-			System.out.println(file);
-			System.out.println(e);
-			VerilogPlugin.println(file.toString() + "\n" + e.toString());
-		}
-	}
-	private IFile file;
-
-	public int getContext()
-	{
-		manager.setUpdateDatabase(false);
-		manager.setContext(OUT_OF_MODULE);
-		try
-		{
-			parse();
-		}
-		catch (ParseException e)
-		{
-		}
-		return manager.getContext();
 	}
 
 	/**

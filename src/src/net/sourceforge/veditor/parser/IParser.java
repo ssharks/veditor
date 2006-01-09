@@ -20,23 +20,14 @@ package net.sourceforge.veditor.parser;
 
 import java.io.Reader;
 
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IProject;
-
 public interface IParser
 {
 	public static final int OUT_OF_MODULE = 0;
 	public static final int IN_MODULE = 1;
 	public static final int IN_STATEMENT = 2;
 
-	public String getCurrentModuleName();
-
-	public Segment getModule(int n);
-	public int size();
-	public void parse(IProject project, IFile file);
-	public int getContext();
-	public void dispose();
-
+	public ParserManager getManager();
+	public void parse() throws ParseException;
 	public void parseLineComment(Reader reader);
 }
 

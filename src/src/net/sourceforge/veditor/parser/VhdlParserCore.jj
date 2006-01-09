@@ -38,7 +38,7 @@ public abstract class VhdlParserCore
 	protected abstract void beginStatement();
 	protected abstract void endStatement();
 
-	protected void parse() throws ParseException
+	public void parse() throws ParseException
 	{
 		modules();
 	}

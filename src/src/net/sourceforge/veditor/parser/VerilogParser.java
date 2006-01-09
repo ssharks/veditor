@@ -23,10 +23,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.Iterator;
 
-import net.sourceforge.veditor.VerilogPlugin;
-
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IProject;
 
 /**
  * implementation class of VerilogParserCore<p/>
@@ -34,19 +31,22 @@ import org.eclipse.core.resources.IProject;
  */
 class VerilogParser extends VerilogParserCore implements IParser
 {
-	public VerilogParser(Reader reader)
+	private IFile file;
+	private ParserManager manager;
+
+	public VerilogParser(Reader reader, IFile file)
 	{
 		super(reader);
+		this.file = file;
+		manager = new ParserManager(this);
 	}
-
-	ModuleParserManager manager = new ModuleParserManager();
-
-	public String getCurrentModuleName()
+	
+	public ParserManager getManager()
 	{
-		return manager.getCurrentModuleName();
+		return manager;
 	}
 
-	// called by VhdlParserCore
+	// called by VerilogParserCore
 	protected void addModule(int begin, String name)
 	{
 		manager.addModule(begin, name, file);
@@ -80,57 +80,6 @@ class VerilogParser extends VerilogParserCore implements IParser
 		manager.endStatement();
 	}
 
-	//  called by editor
-	public Segment getModule(int n)
-	{
-		return manager.getModule(n);
-	}
-	public int size()
-	{
-		return manager.size();
-	}
-
-	public void dispose()
-	{
-		manager.dispose();
-	}
-
-	public void parse(IProject project, IFile file)
-	{
-		manager.setUpdateDatabase(true);
-		manager.setContext(OUT_OF_MODULE);
-		ModuleList.setCurrent(project);
-		this.file = file;
-		try
-		{
-			parse();
-		}
-		catch (ParseException e)
-		{
-			if (e.currentToken != null)
-				endModule(e.currentToken.endLine);
-			System.out.println(file);
-			System.out.println(e);
-
-			VerilogPlugin.println(file.toString() + "\n" + e.toString());
-		}
-	}
-	private IFile file;
-
-	public int getContext()
-	{
-		manager.setUpdateDatabase(false);
-		manager.setContext(OUT_OF_MODULE);
-		try
-		{
-			parse();
-		}
-		catch (ParseException e)
-		{
-		}
-		return manager.getContext();
-	}
-	
 	/**
 	 * parse line comment for content outline
 	 */
@@ -220,10 +169,8 @@ class VerilogParser extends VerilogParserCore implements IParser
 		Iterator i = manager.getModuleIterator();
 		while (i.hasNext())
 		{
-			Module mod = (Module)i.next();
-			if (line >= mod.getLine() + mod.getLength())
-				break;
-			if (line >= mod.getLine())
+			Module mod = (Module) i.next();
+			if (mod.getLine() <= line && line < mod.getLine() + mod.getLength())
 			{
 				// System.out.println(comment);
 				mod.addElement(line, line, "//", comment);

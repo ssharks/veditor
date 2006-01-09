@@ -40,7 +40,7 @@ public class VhdlDocument extends HdlDocument
 	
 	public IParser createParser(Reader reader)
 	{
-		return ParserFactory.createVhdlParser(reader);
+		return ParserFactory.createVhdlParser(reader, getFile());
 	}
 
 }

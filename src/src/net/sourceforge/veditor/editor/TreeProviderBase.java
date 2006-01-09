@@ -20,7 +20,7 @@ package net.sourceforge.veditor.editor;
 
 import java.io.StringReader;
 
-import net.sourceforge.veditor.parser.IParser;
+import net.sourceforge.veditor.parser.ParserManager;
 import net.sourceforge.veditor.parser.Segment;
 
 import org.eclipse.jface.viewers.ITreeContentProvider;
@@ -33,10 +33,15 @@ public abstract class TreeProviderBase implements ITreeContentProvider
 	{
 	}
 
+	private ParserManager manager;
+
 	public void dispose()
 	{
-		parser.dispose();
-		parser = null;
+		if (manager != null)
+		{
+			manager.dispose();
+			manager = null;
+		}
 	}
 
 	public Object getParent(Object element)
@@ -58,24 +63,25 @@ public abstract class TreeProviderBase implements ITreeContentProvider
 	{
 		// parse source code and get instance list
 		HdlDocument doc = (HdlDocument)inputElement;
-		IParser parser = parse(doc);
-		int size = parser.size();
+		parse(doc);
+		int size = manager.size();
 		Object[] elements = new Object[size];
 
 		for (int i = 0; i < size; i++)
-			elements[i] = parser.getModule(i);
+			elements[i] = manager.getModule(i);
 		return elements;
 	}
 
-	protected IParser parse(HdlDocument doc)
+	private void parse(HdlDocument doc)
 	{
 		String text = doc.get();
 
-		parser = doc.createParser(new StringReader(text));
-		parser.parse(doc.getProject(), doc.getFile());
-		parser.parseLineComment(new StringReader(text));
-		return parser;
+		manager = doc.createParserManager(new StringReader(text));
+		manager.parse(doc.getProject(), doc.getFile());
+		manager.parseLineComment(new StringReader(text));
 	}
-	private IParser parser;
 }
+
+
+
 
