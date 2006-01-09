@@ -107,6 +107,7 @@ TOKEN :
 |	<ELSE:		"else">
 |	<WHILE:		"while">
 |	<FOR:		"for">
+|	<REPEAT:	"repeat">
 |	<CASE:		"case">
 |	<CASEX:		"casex">
 |	<ENDCASE:	"endcase">
@@ -114,10 +115,13 @@ TOKEN :
 |	<ENDFUNCTION: "endfunction">
 |	<TASK:		"task">
 |	<ENDTASK:	"endtask">
+|	<GENERATE:	"generate">
+|	<ENDGENERATE:	"endgenerate">
 |	<PORT_HEAD: 	( "input" | "output" | "inout") >
-|	<VARIABLE_HEAD: ( "integer" | "real" | "wire" | "reg" | "event" ) >
+|	<VARIABLE_HEAD: ( "integer" | "real" | "wire" | "reg" | "event" | "genvar" ) >
+|	<SIGNED:		"signed">
 |	<STMT_HEAD: (
-		"parameter" | "time" |
+		"parameter" | "localparam" | "time" |
 		"assign" | "defparam" | "tri0" | "tri1" | "pullup" | "pulldown" |
 		"buf"
 	)>
@@ -169,7 +173,8 @@ void argument() :
 	Token ident;
 }
 {
-		<PORT_HEAD> [ "[" skipTo(RBRACKET) ] ident = identifier()
+		<PORT_HEAD> [ variableHead() ] [ "[" skipTo(RBRACKET) ]
+		ident = identifier()
 		{
 			addPort( ident.beginLine, ident.image );
 		}
@@ -182,13 +187,14 @@ void moduleBody() :
 }
 {
 //		LOOKAHEAD( 5 )
-		<PORT_HEAD> {beginStatement();} port() {endStatement();}
-	|	<VARIABLE_HEAD> {beginStatement();} variable() {endStatement();}
+		<PORT_HEAD> [ variableHead() ] {beginStatement();} port() {endStatement();}
+	|	variableHead() {beginStatement();} variable() {endStatement();}
 	|	<STMT_HEAD> {beginStatement();} skipTo( EOS ) {endStatement();}
 	|	<BLOCK_HEAD> {beginStatement();} statement() {endStatement();}
 	|	<SPECIFY> {beginStatement();} skipTo( ENDSPECIFY ) {endStatement();}
 	|	<FUNCTION> {beginStatement();} function() {endStatement();}
 	|	<TASK> {beginStatement();} task() {endStatement();}
+	|	generate()
 	|	module = identifier() 
 		{ beginStatement(); }
 		[ "#" ( identifier() | <LPAREN> skipParen() <RPAREN> ) ]
@@ -197,6 +203,13 @@ void moduleBody() :
 			addInstance( module.beginLine, iend.endLine, module.image, inst.image );
 			endStatement();
 		}
+}
+
+void variableHead() :
+{
+}
+{
+	<VARIABLE_HEAD> [ <SIGNED> ]
 }
 
 Token identifier() :
@@ -276,6 +289,7 @@ void statement() :
 	|	caseStatement()
 	|	whileStatement()
 	|	forStatement()
+	|	repeatStatement()
 	)
 }
 
@@ -313,6 +327,24 @@ void task() :
 	}
 }
 
+void generate() :
+{
+}
+{
+	<GENERATE>
+	( generateStatement() )*
+	<ENDGENERATE>
+}
+
+void generateStatement() : 
+{
+}
+{
+	generateForStatement()
+|	generateIfStatement()
+|	moduleBody()
+}
+
 void ifStatement() :
 {
 }
@@ -345,6 +377,34 @@ void forStatement() :
 {
 	<FOR> "(" skipParen() ")" statement()
 }
+
+void repeatStatement() :
+{
+}
+{
+	<REPEAT> "(" skipParen() ")" statement()
+}
+
+void generateForStatement() :
+{
+}
+{
+	<FOR> "(" skipParen() ")"
+	<BEGIN>
+	[ ":" identifier() ]
+	( generateStatement() )+
+	<END>
+}
+
+void generateIfStatement() :
+{
+}
+{
+	<IF> "(" skipParen() ")"
+	<BEGIN> ( generateStatement() )+ <END>
+	[ LOOKAHEAD(1) <ELSE> <BEGIN> ( generateStatement() )+ <END> ]
+}
+
 
 JAVACODE
 Token skipTo( int skip )

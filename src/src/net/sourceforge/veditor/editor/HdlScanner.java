@@ -60,7 +60,9 @@ public class HdlScanner extends RuleBasedScanner
 			"task", "time", "tran", "tranif0", "tranif1", "tri", "tri0",
 			"tri1", "triand", "trior", "trireg", "unsigned", "vectoryd",
 			"wait", "wand", "weak0", "weak1", "while", "wire", "wor", "xnor",
-			"xor"};
+			"xor",
+			"generate", "endgenerate", "genvar", "localparam"
+			};
 
 	private static final String[] vhdlWords = { "abs", "access", "after",
 			"alias", "all", "and", "architecture", "array", "assert",
