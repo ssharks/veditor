@@ -46,6 +46,8 @@
 		<mkdir dir="plugins"/>
 		<mkdir dir="${dst}" />
 		<javac
+			target="1.2"
+			source="1.3"
 			debug="on"
 			srcdir="${src};${javacc_generated}"
 			destdir="${dst}">
