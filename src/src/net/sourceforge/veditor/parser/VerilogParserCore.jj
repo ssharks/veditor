@@ -1,5 +1,5 @@
 //
-//  Copyright 2004, KOBAYASHI Tadashi
+//  Copyright 2004, 2006 KOBAYASHI Tadashi
 //  $Id$
 //
 //  This program is free software; you can redistribute it and/or modify
@@ -32,6 +32,7 @@ public abstract class VerilogParserCore
 	protected abstract void endModule(int line);
 	protected abstract void addPort(int line, String portName);
 	protected abstract void addVariable(int line, String varName);
+	protected abstract void addParameter(int line, String name, String value);
 	protected abstract void addElement(int begin, int end, String type, String name);
 	protected abstract void addInstance(int begin, int end, String module, String inst);
 	protected abstract void beginStatement();
@@ -119,9 +120,10 @@ TOKEN :
 |	<ENDGENERATE:	"endgenerate">
 |	<PORT_HEAD: 	( "input" | "output" | "inout") >
 |	<VARIABLE_HEAD: ( "integer" | "real" | "wire" | "reg" | "event" | "genvar" ) >
-|	<SIGNED:		"signed">
+|	<PARAMETER:	"parameter"> 
+|	<SIGNED:	"signed">
 |	<STMT_HEAD: (
-		"parameter" | "localparam" | "time" |
+		"localparam" | "time" |
 		"assign" | "defparam" | "tri0" | "tri1" | "pullup" | "pulldown" |
 		"buf"
 	)>
@@ -188,6 +190,7 @@ void moduleBody() :
 {
 //		LOOKAHEAD( 5 )
 		<PORT_HEAD> [ variableHead() ] {beginStatement();} port() {endStatement();}
+	|	<PARAMETER> {beginStatement();} parameter() {endStatement();}
 	|	variableHead() {beginStatement();} variable() {endStatement();}
 	|	<STMT_HEAD> {beginStatement();} skipTo( EOS ) {endStatement();}
 	|	<BLOCK_HEAD> {beginStatement();} statement() {endStatement();}
@@ -264,6 +267,22 @@ void variable() :
 		";"
 	|	"=" skipTo( EOS )
 	)
+}
+
+void parameter() :
+{
+	Token parameter;
+	Token value;
+}
+{
+	[ "[" skipTo(RBRACKET) ]
+	parameter = identifier() [ "[" skipTo(RBRACKET) ]
+	"="
+	value = skipWord()
+	{
+		addParameter( parameter.beginLine, parameter.image, value.image );
+	}
+	skipTo( EOS )
 }
 
 void delay() :
@@ -405,6 +424,17 @@ void generateIfStatement() :
 	[ LOOKAHEAD(1) <ELSE> <BEGIN> ( generateStatement() )+ <END> ]
 }
 
+
+JAVACODE
+Token skipWord()
+{
+	Token token ;
+	token = getToken( 1 );
+	if ( token.kind == EOF )
+		throw new ParseException("unexpected EOF");
+	getNextToken();
+	return token ;
+}
 
 JAVACODE
 Token skipTo( int skip )

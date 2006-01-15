@@ -20,6 +20,8 @@ package net.sourceforge.veditor.parser;
 
 import java.io.Reader;
 
+import org.eclipse.core.resources.IFile;
+
 public interface IParser
 {
 	public static final int OUT_OF_MODULE = 0;
@@ -27,6 +29,7 @@ public interface IParser
 	public static final int IN_STATEMENT = 2;
 
 	public ParserManager getManager();
+	public IFile getFile();
 	public void parse() throws ParseException;
 	public void parseLineComment(Reader reader);
 }

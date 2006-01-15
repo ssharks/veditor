@@ -82,6 +82,14 @@ public abstract class Module extends Segment
 	{
 		return null;
 	}
+	public Object[] getParameters()
+	{
+		return null;
+	}
+	public Object[] getParameterValues()
+	{
+		return null;
+	}
 	public void addPort(String name)
 	{
 	}
@@ -92,6 +100,9 @@ public abstract class Module extends Segment
 	{
 	}
 	public void addVariable(String str)
+	{
+	}
+	public void addParameter(String str, String value)
 	{
 	}
 	public Module findModule(String str)

@@ -46,6 +46,11 @@ class VerilogParser extends VerilogParserCore implements IParser
 		return manager;
 	}
 
+	public IFile getFile()
+	{
+		return file;
+	}
+
 	// called by VerilogParserCore
 	protected void addModule(int begin, String name)
 	{
@@ -62,6 +67,10 @@ class VerilogParser extends VerilogParserCore implements IParser
 	protected void addVariable(int line, String varName)
 	{
 		manager.addVariable(line, varName);
+	}
+	protected void addParameter(int line, String name, String value)
+	{
+		manager.addParameter(line, name, value);
 	}
 	protected void addElement(int begin, int end, String type, String name)
 	{

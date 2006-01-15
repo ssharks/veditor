@@ -1,5 +1,5 @@
 //
-//  Copyright 2004, KOBAYASHI Tadashi
+//  Copyright 2004, 2005, KOBAYASHI Tadashi
 //  $Id$
 //
 //  This program is free software; you can redistribute it and/or modify
@@ -22,8 +22,6 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
-import net.sourceforge.veditor.VerilogPlugin;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -105,6 +103,15 @@ public class ParserManager
 				module.addVariable(varName);
 		}
 	}
+	protected void addParameter(int line, String name, String value)
+	{
+		if (updateDatabase)
+		{
+			Module module = getCurrentModule();
+			if (module != null)
+				module.addParameter(name, value);
+		}
+	}
 	protected void addElement(int begin, int end, String type, String name)
 	{
 		if (updateDatabase)
@@ -169,6 +176,10 @@ public class ParserManager
 		this.context = context;
 	}
 
+	/**
+	 * analyze context from top of file.
+	 * @return enum of context 
+	 */
 	public int parseContext()
 	{
 		setUpdateDatabase(false);
@@ -182,8 +193,26 @@ public class ParserManager
 		}
 		return getContext();
 	}
+	
 
-	public void parse(IProject project, IFile file)
+	/**
+	 * check syntax. if error, throw exception and caller should show it on GUI
+	 * @throws ParseException
+	 */
+	public void parseSyntax() throws ParseException
+	{
+		setUpdateDatabase(true);
+		setContext(IParser.OUT_OF_MODULE);
+		parser.parse();
+	}
+
+	/**
+	 * parse source code and update module database
+	 * @param project
+	 * @param file
+	 * @return if error, return false
+	 */
+	public boolean parse(IProject project)
 	{
 		setUpdateDatabase(true);
 		setContext(IParser.OUT_OF_MODULE);
@@ -191,6 +220,7 @@ public class ParserManager
 		try
 		{
 			parser.parse();
+			return true;
 		}
 		catch (ParseException e)
 		{
@@ -198,8 +228,8 @@ public class ParserManager
 				endModule(e.currentToken.endLine);
 			//System.out.println(file);
 			//System.out.println(e);
-
-			VerilogPlugin.println(file.toString() + "\n" + e.toString());
+			//VerilogPlugin.println(file.toString() + "\n" + e.toString());
+			return false;
 		}
 	}
 	

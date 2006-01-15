@@ -1,5 +1,5 @@
 //
-//  Copyright 2004, KOBAYASHI Tadashi
+//  Copyright 2004, 2006 KOBAYASHI Tadashi
 //  $Id$
 //
 //  This program is free software; you can redistribute it and/or modify
@@ -33,13 +33,6 @@ public class VerilogPreferenceInitializer extends AbstractPreferenceInitializer
 		Preferences preferences = VerilogPlugin.getPlugin()
 				.getPluginPreferences();
 
-//		setDefaultAttr(preferences, "DoxygenComment", "404080");
-//		setDefaultAttr(preferences, "SingleLineComment", "008080");
-//		setDefaultAttr(preferences, "MultiLineComment", "008080");
-//		setDefaultAttr(preferences, "String", "000080");
-//		setDefaultAttr(preferences, "Default", "000000");
-//		setDefaultAttr(preferences, "KeyWord", "800080");
-
 		setDefaultAttr(preferences, "DoxygenComment", "64,64,128");
 		setDefaultAttr(preferences, "SingleLineComment", "00,128,128");
 		setDefaultAttr(preferences, "MultiLineComment", "00,128,128");
@@ -47,6 +40,8 @@ public class VerilogPreferenceInitializer extends AbstractPreferenceInitializer
 		setDefaultAttr(preferences, "Default", "00,00,00");
 		setDefaultAttr(preferences, "KeyWord", "128,00,128");
 
+		preferences.setDefault("Outline.Comment", true);
+		preferences.setDefault("ContentAssist.ModuleParameter", false);
 		preferences.setDefault("Compile.command", "iverilog -tnull -y . -Wall");
 	}
 	

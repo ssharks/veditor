@@ -1,5 +1,5 @@
 //
-//  Copyright 2004, KOBAYASHI Tadashi
+//  Copyright 2004, 2006 KOBAYASHI Tadashi
 //  $Id$
 //
 //  This program is free software; you can redistribute it and/or modify
@@ -53,7 +53,6 @@ public final class ModuleList
 		if (current != null && current.toString().equals(proj.toString()))
 			return;
 
-		// System.out.println( "set current project " + proj );
 		ModuleList mods = find(proj);
 		if (mods != null)
 		{
@@ -61,7 +60,6 @@ public final class ModuleList
 			return;
 		}
 
-		// System.out.println( "new project " + proj );
 		current = new ModuleList(proj);
 		projectList.add(current);
 		current.construct(proj, proj);
@@ -148,7 +146,7 @@ public final class ModuleList
 
 
 	/**
-	 * refered project
+	 * referred project
 	 */
 	private IProject project;
 
@@ -223,7 +221,7 @@ public final class ModuleList
 			else
 				parser = ParserFactory.createVhdlParser(reader, file);
 			ParserManager manager = parser.getManager();
-			manager.parse(project, file);
+			manager.parse(project);
 			manager.dispose();
 		}
 		catch (CoreException e)
@@ -346,7 +344,7 @@ public final class ModuleList
 		}
 
 		/**
-		 * input/output prots
+		 * input/output ports
 		 */
 		private List ports = new ArrayList();
 		public Object[] getPorts()
@@ -362,6 +360,20 @@ public final class ModuleList
 		{
 			return variables.toArray();
 		}
+		
+		/**
+		 * parameter
+		 */
+		private List parameters = new ArrayList();
+		private List paramvalues = new ArrayList();
+		public Object[] getParameters()
+		{
+			return parameters.toArray();
+		}
+		public Object[] getParameterValues()
+		{
+			return paramvalues.toArray();
+		}
 
 		//  called by parser
 		public void addPort(String name)
@@ -371,6 +383,11 @@ public final class ModuleList
 		public void addVariable(String name)
 		{
 			variables.add(name);
+		}
+		public void addParameter(String name, String value)
+		{
+			parameters.add(name);
+			paramvalues.add(value);
 		}
 		public void addElement(int begin, int end, String typeName, String name)
 		{

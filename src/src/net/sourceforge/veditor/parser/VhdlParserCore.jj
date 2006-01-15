@@ -1,5 +1,5 @@
 //
-//  Copyright 2004, KOBAYASHI Tadashi
+//  Copyright 2004, 2006 KOBAYASHI Tadashi
 //  $Id$
 //
 //  This program is free software; you can redistribute it and/or modify
@@ -33,6 +33,7 @@ public abstract class VhdlParserCore
 	protected abstract void endModule(int line);
 	protected abstract void addPort(int line, String portName);
 	protected abstract void addVariable(int line, String varName);
+	protected abstract void addParameter(int line, String name, String value);
 	protected abstract void addElement(int begin, int end, String type, String name);
 	protected abstract void addInstance(int begin, int end, String module, String inst);
 	protected abstract void beginStatement();
