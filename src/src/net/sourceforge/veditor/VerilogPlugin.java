@@ -1,5 +1,5 @@
 //
-//  Copyright 2004, KOBAYASHI Tadashi
+//  Copyright 2004, 2006 KOBAYASHI Tadashi
 //  $Id$
 //
 //  This program is free software; you can redistribute it and/or modify
@@ -19,8 +19,11 @@
 
 package net.sourceforge.veditor;
 
+import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.ui.console.ConsolePlugin;
 import org.eclipse.ui.console.IConsole;
 import org.eclipse.ui.console.IConsoleManager;
@@ -35,6 +38,7 @@ public class VerilogPlugin extends AbstractUIPlugin
 {
 	private static final String CONSOLE_NAME = "veditor";
 	private static VerilogPlugin plugin;
+	private static final String MARKER_TYPE = "org.eclipse.core.resources.problemmarker";
 
 	public VerilogPlugin()
 	{
@@ -83,6 +87,16 @@ public class VerilogPlugin extends AbstractUIPlugin
 		out.println(msg);
 	}
 	
+	/**
+	 * FIXME:
+	 * I cannot use clearConsole!
+	 * When clearConsole is called, println is ignored
+	 */
+	public static void clear()
+	{
+		findConsole(CONSOLE_NAME).clearConsole();
+	}
+	
 	private static MessageConsole findConsole(String name)
 	{
 		IConsoleManager man = ConsolePlugin.getDefault().getConsoleManager();
@@ -98,6 +112,44 @@ public class VerilogPlugin extends AbstractUIPlugin
 		man.addConsoles(new IConsole[]{newConsole});
 		return newConsole;
 	}
-	
+
+	public static void setProblemMarker(IResource file, int lineNumber,
+			String msg)
+	{
+		setProblemMarker(file, "error", lineNumber, msg);
+	}
+
+	public static void setProblemMarker(IResource file, String type,
+			int lineNumber, String msg)
+	{
+		int level;
+		if (type.indexOf("warning") != -1)
+			level = IMarker.SEVERITY_WARNING;
+		else
+			level = IMarker.SEVERITY_ERROR;
+		try
+		{
+			IMarker marker = file.createMarker(MARKER_TYPE);
+			marker.setAttribute(IMarker.SEVERITY, level);
+			marker.setAttribute(IMarker.LINE_NUMBER, lineNumber);
+			marker.setAttribute(IMarker.MESSAGE, msg);
+		}
+		catch (CoreException e)
+		{
+		}
+	}
+
+	public static void clearProblemMarker(IResource file)
+	{
+		try
+		{
+			IMarker[] markers = file.findMarkers(MARKER_TYPE, true, 1);
+			for (int i = 0; i < markers.length; i++)
+				markers[i].delete();
+		}
+		catch (CoreException e)
+		{
+		}
+	}
 }
 

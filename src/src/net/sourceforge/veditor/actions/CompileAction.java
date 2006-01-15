@@ -29,15 +29,11 @@ import net.sourceforge.veditor.VerilogPlugin;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.action.IAction;
 
 public class CompileAction extends AbstractActionDelegate
 {
-	private static final String MARKER_TYPE = "org.eclipse.core.resources.problemmarker";
-
 	public CompileAction()
 	{
 	}
@@ -53,15 +49,7 @@ public class CompileAction extends AbstractActionDelegate
 				+ " " + file.getName();
 		
 		String msg = executeCompiler(dir, command);
-		try
-		{
-			IMarker[] markers = folder.findMarkers(MARKER_TYPE, true, 1);
-			for (int i = 0; i < markers.length; i++)
-				markers[i].delete();
-		}
-		catch (CoreException e)
-		{
-		}
+		VerilogPlugin.clearProblemMarker(folder);
 
 		// show message in console
 		VerilogPlugin.println(msg);
@@ -112,13 +100,13 @@ public class CompileAction extends AbstractActionDelegate
 						int lineNumber = Integer.parseInt(segs[1]);
 						if (segs[2].indexOf("parse error") != -1)
 						{
-							setProblemMarker(resource, "error", lineNumber,
-									"parse error");
+							VerilogPlugin.setProblemMarker(resource, "error",
+									lineNumber, "parse error");
 						}
 						else if (segs.length >= 4)
 						{
-							setProblemMarker(resource, segs[2], lineNumber,
-									segs[3]);
+							VerilogPlugin.setProblemMarker(resource, segs[2],
+									lineNumber, segs[3]);
 						}
 					}
 					catch (NumberFormatException e)
@@ -128,27 +116,7 @@ public class CompileAction extends AbstractActionDelegate
 			}
 		}
 	}
-	
-	private void setProblemMarker(IResource file, String type, int lineNumber,
-			String msg)
-	{
-		int level;
-		if (type.indexOf("warning") != -1)
-			level = IMarker.SEVERITY_WARNING;
-		else
-			level = IMarker.SEVERITY_ERROR;
-		try
-		{
-			IMarker marker = file.createMarker(MARKER_TYPE);
-			marker.setAttribute(IMarker.SEVERITY, level);
-			marker.setAttribute(IMarker.LINE_NUMBER, lineNumber);
-			marker.setAttribute(IMarker.MESSAGE, msg);
-		}
-		catch (CoreException e)
-		{
-		}
-	}
-		
+
 	private class MessageThread extends Thread
 	{
 		private Reader reader;
