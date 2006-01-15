@@ -3,7 +3,7 @@
 <plugin
    id="net.sourceforge.veditor"
    name="verilog plugin"
-   version="0.3.0"
+   version="0.3.2"
    provider-name="tadashi"
    class="net.sourceforge.veditor.VerilogPlugin">
 
@@ -65,9 +65,15 @@
    <extension
          point = "org.eclipse.ui.preferencePages">
       <page
-            id="net.sourceforge.veditor.editor.PreferencePage"
-	        class="net.sourceforge.veditor.editor.PreferencePage"
+            id="net.sourceforge.veditor.preference.PreferencePage"
+	        class="net.sourceforge.veditor.preference.PreferencePage"
             name="Verilog Editor">
+      </page>
+      <page
+            category="net.sourceforge.veditor.preference.PreferencePage"
+            id="net.sourceforge.veditor.preference.ColorPreferencePage"
+	        class="net.sourceforge.veditor.preference.ColorPreferencePage"
+            name="Color">
       </page>
    </extension>
 
