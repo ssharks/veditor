@@ -1,5 +1,5 @@
 //
-//  Copyright 2004, KOBAYASHI Tadashi
+//  Copyright 2004, 2006 KOBAYASHI Tadashi
 //  $Id$
 //
 //  This program is free software; you can redistribute it and/or modify
@@ -21,6 +21,7 @@ package net.sourceforge.veditor.editor;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.sourceforge.veditor.VerilogPlugin;
 import net.sourceforge.veditor.parser.Module;
 import net.sourceforge.veditor.parser.ModuleList;
 
@@ -93,7 +94,7 @@ public class VerilogCompletionProcessor extends HdlCompletionProcessor
 	}
 
 	// code templates
-	// TODO: must refactor
+	// TODO: need refactoring
 	private ICompletionProposal createBeginEnd(IDocument doc, int offset, int length)
 	{
 		String indent = getIndent(doc, offset);
@@ -148,7 +149,31 @@ public class VerilogCompletionProcessor extends HdlCompletionProcessor
 		{
 			String name = module.toString();
 			String indent = "\n" + getIndentString();
-			StringBuffer replace = new StringBuffer(name + " " + name + "(");
+
+			boolean isParams = VerilogPlugin
+					.getPreferenceBoolean("ContentAssist.ModuleParameter");
+			Object[] params = module.getParameters();
+			isParams = isParams && (params.length > 0);
+
+			StringBuffer replace = new StringBuffer(name + " ");
+			
+			if (isParams)
+			{
+				Object[] values = module.getParameterValues();
+				replace.append("#(");
+				for (int i = 0; i < params.length; i++)
+				{
+					replace.append(indent + "\t");
+					String param = params[i].toString();
+					String value = values[i].toString();
+					replace.append("." + param + "(" + value + ")");
+					if (i < params.length - 1)
+						replace.append(",");
+				}
+				replace.append("\n)\n");
+			}
+			
+			replace.append(name + "(");
 			Object[] ports = module.getPorts();
 			for (int i = 0; i < ports.length; i++)
 			{

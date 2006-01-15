@@ -19,6 +19,7 @@
 package net.sourceforge.veditor.editor;
 
 import java.io.Reader;
+import java.io.StringReader;
 
 import net.sourceforge.veditor.parser.IParser;
 import net.sourceforge.veditor.parser.ParserManager;
@@ -56,6 +57,11 @@ abstract public class HdlDocument extends Document
 	{
 		IParser parser = createParser(reader);
 		return parser.getManager();
+	}
+
+	public ParserManager createParserManager()
+	{
+		return createParserManager(new StringReader(get()));
 	}
 
 	abstract public HdlPartitionScanner createPartitionScanner();

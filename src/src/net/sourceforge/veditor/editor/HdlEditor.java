@@ -19,13 +19,13 @@
 
 package net.sourceforge.veditor.editor;
 
-import java.io.StringReader;
-
+import net.sourceforge.veditor.VerilogPlugin;
 import net.sourceforge.veditor.actions.FormatAction;
 import net.sourceforge.veditor.actions.GotoMatchingBracketAction;
 import net.sourceforge.veditor.actions.OpenDeclarationAction;
 import net.sourceforge.veditor.parser.Module;
 import net.sourceforge.veditor.parser.ModuleList;
+import net.sourceforge.veditor.parser.ParseException;
 import net.sourceforge.veditor.parser.ParserManager;
 import net.sourceforge.veditor.parser.Segment;
 
@@ -155,6 +155,7 @@ abstract public class HdlEditor extends TextEditor
 	 */
 	private void updatePages()
 	{
+		checkSyntax();
 		if (outlinePage != null)
 			outlinePage.update();
 		if (modulePage != null)
@@ -169,6 +170,29 @@ abstract public class HdlEditor extends TextEditor
 			modulePage.setInput(input);
 	}
 	
+	private void checkSyntax()
+	{
+		HdlDocument doc = getHdlDocument();
+		ParserManager manager = doc.createParserManager();
+		
+		VerilogPlugin.clearProblemMarker(doc.getFile());
+		try
+		{
+			manager.parseSyntax();
+		}
+		catch (ParseException e)
+		{
+			VerilogPlugin.println(doc.getFile().toString());
+			VerilogPlugin.println(e.toString());
+			VerilogPlugin.setProblemMarker(doc.getFile(),
+					e.currentToken.beginLine, e.toString());
+			update();
+		}
+	}
+	
+	/**
+	 * update editor view for problem marker.
+	 */
 	public void update()
 	{
 		try
@@ -177,7 +201,7 @@ abstract public class HdlEditor extends TextEditor
 			int caret = widget.getCaretOffset();
 			int top = widget.getTopIndex();
 			
-			doSetInput(getEditorInput());
+			super.doSetInput(getEditorInput());
 			
 			// widget might change in doSetInput
 			widget = getViewer().getTextWidget();
@@ -263,8 +287,8 @@ abstract public class HdlEditor extends TextEditor
 		HdlDocument doc = getHdlDocument();
 		if (doc != null)
 		{
-			ParserManager manager = doc.createParserManager(new StringReader(doc.get()));
-			manager.parse(doc.getProject(), doc.getFile());
+			ParserManager manager = doc.createParserManager();
+			manager.parse(doc.getProject());
 
 			int size = manager.size();
 			Segment[] elements = new Segment[size];

@@ -62,7 +62,6 @@ public class HdlContentOutlinePage extends ContentOutlinePage
 
 		ISelection selection = event.getSelection();
 
-		//  empty‚Ìê‡‚ÍresetHighlightRange‚µ‚È‚¢
 		if (!selection.isEmpty())
 		{
 			Segment mod =

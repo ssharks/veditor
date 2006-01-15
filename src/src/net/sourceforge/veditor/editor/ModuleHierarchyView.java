@@ -44,7 +44,7 @@ public class ModuleHierarchyView extends PageBookView
 
 	protected IPage createDefaultPage(PageBook book)
 	{
-		//  These are refered from ContentOutline
+		//  These are referred from ContentOutline
 		MessagePage page = new MessagePage();
 		initPage(page);
 		page.createControl(book);
