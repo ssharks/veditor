@@ -108,6 +108,7 @@ TOKEN :
 |	<ELSE:		"else">
 |	<WHILE:		"while">
 |	<FOR:		"for">
+|	<FOREVER:	"forever">
 |	<REPEAT:	"repeat">
 |	<CASE:		"case">
 |	<CASEX:		"casex">
@@ -308,6 +309,7 @@ void statement() :
 	|	caseStatement()
 	|	whileStatement()
 	|	forStatement()
+	|	foreverStatement()
 	|	repeatStatement()
 	)
 }
@@ -395,6 +397,13 @@ void forStatement() :
 }
 {
 	<FOR> "(" skipParen() ")" statement()
+}
+
+void foreverStatement() :
+{
+}
+{
+	<FOREVER> statement()
 }
 
 void repeatStatement() :
