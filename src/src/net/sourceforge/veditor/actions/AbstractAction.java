@@ -35,7 +35,9 @@ public abstract class AbstractAction extends Action
 	{
 		editor = HdlEditor.current();
 		setEnabled(true);
-		setId("net.sourceforge.veditor.veditor." + name);
+		String id = "net.sourceforge.veditor.actions." + name;
+		setId(id);
+		setActionDefinitionId(id);
 		ResourceBundle resource = EditorMessages.getResourceBundle();
 		setText(resource.getString(name + ".label"));
 	}

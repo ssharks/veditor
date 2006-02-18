@@ -8,7 +8,7 @@
 
 	<!-- must be linked with plugin.xml -->
 	<property name="project" value="net.sourceforge.veditor"/>
-	<property name="plugin_version" value="0.3.2"/>
+	<property name="plugin_version" value="0.3.3"/>
 
 	<property name="src" value="src"/>
 	<property name="dst" value="bin"/>

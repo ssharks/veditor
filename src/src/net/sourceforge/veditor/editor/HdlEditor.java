@@ -20,6 +20,7 @@
 package net.sourceforge.veditor.editor;
 
 import net.sourceforge.veditor.VerilogPlugin;
+import net.sourceforge.veditor.actions.CompileAction;
 import net.sourceforge.veditor.actions.FormatAction;
 import net.sourceforge.veditor.actions.GotoMatchingBracketAction;
 import net.sourceforge.veditor.actions.OpenDeclarationAction;
@@ -32,7 +33,6 @@ import net.sourceforge.veditor.parser.Segment;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.jdt.ui.actions.IJavaEditorActionDefinitionIds;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.Separator;
@@ -83,6 +83,11 @@ abstract public class HdlEditor extends TextEditor
 		setInputPages(input);
 	}
 
+	protected void initializeKeyBindingScopes()
+	{
+		setKeyBindingScopes(new String[] { "net.sourceforge.veditor.scope" });
+	}
+
 	public IDocument getDocument()
 	{
 		return getDocumentProvider().getDocument(getEditorInput());
@@ -94,6 +99,7 @@ abstract public class HdlEditor extends TextEditor
 	{
 		super.createActions();
 
+		// add content assist action
 		IAction action;
 		action =
 			new TextOperationAction(
@@ -104,17 +110,11 @@ abstract public class HdlEditor extends TextEditor
 		action.setActionDefinitionId(ITextEditorActionDefinitionIds.CONTENT_ASSIST_PROPOSALS);
 		setAction("ContentAssistProposal", action);
 
-		action = new GotoMatchingBracketAction();
-		action.setActionDefinitionId(IJavaEditorActionDefinitionIds.GOTO_MATCHING_BRACKET);
-		setAction("GotoMatchingBracket", action);
-
-		action = new OpenDeclarationAction();
-		action.setActionDefinitionId(IJavaEditorActionDefinitionIds.OPEN_EDITOR);
-		setAction("OpenDeclaration", action);
-
-		action = new FormatAction();
-		action.setActionDefinitionId(IJavaEditorActionDefinitionIds.FORMAT);
-		setAction("Format", action);
+		// add special actions
+		setAction("GotoMatchingBracket", new GotoMatchingBracketAction());
+		setAction("OpenDeclaration", new OpenDeclarationAction());
+		setAction("Format", new FormatAction());
+		setAction("Compile", new CompileAction());
 	}
 
 //	for content assist?

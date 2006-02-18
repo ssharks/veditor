@@ -3,7 +3,7 @@
 <plugin
    id="net.sourceforge.veditor"
    name="verilog plugin"
-   version="0.3.2"
+   version="0.3.3"
    provider-name="tadashi"
    class="net.sourceforge.veditor.VerilogPlugin">
 
@@ -17,7 +17,6 @@
       <import plugin="org.eclipse.core.runtime"/>
       <import plugin="org.eclipse.jface.text"/>
       <import plugin="org.eclipse.core.resources"/>
-      <import plugin="org.eclipse.jdt.ui"/>
       <import plugin="org.eclipse.ui.views"/>
       <import plugin="org.eclipse.ui.ide"/>
       <import plugin="org.eclipse.ui.console"/>
@@ -48,13 +47,23 @@
    </extension>
 
    <extension
+         point="org.eclipse.ui.perspectives">
+      <perspective
+            name="Verilog/VHDL"
+            icon="icons/pers.gif"
+            class="net.sourceforge.veditor.VerilogPerspective"
+            id="net.sourceforge.veditor.editor.perspective"
+            fixed="true"/>
+   </extension>
+
+   <extension
          point="org.eclipse.ui.views">
       <category
             name="Eclipse Verilog Editor"
             id="veditor">
       </category>
       <view
-            name="Module Hierarchy"
+            name="Hierarchy"
             icon="icons/hierarchy.gif"
             category="veditor"
             class="net.sourceforge.veditor.editor.ModuleHierarchyView"
@@ -78,23 +87,79 @@
    </extension>
 
    <extension
-         point="org.eclipse.ui.editorActions">
-      <editorContribution
-         id="net.sourceforge.veditor.actions"
-         targetID="net.sourceforge.veditor.editor.VerilogEditor">
-         <action
-            id="net.sourceforge.veditor.actions.compile"
-            label="&amp;Compile"
-            accelerator="Ctrl+0"
-            menubarPath="edit/additions"
-            class="net.sourceforge.veditor.actions.CompileAction">
-         </action> 
-      </editorContribution> 
+         point="org.eclipse.core.runtime.preferences">
+      <initializer class="net.sourceforge.veditor.VerilogPreferenceInitializer"/>
    </extension>
 
    <extension
-         point="org.eclipse.core.runtime.preferences">
-      <initializer class="net.sourceforge.veditor.VerilogPreferenceInitializer"/>
+   		 point="org.eclipse.ui.contexts">
+   	   <context
+            name="Editing Verilog/VHDL"
+            parentId="org.eclipse.ui.textEditorScope"
+            description="Editing Verilog/VHDL"
+            id="net.sourceforge.veditor.scope">
+       </context>
+   </extension>
+
+   <extension
+         point="org.eclipse.ui.commands">
+      <category
+            name="Verilog/VHDL Editing"
+            description="Verilog/VHDL editing commands"
+            id="net.sourceforge.veditor.commands">
+      </category>
+      <command
+            name="Format"
+            description="Format region"
+            categoryId="net.sourceforge.veditor.commands"
+            id="net.sourceforge.veditor.actions.Format">
+      </command>
+      <command
+            name="Compile"
+            description="Compile"
+            categoryId="net.sourceforge.veditor.commands"
+            id="net.sourceforge.veditor.actions.Compile">
+      </command>
+      <command
+            name="Matching Bracket"
+            description="Goto Matching Bracket"
+            categoryId="net.sourceforge.veditor.commands"
+            id="net.sourceforge.veditor.actions.GotoMatchingBracket">
+      </command>
+      <command
+            name="Open Declaration"
+            description="Goto Open Declaration"
+            categoryId="net.sourceforge.veditor.commands"
+            id="net.sourceforge.veditor.actions.OpenDeclaration">
+      </command>
+   </extension>
+
+   <extension
+   		 point="org.eclipse.ui.bindings">
+   	 <key
+            sequence="M1+M2+F"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="net.sourceforge.veditor.scope"
+            commandId="net.sourceforge.veditor.actions.Format">
+     </key>
+   	 <key
+            sequence="M1+0"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="net.sourceforge.veditor.scope"
+            commandId="net.sourceforge.veditor.actions.Compile">
+     </key>
+   	 <key
+            sequence="Esc ]"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="net.sourceforge.veditor.scope"
+            commandId="net.sourceforge.veditor.actions.GotoMatchingBracket">
+     </key>
+   	 <key
+            sequence="F3"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="net.sourceforge.veditor.scope"
+            commandId="net.sourceforge.veditor.actions.OpenDeclaration">
+     </key>
    </extension>
 
 </plugin>

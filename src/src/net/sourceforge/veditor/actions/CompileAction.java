@@ -30,15 +30,15 @@ import net.sourceforge.veditor.VerilogPlugin;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.jface.action.IAction;
 
-public class CompileAction extends AbstractActionDelegate
+public class CompileAction extends AbstractAction
 {
 	public CompileAction()
 	{
+		super("Compile");
 	}
 	
-	public void run(IAction action)
+	public void run()
 	{
 		IFile file = getEditor().getHdlDocument().getFile();
 		IContainer parent = file.getParent();

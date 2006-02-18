@@ -21,7 +21,12 @@ package net.sourceforge.veditor.editor;
 
 import java.util.ResourceBundle;
 
-import org.eclipse.jdt.ui.actions.IJavaEditorActionDefinitionIds;
+import net.sourceforge.veditor.actions.CompileAction;
+import net.sourceforge.veditor.actions.FormatAction;
+import net.sourceforge.veditor.actions.GotoMatchingBracketAction;
+import net.sourceforge.veditor.actions.OpenDeclarationAction;
+
+import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.ui.IActionBars;
@@ -35,14 +40,12 @@ import org.eclipse.ui.texteditor.RetargetTextEditorAction;
 public class HdlActionContributor extends TextEditorActionContributor
 {
 	private RetargetTextEditorAction contentAssistProposal;
-	private RetargetTextEditorAction gotoMatchingBracket;
-	private RetargetTextEditorAction openDeclaration;
-	private RetargetTextEditorAction format;
+	private IAction gotoMatchingBracket;
+	private IAction openDeclaration;
+	private IAction format;
+	private IAction compile;
 
 	private static final String CONTENT_ASSIST_PROPOSAL = "ContentAssistProposal";
-	private static final String GOTO_MATCHING_BRACKET = "GotoMatchingBracket";
-	private static final String OPEN_DECLARATION = "OpenDeclaration";
-	private static final String FORMAT = "Format";
 
 	private ResourceBundle resource;
 
@@ -56,17 +59,17 @@ public class HdlActionContributor extends TextEditorActionContributor
 			createAction(
 				CONTENT_ASSIST_PROPOSAL,
 				ITextEditorActionDefinitionIds.CONTENT_ASSIST_PROPOSALS);
-		gotoMatchingBracket =
-			createAction(
-				GOTO_MATCHING_BRACKET,
-				IJavaEditorActionDefinitionIds.GOTO_MATCHING_BRACKET);
-		openDeclaration =
-			createAction(OPEN_DECLARATION, IJavaEditorActionDefinitionIds.OPEN_EDITOR);
-		format = createAction(FORMAT, IJavaEditorActionDefinitionIds.FORMAT);
+		
+		gotoMatchingBracket = new GotoMatchingBracketAction();
+		openDeclaration = new OpenDeclarationAction();
+		format = new FormatAction();
+		compile = new CompileAction();
 	}
+
 	private RetargetTextEditorAction createAction(String name, String id)
 	{
-		RetargetTextEditorAction action = new RetargetTextEditorAction(resource, name + ".");
+		RetargetTextEditorAction action = new RetargetTextEditorAction(
+				resource, name + ".");
 		action.setActionDefinitionId(id);
 		return action;
 	}
@@ -77,29 +80,30 @@ public class HdlActionContributor extends TextEditorActionContributor
 
 		IMenuManager menuManager = bars.getMenuManager();
 
-		IMenuManager editMenu = menuManager.findMenuUsingPath(IWorkbenchActionConstants.M_EDIT);
+		IMenuManager editMenu = menuManager
+				.findMenuUsingPath(IWorkbenchActionConstants.M_EDIT);
 		if (editMenu != null)
 		{
 			editMenu.add(new Separator());
 			editMenu.add(contentAssistProposal);
 			editMenu.add(format);
+			editMenu.add(compile);
 		}
 
-		IMenuManager navigateMenu =
-			menuManager.findMenuUsingPath(IWorkbenchActionConstants.M_NAVIGATE);
+		IMenuManager navigateMenu = menuManager
+				.findMenuUsingPath(IWorkbenchActionConstants.M_NAVIGATE);
 		if (navigateMenu != null)
 		{
-			IMenuManager gotoMenu = navigateMenu.findMenuUsingPath(IWorkbenchActionConstants.GO_TO);
+			IMenuManager gotoMenu = navigateMenu
+					.findMenuUsingPath(IWorkbenchActionConstants.GO_TO);
 			gotoMenu.add(gotoMatchingBracket);
 
 			navigateMenu.add(openDeclaration);
 		}
 	}
 
-	private void setEditorAction(
-		ITextEditor editor,
-		final RetargetTextEditorAction action,
-		String id)
+	private void setEditorAction(ITextEditor editor,
+			final RetargetTextEditorAction action, String id)
 	{
 		action.setAction(getAction(editor, id));
 	}
@@ -113,9 +117,6 @@ public class HdlActionContributor extends TextEditorActionContributor
 			editor = (ITextEditor)part;
 
 		setEditorAction(editor, contentAssistProposal, CONTENT_ASSIST_PROPOSAL);
-		setEditorAction(editor, gotoMatchingBracket, GOTO_MATCHING_BRACKET);
-		setEditorAction(editor, openDeclaration, OPEN_DECLARATION);
-		setEditorAction(editor, format, FORMAT);
 	}
 
 	public void setActiveEditor(IEditorPart part)
