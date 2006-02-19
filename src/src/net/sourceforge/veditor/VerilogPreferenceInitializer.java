@@ -38,7 +38,7 @@ public class VerilogPreferenceInitializer extends AbstractPreferenceInitializer
 		setDefaultAttr(preferences, "MultiLineComment", "00,128,128");
 		setDefaultAttr(preferences, "String", "00,00,128");
 		setDefaultAttr(preferences, "Default", "00,00,00");
-		setDefaultAttr(preferences, "KeyWord", "128,00,128");
+		setDefaultAttr(preferences, "KeyWord", "128,00,128", true);
 
 		preferences.setDefault("Outline.Comment", true);
 		preferences.setDefault("ContentAssist.ModuleParameter", false);
@@ -48,9 +48,15 @@ public class VerilogPreferenceInitializer extends AbstractPreferenceInitializer
 	private void setDefaultAttr(Preferences preferences, String name,
 			String color)
 	{
+		setDefaultAttr(preferences, name, color, false);
+	}
+
+	private void setDefaultAttr(Preferences preferences, String name,
+			String color, boolean bold)
+	{
 		preferences.setDefault("Color." + name, color);
-		preferences.setDefault("Bold.", false);
-		preferences.setDefault("Italic.", false);
+		preferences.setDefault("Bold." + name, bold);
+		preferences.setDefault("Italic." + name, false);
 	}
 }
 

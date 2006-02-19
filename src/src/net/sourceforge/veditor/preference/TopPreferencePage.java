@@ -18,17 +18,15 @@
 //
 package net.sourceforge.veditor.preference;
 
-import net.sourceforge.veditor.editor.HdlTextAttribute;
-
 import org.eclipse.ui.IWorkbench;
 
 /**
- * Preference page
+ * Top Preference page
  */
-public class PreferencePage extends PreferencePageBase
+public class TopPreferencePage extends AbstractSimplePreferencePage
 {
 
-	public PreferencePage()
+	public TopPreferencePage()
 	{
 	}
 
@@ -43,13 +41,6 @@ public class PreferencePage extends PreferencePageBase
 
 	public void init(IWorkbench workbench)
 	{
-	}
-
-	public boolean performOk()
-	{
-		super.performOk();
-		HdlTextAttribute.init();
-		return true;
 	}
 
 }

@@ -24,6 +24,9 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.preference.PreferenceConverter;
+import org.eclipse.swt.graphics.RGB;
 import org.eclipse.ui.console.ConsolePlugin;
 import org.eclipse.ui.console.IConsole;
 import org.eclipse.ui.console.IConsoleManager;
@@ -53,6 +56,14 @@ public class VerilogPlugin extends AbstractUIPlugin
 	{
 		return plugin;
 	}
+	
+	/**
+	 * Returns PreferenceStore
+	 */
+	public static IPreferenceStore getStore()
+	{
+		return getPlugin().getPreferenceStore();
+	}
 
 	/**
 	 * Returns the workspace instance.
@@ -67,7 +78,7 @@ public class VerilogPlugin extends AbstractUIPlugin
 	 */
 	public static String getPreferenceString(String key)
 	{
-		return getPlugin().getPreferenceStore().getString(key);
+		return getStore().getString(key);
 	}
 
 	/**
@@ -75,7 +86,44 @@ public class VerilogPlugin extends AbstractUIPlugin
 	 */
 	public static boolean getPreferenceBoolean(String key)
 	{
-		return getPlugin().getPreferenceStore().getBoolean(key);
+		return getStore().getBoolean(key);
+	}
+	
+	/**
+	 * Returns the RGB from the plugin preferences
+	 */
+	public static RGB getPreferenceColor(String key)
+	{
+		return PreferenceConverter.getColor(getStore(), key);
+	}
+	
+	/**
+	 * set the string to the plugin preferences
+	 */
+	public static void setPreference(String key, String value)
+	{
+		getStore().setValue(key, value);
+	}
+
+	/**
+	 * set the string to the plugin preferences
+	 */
+	public static void setPreference(String key, boolean value)
+	{
+		getStore().setValue(key, value);
+	}
+	
+	/**
+	 * set the RGB to the plugin preferences
+	 */
+	public static void setPreference(String key, RGB rgb)
+	{
+		PreferenceConverter.setValue(getStore(), key, rgb);
+	}
+	
+	public static void setDefaultPreference(String key)
+	{
+		getStore().setToDefault(key);
 	}
 
 	/**

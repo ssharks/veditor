@@ -66,10 +66,6 @@ public final class HdlTextAttribute
 		boolean italic = VerilogPlugin.getPreferenceBoolean("Italic." + key);
 		try
 		{
-//			int rgb = Integer.parseInt(color, 16);
-//			int red = (rgb >> 16) & 0xff;
-//			int green = (rgb >> 8) & 0xff;
-//			int blue = (rgb >> 0) & 0xff;
 			RGB rgb = StringConverter.asRGB(color);
 			target.color = new RGB(rgb.red, rgb.green, rgb.blue);
 

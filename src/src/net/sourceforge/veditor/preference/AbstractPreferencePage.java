@@ -18,49 +18,19 @@
 //
 package net.sourceforge.veditor.preference;
 
-import net.sourceforge.veditor.VerilogPlugin;
-import net.sourceforge.veditor.editor.HdlTextAttribute;
-
-import org.eclipse.jface.preference.BooleanFieldEditor;
-import org.eclipse.jface.preference.FieldEditorPreferencePage;
-import org.eclipse.jface.preference.StringFieldEditor;
+import org.eclipse.jface.preference.PreferencePage;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
-/**
- * Preference page
- */
-abstract public class PreferencePageBase extends FieldEditorPreferencePage
+abstract public class AbstractPreferencePage extends PreferencePage
 		implements IWorkbenchPreferencePage
 {
-
-	public PreferencePageBase()
-	{
-		super(GRID);
-		setPreferenceStore(VerilogPlugin.getPlugin().getPreferenceStore());
-	}
-
-	abstract protected void createFieldEditors();
-
-	protected void addStringField(String name, String label)
-	{
-		addField(new StringFieldEditor(name, label, getFieldEditorParent()));
-	}
-	protected void addBooleanField(String name, String label)
-	{
-		addField(new BooleanFieldEditor(name, label, getFieldEditorParent()));
-	}
+	abstract protected Control createContents(Composite parent);
 
 	public void init(IWorkbench workbench)
 	{
 	}
 
-	public boolean performOk()
-	{
-		super.performOk();
-		HdlTextAttribute.init();
-		return true;
-	}
-
 }
-

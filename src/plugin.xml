@@ -74,12 +74,12 @@
    <extension
          point = "org.eclipse.ui.preferencePages">
       <page
-            id="net.sourceforge.veditor.preference.PreferencePage"
-	        class="net.sourceforge.veditor.preference.PreferencePage"
-            name="Verilog Editor">
+            id="net.sourceforge.veditor.preference.TopPreferencePage"
+	        class="net.sourceforge.veditor.preference.TopPreferencePage"
+            name="Verilog/VHDL Editor">
       </page>
       <page
-            category="net.sourceforge.veditor.preference.PreferencePage"
+            category="net.sourceforge.veditor.preference.TopPreferencePage"
             id="net.sourceforge.veditor.preference.ColorPreferencePage"
 	        class="net.sourceforge.veditor.preference.ColorPreferencePage"
             name="Color">
