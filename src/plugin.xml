@@ -26,7 +26,7 @@
          point="org.eclipse.ui.editors">
       <editor
             name="Verilog Editor"
-            icon="icons/vlog_src.gif"
+            icon="icons/vsrc.gif"
             extensions="v"
             contributorClass="net.sourceforge.veditor.editor.HdlActionContributor"
             class="net.sourceforge.veditor.editor.VerilogEditor"
@@ -38,7 +38,7 @@
          point="org.eclipse.ui.editors">
       <editor
             name="VHDL Editor"
-            icon="icons/vlog_src.gif"
+            icon="icons/vsrc.gif"
             extensions="vhd"
             contributorClass="net.sourceforge.veditor.editor.HdlActionContributor"
             class="net.sourceforge.veditor.editor.VhdlEditor"
@@ -59,7 +59,7 @@
    <extension
          point="org.eclipse.ui.views">
       <category
-            name="Eclipse Verilog Editor"
+            name="Verilog/VHDL Editor"
             id="veditor">
       </category>
       <view
@@ -90,6 +90,29 @@
          point="org.eclipse.core.runtime.preferences">
       <initializer class="net.sourceforge.veditor.VerilogPreferenceInitializer"/>
    </extension>
+   
+   <extension
+         point="org.eclipse.ui.newWizards">
+      <category
+            name="Verilog/VHDL"
+            id="net.sourceforge.veditor.wizard">
+      </category>
+      <wizard
+            name="Verilog file"
+            icon="icons/vsrc.gif"
+            category="net.sourceforge.veditor.wizard"
+            class="net.sourceforge.veditor.wizard.NewVerilogWizard"
+            id="net.sourceforge.veditor.wizard.NewVerilogWizard">
+      </wizard>
+      <wizard
+            name="VHDL file"
+            icon="icons/vsrc.gif"
+            category="net.sourceforge.veditor.wizard"
+            class="net.sourceforge.veditor.wizard.NewVhdlWizard"
+            id="net.sourceforge.veditor.wizard.NewVhdlWizard">
+      </wizard>
+   </extension>
+   
 
    <extension
    		 point="org.eclipse.ui.contexts">
