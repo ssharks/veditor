@@ -1,27 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.0"?>
-<plugin
-   id="net.sourceforge.veditor"
-   name="verilog plugin"
-   version="0.3.3"
-   provider-name="tadashi"
-   class="net.sourceforge.veditor.VerilogPlugin">
-
-   <runtime>
-      <library name="veditor.jar"/>
-   </runtime>
-   <requires>
-      <import plugin="org.eclipse.ui"/>
-      <import plugin="org.eclipse.ui.editors"/>
-      <import plugin="org.eclipse.ui.workbench.texteditor"/>
-      <import plugin="org.eclipse.core.runtime"/>
-      <import plugin="org.eclipse.jface.text"/>
-      <import plugin="org.eclipse.core.resources"/>
-      <import plugin="org.eclipse.ui.views"/>
-      <import plugin="org.eclipse.ui.ide"/>
-      <import plugin="org.eclipse.ui.console"/>
-   </requires>
-   
+<plugin>   
    <extension
          point="org.eclipse.ui.editors">
       <editor
@@ -183,6 +162,17 @@
             contextId="net.sourceforge.veditor.scope"
             commandId="net.sourceforge.veditor.actions.OpenDeclaration">
      </key>
+   </extension>
+
+   <extension
+         id="externalBuilder"
+         name="Verilog/VHDL External Builder"
+         point="org.eclipse.core.resources.builders">
+      <builder>
+         <run
+               class="net.sourceforge.veditor.builder.ExternalBuilder">
+         </run>
+      </builder>
    </extension>
 
 </plugin>
