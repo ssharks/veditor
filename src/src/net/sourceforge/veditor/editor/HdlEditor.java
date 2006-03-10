@@ -184,7 +184,7 @@ abstract public class HdlEditor extends TextEditor
 		{
 			VerilogPlugin.println(doc.getFile().toString());
 			VerilogPlugin.println(e.toString());
-			VerilogPlugin.setProblemMarker(doc.getFile(),
+			VerilogPlugin.setErrorMarker(doc.getFile(),
 					e.currentToken.beginLine, e.toString());
 			update();
 		}

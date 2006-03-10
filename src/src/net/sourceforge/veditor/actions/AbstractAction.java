@@ -1,5 +1,5 @@
 //
-//  Copyright 2004, KOBAYASHI Tadashi
+//  Copyright 2004, 2006, KOBAYASHI Tadashi
 //  $Id$
 //
 //  This program is free software; you can redistribute it and/or modify

@@ -18,18 +18,13 @@
 //
 package net.sourceforge.veditor.actions;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-
 import net.sourceforge.veditor.VerilogPlugin;
+import net.sourceforge.veditor.builder.AbstractMessageParser;
+import net.sourceforge.veditor.builder.ExternalLauncher;
+import net.sourceforge.veditor.builder.MessageParserFactory;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IResource;
 
 public class CompileAction extends AbstractAction
 {
@@ -43,112 +38,22 @@ public class CompileAction extends AbstractAction
 		IFile file = getEditor().getHdlDocument().getFile();
 		IContainer parent = file.getParent();
 		IContainer folder = parent;
-		File dir = folder.getLocation().toFile();
-
+		
 		String command = VerilogPlugin.getPreferenceString("Compile.command")
 				+ " " + file.getName();
+
+		ExternalLauncher launchar = new ExternalLauncher(folder, command);
+		launchar.run();
 		
-		String msg = executeCompiler(dir, command);
-		VerilogPlugin.clearProblemMarker(folder);
+		String msg = launchar.getMessage();
 
-		// show message in console
-		VerilogPlugin.println(msg);
+		AbstractMessageParser[] parsers = MessageParserFactory.createAll();
+		for(int i = 0 ; i < parsers.length ; i++)
+		{
+			parsers[i].parse(folder, msg);
+		}
 
-		parseMessage(msg, folder);
 		getEditor().update();
-	}
-
-	private String executeCompiler(File dir, String command)
-	{
-		//System.out.println(command);
-
-		Runtime runtime = Runtime.getRuntime();
-		try
-		{
-			Process process = runtime.exec(command, null, dir);
-			MessageThread stderr = new MessageThread(process.getErrorStream());
-			MessageThread stdout = new MessageThread(process.getInputStream());
-			stderr.start();
-			stdout.start();
-
-			process.waitFor();
-			
-			return stderr.get() + stdout.get();
-		}
-		catch (IOException e)
-		{
-		}
-		catch (InterruptedException e)
-		{
-		}
-		return "";
-	}
-	
-	private void parseMessage(String msg, IContainer folder)
-	{
-		String[] lines = msg.split("\n");
-		for (int i = 0; i < lines.length; i++)
-		{
-			String[] segs = lines[i].split(":", 4);
-			if (segs.length >= 3)
-			{
-				IResource resource = folder.findMember(segs[0]);
-				if (resource != null)
-				{
-					try
-					{
-						int lineNumber = Integer.parseInt(segs[1]);
-						if (segs[2].indexOf("parse error") != -1)
-						{
-							VerilogPlugin.setProblemMarker(resource, "error",
-									lineNumber, "parse error");
-						}
-						else if (segs.length >= 4)
-						{
-							VerilogPlugin.setProblemMarker(resource, segs[2],
-									lineNumber, segs[3]);
-						}
-					}
-					catch (NumberFormatException e)
-					{
-					}
-				}
-			}
-		}
-	}
-
-	private class MessageThread extends Thread
-	{
-		private Reader reader;
-		private StringBuffer buffer;
-
-		public MessageThread( InputStream is )
-		{
-			reader = new InputStreamReader(new BufferedInputStream(is));
-			buffer = new StringBuffer();
-		}
-		
-		public void run()
-		{
-			int c;
-			try
-			{
-				c = reader.read();
-				while( c != -1 )
-				{
-					buffer.append((char)c);
-					c = reader.read();
-				}
-			}
-			catch (IOException e)
-			{
-			}
-		}
-		
-		public String get()
-		{
-			return buffer.toString();
-		}
 	}
 }
 
