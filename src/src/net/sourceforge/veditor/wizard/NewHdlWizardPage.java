@@ -144,11 +144,12 @@ public class NewHdlWizardPage extends WizardPage
 			IContainer container = (IContainer)resource;
 
 			// check file
+			String moduleName = getModuleName();
 			String fileName = getFileName();
 			IFile file = container.getFile(new Path(fileName));
 			if (file.exists())
 				updateStatus("Module/Entity already exist");
-			else if (fileName.length() == 0)
+			else if (moduleName.length() == 0)
 				updateStatus("Module/Entity name must be specified");
 			else if (fileName.replace('\\', '/').indexOf('/', 1) > 0)
 				updateStatus("Module/Entity name must be valid");

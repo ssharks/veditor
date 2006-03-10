@@ -28,7 +28,7 @@ public class NewVerilogWizard extends NewHdlWizard
 
 	String getInitialContents(String moduleName)
 	{
-		return "module " + moduleName + "();\n" + "endmodule;\n";
+		return "module " + moduleName + "();\n" + "endmodule\n";
 	}
 
 }
