@@ -1,10 +1,20 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: Veditor Plugin 
+Bundle-Name: Verilog/VHDL Plugin 
 Bundle-SymbolicName: net.sourceforge.veditor; singleton:=true
 Bundle-Version: 0.3.3
+Bundle-ClassPath: veditor.jar
 Bundle-Activator: net.sourceforge.veditor.VerilogPlugin
 Bundle-Vendor: tadashi
 Bundle-Localization: plugin
-Require-Bundle: org.eclipse.ui, org.eclipse.ui.editors, org.eclipse.ui.workbench.texteditor, org.eclipse.core.runtime, org.eclipse.jface.text, org.eclipse.core.resources, org.eclipse.ui.views, org.eclipse.ui.ide, org.eclipse.ui.console
+Require-Bundle: 
+ org.eclipse.ui,
+ org.eclipse.ui.editors,
+ org.eclipse.ui.workbench.texteditor,
+ org.eclipse.core.runtime,
+ org.eclipse.jface.text,
+ org.eclipse.core.resources,
+ org.eclipse.ui.views,
+ org.eclipse.ui.ide,
+ org.eclipse.ui.console
 Eclipse-AutoStart: true
