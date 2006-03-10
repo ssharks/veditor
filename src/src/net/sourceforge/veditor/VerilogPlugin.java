@@ -161,10 +161,16 @@ public class VerilogPlugin extends AbstractUIPlugin
 		return newConsole;
 	}
 
-	public static void setProblemMarker(IResource file, int lineNumber,
+	public static void setErrorMarker(IResource file, int lineNumber,
 			String msg)
 	{
 		setProblemMarker(file, "error", lineNumber, msg);
+	}
+
+	public static void setWarningMarker(IResource file, int lineNumber,
+			String msg)
+	{
+		setProblemMarker(file, "warning", lineNumber, msg);
 	}
 
 	public static void setProblemMarker(IResource file, String type,
