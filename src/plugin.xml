@@ -54,13 +54,13 @@
          point = "org.eclipse.ui.preferencePages">
       <page
             id="net.sourceforge.veditor.preference.TopPreferencePage"
-	        class="net.sourceforge.veditor.preference.TopPreferencePage"
+            class="net.sourceforge.veditor.preference.TopPreferencePage"
             name="Verilog/VHDL Editor">
       </page>
       <page
             category="net.sourceforge.veditor.preference.TopPreferencePage"
             id="net.sourceforge.veditor.preference.ColorPreferencePage"
-	        class="net.sourceforge.veditor.preference.ColorPreferencePage"
+            class="net.sourceforge.veditor.preference.ColorPreferencePage"
             name="Color">
       </page>
    </extension>
@@ -90,12 +90,20 @@
             class="net.sourceforge.veditor.wizard.NewVhdlWizard"
             id="net.sourceforge.veditor.wizard.NewVhdlWizard">
       </wizard>
+      <wizard
+            name="Verilog/VHDL project"
+            icon="icons/vsrc.gif"
+            category="net.sourceforge.veditor.wizard"
+            class="net.sourceforge.veditor.wizard.NewProjectWizard"
+            project="true"
+            finalPerspective="net.sourceforge.veditor.editor.perspective"
+            id="net.sourceforge.veditor.wizard.NewProjectWizard">
+      </wizard>
    </extension>
-   
 
    <extension
-   		 point="org.eclipse.ui.contexts">
-   	   <context
+         point="org.eclipse.ui.contexts">
+       <context
             name="Editing Verilog/VHDL"
             parentId="org.eclipse.ui.textEditorScope"
             description="Editing Verilog/VHDL"
@@ -137,43 +145,81 @@
    </extension>
 
    <extension
-   		 point="org.eclipse.ui.bindings">
-   	 <key
+         point="org.eclipse.ui.bindings">
+      <key
             sequence="M1+M2+F"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             contextId="net.sourceforge.veditor.scope"
             commandId="net.sourceforge.veditor.actions.Format">
-     </key>
-   	 <key
+      </key>
+      <key
             sequence="M1+0"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             contextId="net.sourceforge.veditor.scope"
             commandId="net.sourceforge.veditor.actions.Compile">
-     </key>
-   	 <key
+      </key>
+      <key
             sequence="Esc ]"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             contextId="net.sourceforge.veditor.scope"
             commandId="net.sourceforge.veditor.actions.GotoMatchingBracket">
-     </key>
-   	 <key
+      </key>
+      <key
             sequence="F3"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             contextId="net.sourceforge.veditor.scope"
             commandId="net.sourceforge.veditor.actions.OpenDeclaration">
-     </key>
+      </key>
    </extension>
 
    <extension
-         id="externalBuilder"
-         name="Verilog/VHDL External Builder"
+         id="simulateBuilder"
+         name="Verilog/VHDL Simulator"
          point="org.eclipse.core.resources.builders">
-      <builder>
+      <builder 
+            hasNature="true">
          <run
-               class="net.sourceforge.veditor.builder.ExternalBuilder">
+               class="net.sourceforge.veditor.builder.SimulateBuilder">
          </run>
       </builder>
    </extension>
 
+   <extension
+         id="hdlNature"
+         name="Verilog/VHDL Project Nature"
+         point="org.eclipse.core.resources.natures">
+      <runtime>
+         <run
+               class="net.sourceforge.veditor.builder.HdlNature">
+         </run>
+      </runtime>
+      <builder
+            id="net.sourceforge.veditor.simulateBuilder">
+      </builder>
+   </extension>
+
+   <extension
+         point="org.eclipse.ui.ide.projectNatureImages">
+      <image
+            icon="icons/ovr.gif"
+            natureId="net.sourceforge.veditor.hdlNature"
+            id="net.sourceforge.veditor.natureImage">
+      </image>
+   </extension>
+
+   <extension
+         point="org.eclipse.ui.propertyPages">
+      <page
+            adaptable="true"
+            objectClass="org.eclipse.core.resources.IProject"
+            name="Verilog/VHDL Simulator"
+            class="net.sourceforge.veditor.builder.SimulatorPropertyPage"
+            id="net.sourceforge.veditor.simulatorProperty">
+            <filter
+                name="nature"
+                value="net.sourceforge.veditor.hdlNature">
+            </filter>            
+      </page>
+   </extension>
 </plugin>
 
