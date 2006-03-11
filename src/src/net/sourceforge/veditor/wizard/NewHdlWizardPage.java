@@ -58,12 +58,12 @@ public class NewHdlWizardPage extends WizardPage
 		if (extension.equals(".v"))
 		{
 			setTitle("Verilog module");
-			setDescription("This wizard creates a new Verilog module.");
+			setDescription("Create a new Verilog module.");
 		}
 		else
 		{
 			setTitle("VHDL entity");
-			setDescription("This wizard creates a new VHDL entity.");
+			setDescription("Create a new VHDL entity.");
 		}
 		this.selection = selection;
 	}
