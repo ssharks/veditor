@@ -30,6 +30,10 @@ import net.sourceforge.veditor.VerilogPlugin;
 
 import org.eclipse.core.resources.IContainer;
 
+/**
+ * Launch child process
+ * @author tadashi
+ */
 public class ExternalLauncher extends Thread
 {
 	private IContainer folder;
