@@ -66,6 +66,8 @@ public class SimulateBuilder extends IncrementalProjectBuilder
 			}
 		}
 		
+		VerilogPlugin.clearProblemMarker(project);
+		
 		AbstractMessageParser[] parsers = MessageParserFactory.createAll();
 		for(int i = 0; i < parsers.length; i++)
 		{
@@ -75,7 +77,7 @@ public class SimulateBuilder extends IncrementalProjectBuilder
 	
 		return null;
 	}
-
+	
 	protected void clean(IProgressMonitor monitor) throws CoreException
 	{
 	}

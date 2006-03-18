@@ -161,26 +161,26 @@ public class VerilogPlugin extends AbstractUIPlugin
 		return newConsole;
 	}
 
-	public static void setErrorMarker(IResource file, int lineNumber,
-			String msg)
+	public static void setErrorMarker(IResource file, int lineNumber, String msg)
 	{
-		setProblemMarker(file, "error", lineNumber, msg);
+		setProblemMarker(file, IMarker.SEVERITY_ERROR, lineNumber, msg);
 	}
 
 	public static void setWarningMarker(IResource file, int lineNumber,
 			String msg)
 	{
-		setProblemMarker(file, "warning", lineNumber, msg);
+		setProblemMarker(file, IMarker.SEVERITY_WARNING, lineNumber, msg);
 	}
 
-	public static void setProblemMarker(IResource file, String type,
+	public static void setInfoMarker(IResource file, int lineNumber, String msg)
+	{
+		setProblemMarker(file, IMarker.SEVERITY_INFO, lineNumber, msg);
+
+	}
+
+	public static void setProblemMarker(IResource file, int level,
 			int lineNumber, String msg)
 	{
-		int level;
-		if (type.indexOf("warning") != -1)
-			level = IMarker.SEVERITY_WARNING;
-		else
-			level = IMarker.SEVERITY_ERROR;
 		try
 		{
 			IMarker marker = file.createMarker(MARKER_TYPE);
@@ -192,12 +192,13 @@ public class VerilogPlugin extends AbstractUIPlugin
 		{
 		}
 	}
-
+	
 	public static void clearProblemMarker(IResource file)
 	{
 		try
 		{
-			IMarker[] markers = file.findMarkers(MARKER_TYPE, true, 1);
+			IMarker[] markers = file.findMarkers(MARKER_TYPE, true,
+					IResource.DEPTH_INFINITE);
 			for (int i = 0; i < markers.length; i++)
 				markers[i].delete();
 		}

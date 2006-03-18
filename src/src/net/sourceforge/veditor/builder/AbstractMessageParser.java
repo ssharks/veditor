@@ -91,6 +91,14 @@ public abstract class AbstractMessageParser
 		if (file != null && lineNumber > 0)
 			VerilogPlugin.setWarningMarker(file, lineNumber, msg);
 	}
+
+	protected void setInfoMarker(String filename, String line, String msg)
+	{
+		IResource file = folder.findMember(filename);
+		int lineNumber = parseLineNumber(line);
+		if (file != null && lineNumber > 0)
+			VerilogPlugin.setInfoMarker(file, lineNumber, msg);
+	}
 }
 
 

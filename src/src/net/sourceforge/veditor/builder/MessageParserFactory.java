@@ -69,6 +69,13 @@ public class MessageParserFactory
 					else
 						setErrorMarker(ssegs[0], ssegs[1], segs[2]);
 				}
+				else if (line.charAt(0) == '-')
+				{
+					String[] segs = line.split("--", 3);
+					String[] ssegs = segs[1].split("[()]");
+					if (ssegs[2].indexOf("INFORM") != -1)
+						setInfoMarker(ssegs[0], ssegs[1], segs[2]);
+				}
 			}
 			return true;
 		}
