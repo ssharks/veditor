@@ -19,6 +19,9 @@
 
 package net.sourceforge.veditor.editor;
 
+import java.util.Iterator;
+
+import org.eclipse.core.resources.IMarker;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ContentAssistant;
 import org.eclipse.jface.text.contentassist.IContentAssistant;
@@ -26,8 +29,11 @@ import org.eclipse.jface.text.presentation.IPresentationReconciler;
 import org.eclipse.jface.text.presentation.PresentationReconciler;
 import org.eclipse.jface.text.rules.DefaultDamagerRepairer;
 import org.eclipse.jface.text.rules.Token;
+import org.eclipse.jface.text.source.IAnnotationHover;
+import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.SourceViewerConfiguration;
+import org.eclipse.ui.texteditor.MarkerAnnotation;
 
 /**
  * parse verilog source code
@@ -92,7 +98,7 @@ abstract public class HdlSourceViewerConfiguration extends
 		return ret;
 	}
 	
-	private HdlScanner getVerilogScanner()
+	private HdlScanner getHdlScanner()
 	{
 		if (scanner == null)
 		{
@@ -109,7 +115,7 @@ abstract public class HdlSourceViewerConfiguration extends
 		PresentationReconciler reconciler = new PresentationReconciler();
 
 		DefaultDamagerRepairer dr;
-		dr = new DefaultDamagerRepairer(getVerilogScanner());
+		dr = new DefaultDamagerRepairer(getHdlScanner());
 		reconciler.setDamager(dr, IDocument.DEFAULT_CONTENT_TYPE);
 		reconciler.setRepairer(dr, IDocument.DEFAULT_CONTENT_TYPE);
 
@@ -146,6 +152,47 @@ abstract public class HdlSourceViewerConfiguration extends
 				.setContextInformationPopupOrientation(IContentAssistant.CONTEXT_INFO_ABOVE);
 
 		return assistant;
+	}
+
+	public IAnnotationHover getAnnotationHover(ISourceViewer sourceViewer)
+	{
+		return new AnnotationHover();
+	}
+
+	private static class AnnotationHover implements IAnnotationHover
+	{
+
+		public String getHoverInfo(ISourceViewer sourceViewer, int lineNumber)
+		{
+			IAnnotationModel model = sourceViewer.getAnnotationModel();
+			if (model == null)
+				return null;
+			
+			// lineNumber starts from 0, not 1
+			lineNumber++;
+
+			Iterator i = model.getAnnotationIterator();
+			String messages = null;
+
+			while(i.hasNext())
+			{
+				Object annotaion = i.next();
+				if (annotaion instanceof MarkerAnnotation)
+				{
+					IMarker marker = ((MarkerAnnotation)annotaion).getMarker();
+					int refline = marker.getAttribute(IMarker.LINE_NUMBER, 0);
+					if (refline == lineNumber)
+					{
+						String mkmsg = marker.getAttribute(IMarker.MESSAGE, "");
+						if (messages == null)
+							messages = mkmsg;
+						else
+							messages += "\n" + mkmsg;
+					}
+				}
+			}
+			return messages;
+		}
 	}
 }
 
