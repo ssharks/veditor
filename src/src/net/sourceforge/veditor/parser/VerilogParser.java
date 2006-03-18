@@ -152,7 +152,7 @@ class VerilogParser extends VerilogParserCore implements IParser
 		for (int i = str.length() - 1; i >= 0; i--)
 		{
 			char ch = str.charAt(i);
-			if (Character.isLetterOrDigit(ch))
+			if (!Character.isSpaceChar(ch))
 				break;
 			else
 				str.deleteCharAt(i);
