@@ -24,7 +24,8 @@ public class MessageParserFactory
 	private static AbstractMessageParser parsers[] =
 	{
 		new CverParser(),
-		new IverilogParser()
+		new IverilogParser(),
+		new FreeHdlParser()
 	};
 	
 	public static AbstractMessageParser[] getParsers()
@@ -107,6 +108,30 @@ public class MessageParserFactory
 						else if (segs[2].indexOf("error") != -1)
 							setErrorMarker(segs[0], segs[1], segs[3]);
 					}
+				}
+			}
+			return true;
+		}
+	}
+
+	static private class FreeHdlParser extends AbstractMessageParser
+	{
+		public String getCompilerName()
+		{
+			return "FreeHDL";
+		}
+
+		protected boolean parse()
+		{
+			for (String line = getLine(); line != null; line = getLine())
+			{
+				String[] segs = line.split(":", 3);
+				if (segs.length >= 3)
+				{
+					if (segs[2].indexOf("warning") != -1)
+						setWarningMarker(segs[0], segs[1], segs[2]);
+					else if (segs[2].indexOf("error") != -1)
+						setErrorMarker(segs[0], segs[1], segs[2]);
 				}
 			}
 			return true;
