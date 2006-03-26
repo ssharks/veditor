@@ -143,8 +143,23 @@ public class NewHdlWizardPage extends WizardPage
 			}
 			IContainer container = (IContainer)resource;
 
-			// check file
+			// check module name
 			String moduleName = getModuleName();
+			if (Character.isLetter(moduleName.charAt(0)) == false)
+			{
+				updateStatus("Module/Entity name must start a letter");
+				return;
+			}
+			for (int i = 1; i < moduleName.length(); i++)
+			{
+				if (Character.isJavaIdentifierPart(moduleName.charAt(i)) == false)
+				{
+					updateStatus("Module/Entity name must be identifier");
+					return;
+				}
+			}
+			
+			// check file
 			String fileName = getFileName();
 			IFile file = container.getFile(new Path(fileName));
 			if (file.exists())
