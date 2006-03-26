@@ -47,7 +47,7 @@ public class CompileAction extends AbstractAction
 		
 		String msg = launchar.getMessage();
 
-		AbstractMessageParser[] parsers = MessageParserFactory.createAll();
+		AbstractMessageParser[] parsers = MessageParserFactory.getParsers();
 		for(int i = 0 ; i < parsers.length ; i++)
 		{
 			parsers[i].parse(folder, msg);

@@ -32,6 +32,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
@@ -46,6 +47,7 @@ public class SimulatorPropertyPage extends PropertyPage
 	private Text simCommand;
 	private Text workFolder;
 	private Text simArguments;
+	private Combo errParser;
 
 	protected Control createContents(Composite parent)
 	{
@@ -66,6 +68,14 @@ public class SimulatorPropertyPage extends PropertyPage
 		button.addSelectionListener(new BrowseListener());
 
 		simCommand = createStringField(group, "&Simulate command:", style);
+		createNull(group);
+
+		errParser = createCombo(group, "&Error parser");
+		AbstractMessageParser[] parsers = MessageParserFactory.getParsers();
+		for(int i = 0; i < parsers.length; i++)
+		{
+			errParser.add(parsers[i].getCompilerName());
+		}
 
 		style = SWT.MULTI | SWT.BORDER | SWT.V_SCROLL;
 		group = createGroup(composite, 1);
@@ -92,6 +102,16 @@ public class SimulatorPropertyPage extends PropertyPage
 
 		return text;
 	}
+
+	private Combo createCombo(Composite parent, String labelText)
+	{
+		Label label = new Label(parent, SWT.NONE);
+		label.setText(labelText);
+
+		Combo combo = new Combo(parent, SWT.NONE);
+				
+		return combo;
+	}
 	
 	private Composite createGroup(Composite parent, int column)
 	{
@@ -102,6 +122,14 @@ public class SimulatorPropertyPage extends PropertyPage
 		gd.grabExcessHorizontalSpace = true;
 		group.setLayoutData(gd);
 		return group;
+	}
+	private void createNull(Composite parent)
+	{
+		Composite group = new Composite(parent, SWT.NONE);
+		GridData gd = new GridData();
+		gd.heightHint = 0;
+		gd.widthHint = 0;
+		group.setLayoutData(gd);
 	}
 	
 	private IProject getProject()
@@ -130,16 +158,25 @@ public class SimulatorPropertyPage extends PropertyPage
 		
 		Map args = command.getArguments();
 
-		String enableValue = args.get("enable").toString();
+		String enableValue = getArg(args, "enable");
 		boolean enable = enableValue.equals("true");
 		enableButton.setSelection(enable);
-		
-		workFolder.setText(args.get("work").toString());
-		simCommand.setText(args.get("command").toString());
+
+		workFolder.setText(getArg(args, "work"));
+		simCommand.setText(getArg(args, "command"));
+		errParser.setText(getArg(args, "parser"));
 
 		String linesep = System.getProperty("line.separator");
-		String argstext = args.get("arguments").toString();
+		String argstext = getArg(args, "arguments");
 		simArguments.setText(argstext.replaceAll("\\\\n", linesep));
+	}
+	private String getArg(Map args, String name)
+	{
+		Object obj = args.get(name);
+		if (obj == null)
+			return "";
+		else
+			return obj.toString();
 	}
 	
 	private void setDefaults()
@@ -153,6 +190,7 @@ public class SimulatorPropertyPage extends PropertyPage
 		args.put("work", "bench");
 		args.put("command", "");
 		args.put("arguments", "");
+		args.put("parser", "");
 
 		command.setArguments(args);
 		nature.setSimulateCommand(command);
@@ -169,6 +207,7 @@ public class SimulatorPropertyPage extends PropertyPage
 		args.put("enable", Boolean.toString(enableButton.getSelection()));
 		args.put("work", workFolder.getText());
 		args.put("command", simCommand.getText());
+		args.put("parser", errParser.getText());
 		
 		String linesep = System.getProperty("line.separator");
 		String argstext = simArguments.getText().replaceAll(linesep, "\\\\n");

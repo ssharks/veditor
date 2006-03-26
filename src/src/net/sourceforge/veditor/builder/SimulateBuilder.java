@@ -35,13 +35,13 @@ public class SimulateBuilder extends IncrementalProjectBuilder
 
 	protected IProject[] build(int kind, Map args, IProgressMonitor monitor)
 	{
-		String enableValue = args.get("enable").toString();
+		String enableValue = getArg(args, "enable");
 		if (!enableValue.equals("true"))
 			return null;
 
-		String dir = args.get("work").toString();
-		String cmd = args.get("command").toString();
-		String argstext = args.get("arguments").toString(); 
+		String dir = getArg(args, "work");
+		String cmd = getArg(args, "command");
+		String argstext = getArg(args, "arguments");
 		argstext = argstext.replaceAll("\\\\n", " ");
 		String cmdline = cmd + " "  + argstext;
 		
@@ -68,16 +68,23 @@ public class SimulateBuilder extends IncrementalProjectBuilder
 		
 		VerilogPlugin.clearProblemMarker(project);
 		
-		AbstractMessageParser[] parsers = MessageParserFactory.createAll();
-		for(int i = 0; i < parsers.length; i++)
-		{
-			if (parsers[i].parse(folder, launcher.getMessage()))
-				break;
-		}
+		String parserName = getArg(args, "parser");
+		AbstractMessageParser parser = MessageParserFactory.getParser(parserName);
+		if (parser != null)
+			parser.parse(folder, launcher.getMessage());
 	
 		return null;
 	}
-	
+
+	private String getArg(Map args, String name)
+	{
+		Object obj = args.get(name);
+		if (obj == null)
+			return "";
+		else
+			return obj.toString();
+	}
+
 	protected void clean(IProgressMonitor monitor) throws CoreException
 	{
 	}

@@ -27,12 +27,12 @@ public class MessageParserFactory
 		new IverilogParser()
 	};
 	
-	public static AbstractMessageParser[] createAll()
+	public static AbstractMessageParser[] getParsers()
 	{
 		return parsers;
 	}
 
-	public static AbstractMessageParser create(String compiler)
+	public static AbstractMessageParser getParser(String compiler)
 	{
 		for (int i = 0; i < parsers.length; i++)
 		{
@@ -49,7 +49,7 @@ public class MessageParserFactory
 
 		public String getCompilerName()
 		{
-			return "cver";
+			return "Cver";
 		}
 
 		protected boolean parse()
@@ -86,7 +86,7 @@ public class MessageParserFactory
 	{
 		public String getCompilerName()
 		{
-			return "iverilog";
+			return "Icarus Verilog";
 		}
 
 		protected boolean parse()
