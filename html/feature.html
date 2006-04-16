@@ -1,8 +1,8 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <HTML>
 <HEAD>
-<META http-equiv="Content-Type" content="text/html; charset=Shift_JIS">
-<META name="GENERATOR" content="IBM WebSphere Studio Homepage Builder Version 7.0.1.0 for Windows">
+<META http-equiv="Content-Type" content="text/html; charset=SHIFT_JIS">
+<META name="GENERATOR" content="IBM WebSphere Studio Homepage Builder Version 9.0.0.0 for Windows">
 <META http-equiv="Content-Style-Type" content="text/css">
 <TITLE></TITLE>
 </HEAD>
@@ -41,13 +41,10 @@
   &quot;copy text&quot; copies module list to clipboard simply. The &quot;copy
   hierarchy&quot; copies hierarchical list.</P>
   <LI>Problems view
-  <P>You have to install <A href="http://icarus.com/eda/verilog/">Icarus Verilog</A> at first, and add iverilog/bin to path. Then you can select &quot;Edit&quot;-&gt;&quot;Compile&quot;.
-  You will see error and warning messages in Problems view if exist.</P>
-  <LI>VHDL
-  <P>You don't need any particular operations for VHDL. You can open and edit
-  *.vhd files like *.v.<BR>
-  Unfortunately you cannot use external VHDL compiler and Problems view.
-  I don't know about free VHDL compiler exactly. Please let <A href="mailto:tadashi-k@users.sourceforge.net">me</A> know.</P>
+  <P>You have to install <A href="http://icarus.com/eda/verilog/">Icarus Verilog</A>, <A href="http://www.pragmatic-c.com/gpl-cver/index.htm">CVer</A> or <A href="http://www.freehdl.seul.org/">FreeHDL</A> at first. Then you can select &quot;Edit&quot;-&gt;&quot;Compile&quot;.
+  You will see error and warning messages in Problems view if exist.<BR>
+  Warning: it is just simple method. If your design has many modules and
+  libraries, you should use &quot;Verilog/VHDL simulator builder&quot;.</P>
   <LI>Preference page
   <P>You can select &quot;Window&quot;-&gt;&quot;Preferences&quot;-&gt;&quot;Verilog
   Editor&quot;.</P>
@@ -57,6 +54,45 @@
   </LI>
   <LI>Console view
   <P>Console view automatically opens when you compile or parser error occurs.</P>
+  </LI>
+  <LI>Verilog/VHDL perspective
+  <IMG src="new.gif" width="61" height="13" border="0">
+  <P>Select &quot;Window&quot;-&gt;&quot;Open Perspective&quot;-&gt;&quot;Other...&quot;,
+  then select &quot;Verilog/VHDL&quot;.<BR>
+  Then you will see &quot;Verilog/VHDL&quot; icon on top left corner on Eclipse
+  Window.</P>
+  </LI>
+  <LI>Verilog/VHDL new project wizard
+  <IMG src="new.gif" width="61" height="13" border="0">
+  <P>In the Verilog/VHDL perspective, select &quot;File&quot;-&gt;&quot;New&quot;-&gt;&quot;Project&quot;
+  or &quot;New&quot;-&gt;&quot;Project&quot; on Navigator. Then select &quot;Verilog/VHDL
+  project&quot; and push &quot;Next&quot;. Enter Project name and push &quot;Finish&quot;.</P>
+  </LI>
+  <LI>Verilog/VHDL new file wizard
+  <IMG src="new.gif" width="61" height="13" border="0">
+  <P>In the Verilog/VHDL perspective, select &quot;File&quot;-&gt;&quot;New&quot;-&gt;&quot;Verilog
+  file&quot; or &quot;New&quot;-&gt;&quot;Verilog file&quot; on Navigator.
+  Then enter module name and push &quot;Finish&quot;. You can also select
+  &quot;VHDL file&quot;.</P>
+  </LI>
+  <LI>Verilog/VHDL simulator builder
+  <IMG src="new.gif" width="61" height="13" border="0">
+  <P>Select your Verilog/VHDL project on Navigator. Then open context menu and
+  select &quot;Properties&quot;. Select &quot;Verilog/VHDL Simulator&quot;
+  category. Check &quot;Enable Verilog/VHDL Builder&quot; and fill &quot;Working
+  Folder&quot;, &quot;Simulate command&quot; and &quot;Arguments&quot;. Finally
+  you have to select &quot;Error parser&quot; which are <A href="http://icarus.com/eda/verilog/">Icarus Verilog</A>, <A href="http://www.pragmatic-c.com/gpl-cver/index.htm">CVer</A> or <A href="http://www.freehdl.seul.org/">FreeHDL</A> now. Push &quot;OK&quot;<BR>
+  <BR>
+  Then you can &quot;Build project&quot;. Problems view reflects the simulator
+  error and warning messages.<BR>
+  <BR>
+  Warning:<BR>
+  Eclipse builds automatically by default. So you save your Verilog or VHDL
+  file, your simulator run immediately. To avoid this, you can disable &quot;build
+  automatically&quot;. To disable, you have to select &quot;Project&quot;-&gt;&quot;Build
+  automatically&quot;. When you want to simulate in build non-automatically,
+  you can select &quot;Project&quot;-&gt;&quot;Build-&gt;Project&quot; or
+  &quot;Project&quot;-&gt;&quot;Build All&quot;.</P>
   </LI>
 </UL>
 <P><A href="index.html">Return to top page</A></P>

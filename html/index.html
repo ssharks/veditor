@@ -7,9 +7,12 @@
 </HEAD>
 <BODY>
 <H2 align="center">Eclipse Verilog editor</H2>
-<P align="right">Last updated: December 04, 2005</P>
+<P align="right">Last updated: April 16, 2006</P>
 <H3>News</H3>
-<P>Eclipse Verilog editor 0.3.1 released. The new version fixed some bugs.<BR>
+<P>Eclipse Verilog editor 0.4.0 released. The new version has Verilog/VHDL
+perspective, new module wizard and simulator builder in new Verilog/VHDL
+project. It supports Cver and FreeHDL compilers.</P>
+<P>
 Eclipse Verilog editor version 0.2.0 was distributed with <A href="http://www.opencores.org/projects.cgi/web/opentech/">OpenTech</A> package for Open source EDA tools and open source hardware designs.</P>
 <H3>Introduction</H3>
 <P>Eclipse Verilog editor provides <A href="http://www.verilog.com/">Verilog (IEEE-1364)</A> and VHDL language specific features on <A href="http://www.eclipse.org/">Eclipse IDE</A>. It helps coding and debugging in hardware development based on Verilog
@@ -40,20 +43,31 @@ Eclipse Verilog Editor is tested on Eclipse 3.1.</P>
   <P>Go to module declaration of selected word by searching a project hierarchy.<BR>
   It is valid when you defined a same module name with file name, e.g. module
   &quot;adder&quot; is defined in file &quot;adder.v&quot;.</P>
-  <LI>Automatic port connection for instantiation
+  <LI>Automatic port connection for instantiation <IMG src="update.gif" width="61" height="13" border="0">
   <P>When you enter module name only, Eclipse Verilog Editor completes module
   instantiation code with named port connection.<BR>
   <BR>
   e.g.<BR>
   If you have already defined adder.v:</P>
-  <BLOCKQUOTE>module adder( a, b, sum );<BR>
-  input[15:0] a, b ;<BR>
-  output[15:0] sum ;<BR>
-  ...<BR>
-  endmodule</BLOCKQUOTE>
+  <BLOCKQUOTE><PRE>module adder( a, b, sum );
+parameter WIDTH = 16;
+input[WIDTH-1:0] a, b ;
+output[WIDTH-1:0] sum ;
+...
+endmodule</PRE></BLOCKQUOTE>
   <P>You can instantiate this.</P>
-  <BLOCKQUOTE>adder adder( .a(a), .b(b), .sum(sum) );</BLOCKQUOTE>
-  <P>It is more effective when you are using more complicated modules.</P>
+  <BLOCKQUOTE><PRE>adder #(
+  .WIDTH(16)
+)
+  adder(
+  .clk(clk),
+  .a(a),
+  .b(b),
+  .sum(sum)
+);</PRE></BLOCKQUOTE>
+  <P>It is more effective when you are using more complicated modules. If you
+  don't need Verilog-2001 style parameter, you can disable it in the preference
+  page.</P>
   <LI>Content assist
   <P>Content Assist completes a whole phrase which you want. Eclipse provides
   a proposal list. The proposal list may include code templates, signals
@@ -68,19 +82,19 @@ Eclipse Verilog Editor is tested on Eclipse 3.1.</P>
   and module instances. The proposal in 3 includes &quot;begin/end&quot;
   template and signals, which defined in same module.</P>
   <LI>Module Hierarchy
-  <P>Eclipse Verilog Editor provides &quot;Module Hierarch&quot; view.<BR>
+  <P>Eclipse Verilog Editor provides &quot;Hierarch&quot; view.<BR>
   The Module Hierarchy view shows module(s) defined in current editor page
   at first. You can click &quot;+&quot; and expand hierarchical tree of module
   instantiation.<BR>
   You can copy hierarchical view as text to clipboard. So you can paste it
   to any other text editors.</P>
   <LI>Problems view
+  <IMG src="update.gif" width="61" height="13" border="0">
   <P>Eclipse Verilog Editor provides &quot;Problems&quot; view.<BR>
   The Problems view shows compiler error and warning messages. The compiler
-  is out of Eclipse. Now you can use <A href="http://icarus.com/eda/verilog/">Icarus Verilog</A>.</P>
+  is out of Eclipse. Now you can use <A href="http://icarus.com/eda/verilog/">Icarus Verilog</A>, <A href="http://www.pragmatic-c.com/gpl-cver/index.htm">CVer</A> or <A href="http://www.freehdl.seul.org/">FreeHDL</A>..</P>
   <LI>VHDL support
-  <P>VHDL language is supported. All Verilog features are supported in VHDL
-  except Problems view</P>
+  <P>VHDL language is supported. All Verilog features are supported.</P>
   <LI>Preference page
   <P>It can modify colors and font styles in editor and command line option
   for external Verilog compiler.</P>
@@ -95,10 +109,23 @@ Eclipse Verilog Editor is tested on Eclipse 3.1.</P>
   <LI>Console view
   <P>Console view show output messages from external compiler and error messages
   from internal code parser. It make you easy to fix problems.</P>
+  <LI>Verilog/VHDL Perspective
+  <IMG src="new.gif" width="61" height="13" border="0">
+  <P>Verilog/VHDL Perspective provides customized arrangement about views alignment
+  and new wizard.</P>
+  <LI>New wizard
+  <IMG src="new.gif" width="61" height="13" border="0">
+  <P>New Verilog module, new VHDL entity and new Verilog/VHDL project wizard
+  are supported.</P>
+  <LI>Simulator builder
+  <IMG src="new.gif" width="61" height="13" border="0">
+  <P>Verilog/VHDL project supports simulator builder, which can launch external
+  circuit simulators, then parse error messages and reflect problems view
+  from them. New <A href="http://icarus.com/eda/verilog/">Icarus Verilog</A>, <A href="http://www.pragmatic-c.com/gpl-cver/index.htm">CVer</A> and <A href="http://www.freehdl.seul.org/">FreeHDL</A> are supported.</P>
 </UL>
 <H3>How to use Eclipse Verilog editor</H3>
 <P><A href="install.html">Install Eclipse and Eclipse Verilog editor plug-in</A></P>
-<P><A href="project.html">Start Verilog project in Eclipse</A></P>
+<P><A href="project.html">Start Verilog/VHDL project in Eclipse</A></P>
 <P><A href="feature.html">How to use features</A></P>
 <H3>Update log</H3>
 <DL>
@@ -125,6 +152,12 @@ Eclipse Verilog Editor is tested on Eclipse 3.1.</P>
   <DD>is tested on Eclipse 3.1
   <DD>fixed some VHDL parsing problems.
   <DD>fixed bugs which are 1060327, 1224567, 1251136.
+  <DT>0.4.0
+  <DD>supported Verilog/VHDL perspective.
+  <DD>supported new module/entity wizard.
+  <DD>supported simulator builder in new Verilog/VHDL project.
+  <DD>supported Cver and FreeHDL compilers.
+  <DD>can run on Eclipse Platform Runtime instead of Eclipse SDK.
 </DL>
 <H3>Future plan</H3>
 <UL>
