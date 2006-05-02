@@ -71,7 +71,7 @@ public class SimulatorPropertyPage extends PropertyPage
 		createNull(group);
 
 		errParser = createCombo(group, "&Error parser");
-		AbstractMessageParser[] parsers = MessageParserFactory.getParsers();
+		ErrorParser[] parsers = ErrorParser.getParsers();
 		for(int i = 0; i < parsers.length; i++)
 		{
 			errParser.add(parsers[i].getCompilerName());

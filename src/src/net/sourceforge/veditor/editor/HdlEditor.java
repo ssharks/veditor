@@ -73,7 +73,6 @@ abstract public class HdlEditor extends TextEditor
 
 		current = this;
 		colorManager = new ColorManager();
-		// setDocumentProvider(new HdlDocumentProvider());
 		HdlTextAttribute.init();
 	}
 

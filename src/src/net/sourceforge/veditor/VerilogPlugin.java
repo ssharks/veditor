@@ -19,6 +19,10 @@
 
 package net.sourceforge.veditor;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
@@ -98,6 +102,37 @@ public class VerilogPlugin extends AbstractUIPlugin
 	}
 	
 	/**
+	 * Returns the string list separated by "\n" from the plugin preferences
+	 */
+	public static List getPreferenceStrings(String key)
+	{
+		String string = getPreferenceString(key);
+		if (string == null)
+			return null;
+
+		int index = string.indexOf('\n');
+		if (index >= 0)
+		{
+			// check version number
+			if (!string.substring(0, index).equals("1"))
+				return null;
+		}
+	
+		List list = new ArrayList();
+		int length = string.length();
+		while(index >= 0 && index < length - 1)
+		{
+			int next = string.indexOf('\n', index + 1);
+			if (next >= 0)
+			{
+				list.add(string.substring(index + 1, next));
+			}
+			index = next;
+		}
+		return list;
+	}
+	
+	/**
 	 * set the string to the plugin preferences
 	 */
 	public static void setPreference(String key, String value)
@@ -121,6 +156,24 @@ public class VerilogPlugin extends AbstractUIPlugin
 		PreferenceConverter.setValue(getStore(), key, rgb);
 	}
 	
+	/**
+	 * set the string list separated by "\n"
+	 */
+	public static void setPreference(String key, List list)
+	{
+		StringBuffer value = new StringBuffer("1\n");
+		Iterator i = list.iterator();
+		while(i.hasNext())
+		{
+			value.append(i.next().toString());
+			value.append("\n");
+		}
+		setPreference(key, value.toString());
+	}
+	
+	/**
+	 * initialize default
+	 */
 	public static void setDefaultPreference(String key)
 	{
 		getStore().setToDefault(key);

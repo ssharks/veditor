@@ -24,6 +24,18 @@
             id="net.sourceforge.veditor.editor.VhdlEditor">
       </editor>
    </extension>
+   
+   <extension
+         point="org.eclipse.ui.editors">
+      <editor
+            name="Verilog/VHDL Log Viewer"
+            icon="icons/vsrc.gif"
+            extensions="log"
+            class="net.sourceforge.veditor.log.LogEditor"
+            contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
+            id="net.sourceforge.veditor.log.LogEditor">
+      </editor>
+   </extension>
 
    <extension
          point="org.eclipse.ui.perspectives">
@@ -62,6 +74,12 @@
             id="net.sourceforge.veditor.preference.ColorPreferencePage"
             class="net.sourceforge.veditor.preference.ColorPreferencePage"
             name="Color">
+      </page>
+      <page
+            category="net.sourceforge.veditor.preference.TopPreferencePage"
+            id="net.sourceforge.veditor.preference.ErrorParserPreferencePage"
+            class="net.sourceforge.veditor.preference.ErrorParserPreferencePage"
+            name="Error Parser">
       </page>
    </extension>
 

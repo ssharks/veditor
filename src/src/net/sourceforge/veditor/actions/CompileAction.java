@@ -19,9 +19,8 @@
 package net.sourceforge.veditor.actions;
 
 import net.sourceforge.veditor.VerilogPlugin;
-import net.sourceforge.veditor.builder.AbstractMessageParser;
+import net.sourceforge.veditor.builder.ErrorParser;
 import net.sourceforge.veditor.builder.ExternalLauncher;
-import net.sourceforge.veditor.builder.MessageParserFactory;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
@@ -47,7 +46,7 @@ public class CompileAction extends AbstractAction
 		
 		String msg = launchar.getMessage();
 
-		AbstractMessageParser[] parsers = MessageParserFactory.getParsers();
+		ErrorParser[] parsers = ErrorParser.getParsers();
 		for(int i = 0 ; i < parsers.length ; i++)
 		{
 			parsers[i].parse(folder, msg);

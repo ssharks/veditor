@@ -69,7 +69,7 @@ public class SimulateBuilder extends IncrementalProjectBuilder
 		VerilogPlugin.clearProblemMarker(project);
 		
 		String parserName = getArg(args, "parser");
-		AbstractMessageParser parser = MessageParserFactory.getParser(parserName);
+		ErrorParser parser = ErrorParser.getParser(parserName);
 		if (parser != null)
 			parser.parse(folder, launcher.getMessage());
 	

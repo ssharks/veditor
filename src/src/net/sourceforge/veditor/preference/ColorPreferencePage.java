@@ -37,7 +37,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.List;
 
 /**
- * Color Preference page, which is complicated
+ * Color Preference page
  */
 public class ColorPreferencePage extends AbstractPreferencePage
 {
@@ -101,7 +101,6 @@ public class ColorPreferencePage extends AbstractPreferencePage
     protected Control createContents(Composite parent)
 	{
 		Composite composite = new Composite(parent, SWT.NONE);
-		composite.setLayout(new GridLayout(1, false));
 
 		createColorSection(composite);
 

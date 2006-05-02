@@ -28,6 +28,35 @@ public class VerilogPreferenceInitializer extends AbstractPreferenceInitializer
 		super();
 	}
 
+	/**
+	 * Error parser
+	 * <PRE>
+	 *  version number for future extension 
+	 *  (
+	 *    compiler name
+	 *    error matching pattern
+	 *    warning matching pattern
+	 *    info matching pattern
+	 *  )*
+	 * </PRE>
+	 */
+	private static final String DEFAULT_ERROR_PARSER_REGEX =
+		"1"
+		+ "\n" + "Cver"
+		+ "\n" + "\\*\\*(.*)\\((.*)\\) ERROR\\*\\* (.*)"
+		+ "\n" + "\\*\\*(.*)\\((.*)\\) WARN\\*\\* (.*)"
+		+ "\n" + "--(.*)\\((.*)\\) INFORM-- (.*)" 
+		+ "\n" + "Icarus Verilog"
+		+ "\n" + "(.*):(.*): [a-z ]*error: (.*)"
+		+ "\n" + "(.*):(.*): warning: (.*)"
+		+ "\n" + ""
+		+ "\n" + "FreeHDL"
+		+ "\n" + "(.*):(.*): error: (.*)" 
+		+ "\n" + "(.*):(.*): warning: (.*)" 
+		+ "\n" + ""
+		+ "\n";
+	public static final int NUM_OF_DEFAULT_ERROR_PARSERS = 3;
+	
 	public void initializeDefaultPreferences()
 	{
 		Preferences preferences = VerilogPlugin.getPlugin()
@@ -43,6 +72,8 @@ public class VerilogPreferenceInitializer extends AbstractPreferenceInitializer
 		preferences.setDefault("Outline.Comment", true);
 		preferences.setDefault("ContentAssist.ModuleParameter", false);
 		preferences.setDefault("Compile.command", "iverilog -tnull -y . -Wall");
+		
+		preferences.setDefault("ErrorParser", DEFAULT_ERROR_PARSER_REGEX);
 	}
 	
 	private void setDefaultAttr(Preferences preferences, String name,
