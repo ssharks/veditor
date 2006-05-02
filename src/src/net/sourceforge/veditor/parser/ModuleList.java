@@ -39,8 +39,8 @@ import org.eclipse.core.runtime.CoreException;
 public final class ModuleList
 {
 	private static Set projectList = new HashSet();
-	private static ModuleList current;
 	private static ModuleList nullList = new ModuleList(null);
+	private static ModuleList current = nullList;
 
 	public static void setCurrent(IProject proj)
 	{
@@ -50,7 +50,7 @@ public final class ModuleList
 			return;
 		}
 			
-		if (current != null && current.toString().equals(proj.toString()))
+		if (current.toString().equals(proj.toString()))
 			return;
 
 		ModuleList mods = find(proj);
@@ -131,17 +131,20 @@ public final class ModuleList
 	public boolean equals(Object obj)
 	{
 		if (obj instanceof ModuleList)
-			return project.toString().equals(obj.toString());  // project name is system unique
+			return toString().equals(obj.toString());  // project name is system unique
 		else
 			return false;
 	}
 	public int hashCode()
 	{
-		return project.toString().hashCode();
+		return toString().hashCode();
 	}
 	public String toString()
 	{
-		return project.toString();
+		if (project == null)
+			return "";
+		else
+			return project.toString();
 	}
 
 
@@ -205,7 +208,7 @@ public final class ModuleList
 		IFile file = findFile(name + ".v");
 		boolean isVerilog = true;
 
-		if ( file == null )
+		if (file == null)
 		{
 			file = findFile(name + ".vhd");
 			isVerilog = false;
