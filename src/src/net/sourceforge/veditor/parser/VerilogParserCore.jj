@@ -213,7 +213,8 @@ void variableHead() :
 {
 }
 {
-	<VARIABLE_HEAD> [ <SIGNED> ]
+		<VARIABLE_HEAD> [ <SIGNED> ]
+	|	<SIGNED>
 }
 
 Token identifier() :
