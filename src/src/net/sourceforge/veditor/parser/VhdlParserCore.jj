@@ -84,11 +84,13 @@ SPECIAL_TOKEN :
 TOKEN :
 {
 	<LIBRARY:	"library">
+|	<PACKAGE:	"package">
 |	<USE:		"use">
 |	<ENTITY:	"entity">
 |	<ARCHITECTURE:	"architecture">
 |	<IS:		"is">
 |	<OF:		"of">
+|	<RECORD:	"record">
 |	<GENERIC:	"generic">
 |	<PORT:		"port">
 |	<PROCESS:	"process">
@@ -140,15 +142,25 @@ TOKEN :
 
 void modules() :
 {
-	Token name ;
-	Token end ;
 }
 {
 	(
 		<LIBRARY> skipTo( EOS )
 	|	<USE> skipTo( EOS )
 	)*
-	
+
+	(
+		entity()
+	|	packageDef()
+	)
+}
+
+void entity() :
+{	
+	Token name ;
+	Token end ;
+}
+{
 	<ENTITY> name = identifier() <IS>
 	{
 		addModule( name.beginLine, name.image );
@@ -165,6 +177,33 @@ void modules() :
 	{
 		endModule( end.beginLine );
 	}
+}
+
+void packageDef() :
+{
+	Token name ;
+	Token end ;
+}
+{
+	<PACKAGE> identifier() <IS>
+	(
+		( packageDeclaration() )*
+
+		<COMPONENT> name = identifier() [<IS>]
+		{
+			addModule( name.beginLine, name.image );
+		}
+		(
+			<GENERIC> "(" skipParen() ")" <EOS>
+		|	<PORT> "(" port() ( ";" port() )* ")" <EOS>
+		)*
+		end = <END> <COMPONENT> <EOS>
+		{
+			endModule( end.beginLine );
+		}
+	
+	)+
+	<END> [identifier()] <EOS>
 }
 
 void port() :
@@ -212,7 +251,7 @@ Token identifier() :
 	}
 }
 
-void declaration() :
+void packageDeclaration() :
 {
 	Token variable;
 }
@@ -232,8 +271,19 @@ void declaration() :
 		)*
 		":" skipTo( EOS )
 	)
-|	( <TYPE> | <SUBTYPE> | <FILE> | <ALIAS> | <ATTRIBUTE> |
-	  <FOR> | <DISCONNECT> | <GROUP> ) skipTo( EOS )
+|	( <TYPE> | <SUBTYPE> ) identifier() <IS> 
+		(
+			( <RECORD> skipEnd() <END> <RECORD> <EOS> )
+		|	skipTo( EOS )
+		)
+|	( <FILE> | <ALIAS> | <ATTRIBUTE> | <FOR> | <DISCONNECT> | <GROUP> ) skipTo( EOS )
+}
+
+void declaration() :
+{
+}
+{
+	packageDeclaration()
 |	<COMPONENT> skipTo2( END, COMPONENT ) skipTo( EOS )
 |	( <PROCEDURE> | <FUNCTION> ) skipTo( BEGIN ) skipEnd() <END> <EOS>
 }
@@ -258,6 +308,7 @@ void statement() :
 				|	statement()
 				)
 				<END> <GENERATE> [identifier()] <EOS>
+			|	<PROCESS> process()
 			)
 			{endStatement();}
 		|	{beginStatement();} [ "(" skipParen() ")" ] skipTo( EOS )
