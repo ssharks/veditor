@@ -72,7 +72,7 @@ public class HdlScanner extends RuleBasedScanner
 			"function", "generate", "generic", "guarded", "if", "in", "inout",
 			"is", "label", "library", "linkage", "loop", "map", "mod", "nand",
 			"new", "next", "nor", "not", "null", "of", "on", "open", "or",
-			"others", "out", "pakage", "port", "procedure", "process", "range",
+			"others", "out", "package", "port", "procedure", "process", "range",
 			"record", "register", "rem", "report", "return", "select",
 			"severity", "signal", "subtype", "then", "to", "transport", "type",
 			"units", "until", "use", "variable ", "wait", "when", "while",
