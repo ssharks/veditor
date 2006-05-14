@@ -34,27 +34,28 @@ public interface VerilogParserCoreConstants {
   int ENDGENERATE = 36;
   int PORT_HEAD = 37;
   int VARIABLE_HEAD = 38;
-  int PARAMETER = 39;
-  int SIGNED = 40;
-  int STMT_HEAD = 41;
-  int BLOCK_HEAD = 42;
-  int LPAREN = 43;
-  int RPAREN = 44;
-  int LBRACE = 45;
-  int RBRACE = 46;
-  int LBRACKET = 47;
-  int RBRACKET = 48;
-  int EOS = 49;
-  int PARA = 50;
-  int AT = 51;
-  int BQ = 52;
-  int DOLLAR = 53;
-  int COMMA = 54;
-  int COLON = 55;
-  int EQUAL = 56;
-  int IDENT = 57;
-  int SPC_CHAR = 58;
-  int OTHER = 59;
+  int REAL = 39;
+  int PARAMETER = 40;
+  int SIGNED = 41;
+  int STMT_HEAD = 42;
+  int BLOCK_HEAD = 43;
+  int LPAREN = 44;
+  int RPAREN = 45;
+  int LBRACE = 46;
+  int RBRACE = 47;
+  int LBRACKET = 48;
+  int RBRACKET = 49;
+  int EOS = 50;
+  int PARA = 51;
+  int AT = 52;
+  int BQ = 53;
+  int DOLLAR = 54;
+  int COMMA = 55;
+  int COLON = 56;
+  int EQUAL = 57;
+  int IDENT = 58;
+  int SPC_CHAR = 59;
+  int OTHER = 60;
 
   int DEFAULT = 0;
   int IN_MULTI_LINE_COMMENT = 1;
@@ -100,6 +101,7 @@ public interface VerilogParserCoreConstants {
     "\"endgenerate\"",
     "<PORT_HEAD>",
     "<VARIABLE_HEAD>",
+    "\"real\"",
     "\"parameter\"",
     "\"signed\"",
     "<STMT_HEAD>",
