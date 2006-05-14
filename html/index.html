@@ -7,11 +7,10 @@
 </HEAD>
 <BODY>
 <H2 align="center">Eclipse Verilog editor</H2>
-<P align="right">Last updated: April 16, 2006</P>
+<P align="right">Last updated: May 14, 2006</P>
 <H3>News</H3>
-<P>Eclipse Verilog editor 0.4.0 released. The new version has Verilog/VHDL
-perspective, new module wizard and simulator builder in new Verilog/VHDL
-project. It supports Cver and FreeHDL compilers.</P>
+<P>Eclipse Verilog editor 0.4.1 released. The new version has user customized
+error parser and simulation log viewer.</P>
 <P>
 Eclipse Verilog editor version 0.2.0 was distributed with <A href="http://www.opencores.org/projects.cgi/web/opentech/">OpenTech</A> package for Open source EDA tools and open source hardware designs.</P>
 <H3>Introduction</H3>
@@ -110,20 +109,31 @@ endmodule</PRE></BLOCKQUOTE>
   <P>Console view show output messages from external compiler and error messages
   from internal code parser. It make you easy to fix problems.</P>
   <LI>Verilog/VHDL Perspective
-  <IMG src="new.gif" width="61" height="13" border="0">
   <P>Verilog/VHDL Perspective provides customized arrangement about views alignment
   and new wizard.</P>
   <LI>New wizard
-  <IMG src="new.gif" width="61" height="13" border="0">
   <P>New Verilog module, new VHDL entity and new Verilog/VHDL project wizard
   are supported.</P>
   <LI>Simulator builder
-  <IMG src="new.gif" width="61" height="13" border="0">
+  <IMG src="update.gif" width="61" height="13" border="0">
   <P>Verilog/VHDL project supports simulator builder, which can launch external
   circuit simulators, then parse error messages and reflect problems view
-  from them. New <A href="http://icarus.com/eda/verilog/">Icarus Verilog</A>, <A href="http://www.pragmatic-c.com/gpl-cver/index.htm">CVer</A> and <A href="http://www.freehdl.seul.org/">FreeHDL</A> are supported.</P>
+  from them. New <A href="http://icarus.com/eda/verilog/">Icarus Verilog</A>, <A href="http://www.pragmatic-c.com/gpl-cver/index.htm">CVer</A> and <A href="http://www.freehdl.seul.org/">FreeHDL</A> are supported. And other compiler can be supported, using custom error
+  parser.</P>
 </UL>
-<H3>How to use Eclipse Verilog editor</H3>
+<UL>
+  <LI>Custom error parser<IMG src="new.gif" width="61" height="13" border="0">
+  <P>Custom error parser can support any complier error message. It match pattern
+  with user defined regular expressions.</P>
+</UL>
+<UL>
+  <LI>Log viewer <IMG src="new.gif" width="61" height="13" border="0">
+  <P>Log viewer reads the compiler log files, then parse and update problems
+  view. So you can launch simulator outside Eclipse and reflect problems
+  view. Log viewer opens *.log files by default. You can also change file
+  associations.</P>
+</UL>
+  <H3>How to use Eclipse Verilog editor</H3>
 <P><A href="install.html">Install Eclipse and Eclipse Verilog editor plug-in</A></P>
 <P><A href="project.html">Start Verilog/VHDL project in Eclipse</A></P>
 <P><A href="feature.html">How to use features</A></P>
@@ -149,15 +159,20 @@ endmodule</PRE></BLOCKQUOTE>
   supported Console view.<BR>
   fixed bugs which are 1055081, 1067840, 1148609 and 1157885.
   <DT>0.3.1
-  <DD>is tested on Eclipse 3.1
-  <DD>fixed some VHDL parsing problems.
-  <DD>fixed bugs which are 1060327, 1224567, 1251136.
+  <DD>is tested on Eclipse 3.1<BR>
+  fixed some VHDL parsing problems.<BR>
+  fixed bugs which are 1060327, 1224567, 1251136.
   <DT>0.4.0
-  <DD>supported Verilog/VHDL perspective.
-  <DD>supported new module/entity wizard.
-  <DD>supported simulator builder in new Verilog/VHDL project.
-  <DD>supported Cver and FreeHDL compilers.
-  <DD>can run on Eclipse Platform Runtime instead of Eclipse SDK.
+  <DD>supported Verilog/VHDL perspective.<BR>
+  supported new module/entity wizard.<BR>
+  supported simulator builder in new Verilog/VHDL project.<BR>
+  supported Cver and FreeHDL compilers.<BR>
+  can run on Eclipse Platform Runtime instead of Eclipse SDK.
+  <DT>0.4.1
+  <DD>supported custom error parser<BR>
+  supported log viewer<BR>
+  fixed bugs which are 1476699, 1480879, 1480884<BR>
+  add some keywords of VHDL
 </DL>
 <H3>Future plan</H3>
 <UL>

@@ -46,7 +46,7 @@
   Warning: it is just simple method. If your design has many modules and
   libraries, you should use &quot;Verilog/VHDL simulator builder&quot;.</P>
   <LI>Preference page
-  <P>You can select &quot;Window&quot;-&gt;&quot;Preferences&quot;-&gt;&quot;Verilog
+  <P>You can select &quot;Window&quot;-&gt;&quot;Preferences&quot;-&gt;&quot;Verilog/VHDL
   Editor&quot;.</P>
   </LI>
   <LI>Code Formatter
@@ -56,27 +56,23 @@
   <P>Console view automatically opens when you compile or parser error occurs.</P>
   </LI>
   <LI>Verilog/VHDL perspective
-  <IMG src="new.gif" width="61" height="13" border="0">
   <P>Select &quot;Window&quot;-&gt;&quot;Open Perspective&quot;-&gt;&quot;Other...&quot;,
   then select &quot;Verilog/VHDL&quot;.<BR>
   Then you will see &quot;Verilog/VHDL&quot; icon on top left corner on Eclipse
   Window.</P>
   </LI>
   <LI>Verilog/VHDL new project wizard
-  <IMG src="new.gif" width="61" height="13" border="0">
   <P>In the Verilog/VHDL perspective, select &quot;File&quot;-&gt;&quot;New&quot;-&gt;&quot;Project&quot;
   or &quot;New&quot;-&gt;&quot;Project&quot; on Navigator. Then select &quot;Verilog/VHDL
   project&quot; and push &quot;Next&quot;. Enter Project name and push &quot;Finish&quot;.</P>
   </LI>
   <LI>Verilog/VHDL new file wizard
-  <IMG src="new.gif" width="61" height="13" border="0">
   <P>In the Verilog/VHDL perspective, select &quot;File&quot;-&gt;&quot;New&quot;-&gt;&quot;Verilog
   file&quot; or &quot;New&quot;-&gt;&quot;Verilog file&quot; on Navigator.
   Then enter module name and push &quot;Finish&quot;. You can also select
   &quot;VHDL file&quot;.</P>
   </LI>
   <LI>Verilog/VHDL simulator builder
-  <IMG src="new.gif" width="61" height="13" border="0">
   <P>Select your Verilog/VHDL project on Navigator. Then open context menu and
   select &quot;Properties&quot;. Select &quot;Verilog/VHDL Simulator&quot;
   category. Check &quot;Enable Verilog/VHDL Builder&quot; and fill &quot;Working
@@ -95,6 +91,23 @@
   &quot;Project&quot;-&gt;&quot;Build All&quot;.</P>
   </LI>
 </UL>
-<P><A href="index.html">Return to top page</A></P>
+<UL>
+  <LI>Custom error parser
+  <IMG src="new.gif" width="61" height="13" border="0">
+  <P>&quot;Window&quot;-&gt;&quot;Preferences&quot;-&gt;&quot;Verilog/VHDL Editor&quot;-&gt;&quot;Error
+  Parser&quot;. Push &quot;New&quot; button, then you can add your favorite
+  complier.<BR>
+  You have to fill text box named &quot;Error Pattern&quot;. It is matching
+  string for regular expression of java.util.regex package. The first capturing
+  group means the file name, second is the line number and third is error
+  message.<BR>
+  <BR>
+  If you add your error parser, you can select it in the project properties
+  page.<BR>
+  <BR>
+  The document of java.uitl.regex package is <A href="http://java.sun.com/j2se/1.4.2/docs/api/java/util/regex/package-summary.html">http://java.sun.com/j2se/1.4.2/docs/api/java/util/regex/package-summary.html</A>. The Pattern class link shows how to write the regular expression.</P>
+  </LI>
+</UL>
+  <P><A href="index.html">Return to top page</A></P>
 </BODY>
 </HTML>
