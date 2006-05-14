@@ -43,16 +43,16 @@ public class VerilogPreferenceInitializer extends AbstractPreferenceInitializer
 	private static final String DEFAULT_ERROR_PARSER_REGEX =
 		"1"
 		+ "\n" + "Cver"
-		+ "\n" + "\\*\\*(.*)\\((.*)\\) ERROR\\*\\* (.*)"
-		+ "\n" + "\\*\\*(.*)\\((.*)\\) WARN\\*\\* (.*)"
-		+ "\n" + "--(.*)\\((.*)\\) INFORM-- (.*)" 
+		+ "\n" + "\\*\\*(.*)\\(([0-9]+)\\) ERROR\\*\\* (.*)"
+		+ "\n" + "\\*\\*(.*)\\(([0-9]+)\\) WARN\\*\\* (.*)"
+		+ "\n" + "--(.*)\\(([0-9]+)\\) INFORM-- (.*)" 
 		+ "\n" + "Icarus Verilog"
-		+ "\n" + "(.*):(.*): [a-z ]*error: (.*)"
-		+ "\n" + "(.*):(.*): warning: (.*)"
+		+ "\n" + "(.*):([0-9]+): [a-z ]*error: (.*)"
+		+ "\n" + "(.*):([0-9]+): warning: (.*)"
 		+ "\n" + ""
 		+ "\n" + "FreeHDL"
-		+ "\n" + "(.*):(.*): error: (.*)" 
-		+ "\n" + "(.*):(.*): warning: (.*)" 
+		+ "\n" + "(.*):([0-9]+): error: (.*)" 
+		+ "\n" + "(.*):([0-9]+): warning: (.*)" 
 		+ "\n" + ""
 		+ "\n";
 	public static final int NUM_OF_DEFAULT_ERROR_PARSERS = 3;
