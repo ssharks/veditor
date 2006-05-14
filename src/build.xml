@@ -8,7 +8,7 @@
 
 	<!-- must be linked with plugin.xml -->
 	<property name="project" value="net.sourceforge.veditor"/>
-	<property name="plugin_version" value="0.4.0"/>
+	<property name="plugin_version" value="0.4.1"/>
 
 	<property name="src" value="src"/>
 	<property name="dst" value="bin"/>
@@ -33,11 +33,11 @@
 	<target name="javacc">
 		<mkdir dir="${javacc_dst}" />
 		<javacc
-			javacchome="${javacc_dir}" 
+			javacchome="${javacc_dir}"
 	 		target="${javacc_src_verilog}"
 	 		outputdirectory="${javacc_dst}" />
 		<javacc
-			javacchome="${javacc_dir}" 
+			javacchome="${javacc_dir}"
 	 		target="${javacc_src_vhdl}"
 	 		outputdirectory="${javacc_dst}" />
 	</target>
@@ -83,8 +83,10 @@
 	</target>
 
 	<target name="clean">
+		<delete>
+			<fileset dir="${javacc_generated}" includes="**/*.java" />
+		</delete>
 		<delete dir="${dst}"/>
-		<delete dir="${javacc_generated}"/>
 		<delete file="${jar}"/>
 		<delete file="${zip}"/>
 	</target>
