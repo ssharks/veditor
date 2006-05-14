@@ -1,5 +1,5 @@
 //
-//  Copyright 2004-2006, KOBAYASHI Tadashi
+//  Copyright 2004, KOBAYASHI Tadashi
 //  $Id$
 //
 //  This program is free software; you can redistribute it and/or modify
@@ -19,14 +19,9 @@
 
 package net.sourceforge.veditor.log;
 
-import org.eclipse.ui.editors.text.TextEditor;
+import org.eclipse.jface.text.source.SourceViewerConfiguration;
 
-public class LogEditor extends TextEditor
+public class LogSourceViewerConfiguration extends SourceViewerConfiguration
 {
-	public LogEditor()
-	{
-		super();
-		setDocumentProvider(new LogDocumentProvider());
-		setSourceViewerConfiguration(new LogSourceViewerConfiguration());
-	}
+	// TODO: implement getPresentationReconciler for partitioning
 }
