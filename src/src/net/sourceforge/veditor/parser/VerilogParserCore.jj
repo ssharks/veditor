@@ -120,7 +120,8 @@ TOKEN :
 |	<GENERATE:	"generate">
 |	<ENDGENERATE:	"endgenerate">
 |	<PORT_HEAD: 	( "input" | "output" | "inout") >
-|	<VARIABLE_HEAD: ( "integer" | "real" | "wire" | "reg" | "event" | "genvar" ) >
+|	<VARIABLE_HEAD: ( "integer" | "wire" | "reg" | "event" | "genvar" ) >
+|	<REAL:		"real">
 |	<PARAMETER:	"parameter"> 
 |	<SIGNED:	"signed">
 |	<STMT_HEAD: (
@@ -213,7 +214,8 @@ void variableHead() :
 {
 }
 {
-		<VARIABLE_HEAD> [ <SIGNED> ]
+		<REAL>
+	|	<VARIABLE_HEAD> [ <SIGNED> ]
 	|	<SIGNED>
 }
 
@@ -277,7 +279,10 @@ void parameter() :
 	Token value;
 }
 {
-	[ "[" skipTo(RBRACKET) ]
+	[
+		<REAL>
+	|	"[" skipTo(RBRACKET)
+	]
 	parameter = identifier() [ "[" skipTo(RBRACKET) ]
 	"="
 	value = skipWord()
