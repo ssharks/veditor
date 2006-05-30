@@ -1,0 +1,10 @@
+2006-05-30 Øyvind Harboe	
+	* added ChangeLog
+	* bumped version number for plugin to 0.4.2
+	* Fixed NPE in ctrl-space for VHDL files. 
+	* renamed build.xml to buildjavacc.xml. The original build.xml file
+	  is used to generate .java from .jj files. The "build.xml" name
+	  is used by standard Eclipse naming w.r.t. build files for exporting
+	  the plugin
+	* added standard Eclipse build.xml which allows exporting veditor
+	  as a plugin

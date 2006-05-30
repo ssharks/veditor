@@ -67,11 +67,16 @@ public class VhdlCompletionProcessor extends HdlCompletionProcessor
 
 		//  variable
 		ModuleList mlist = ModuleList.find(doc.getProject());
-		Module module = mlist.findModule(mname);
-		if (module != null)
+		// FIX!!! should we do something more advanced when there
+		// are no modules?
+		if (mlist!=null)
 		{
-			addProposals(matchList, offset, replace, module.getPorts());
-			addProposals(matchList, offset, replace, module.getVariables());
+			Module module = mlist.findModule(mname);
+			if (module != null)
+			{
+				addProposals(matchList, offset, replace, module.getPorts());
+				addProposals(matchList, offset, replace, module.getVariables());
+			}
 		}
 		return matchList;
 	}
