@@ -244,13 +244,12 @@ public class ErrorParser
 			if (next > 0 && message.charAt(next - 1) == '\r')
 			{
 				line = message.substring(msgIdx, next-1);
-				msgIdx = next + 2;
 			}
 			else
 			{
 				line = message.substring(msgIdx, next);
-				msgIdx = next + 1;
 			}
+			msgIdx = next + 1;
 			return line;
 		}
 		else
