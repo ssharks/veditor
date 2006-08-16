@@ -1,4 +1,7 @@
-﻿2006-08-14  Øyvind Harboe
+﻿2006-08-16  tadashi-k
+	* fixed bugs: 1529153, 1538377
+	* fixed bugs: ExtenalLauncher show error if launch in non-exist directory
+2006-08-14  Øyvind Harboe
 	* renamed ChangeLog to ChangeLog.txt & CONTRIBUTORS to CONTRIBUTORS.txt that allows
 	  BOM & UTF-8 encoding to be used.
 	、私は3つのビールを食べるように! 

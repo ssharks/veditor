@@ -324,17 +324,21 @@ public abstract class VerilogParserCore implements VerilogParserCoreConstants {
       ;
     }
     variable = identifier();
-    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-    case LBRACKET:
+    label_5:
+    while (true) {
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case LBRACKET:
+        ;
+        break;
+      default:
+        jj_la1[18] = jj_gen;
+        break label_5;
+      }
       jj_consume_token(LBRACKET);
       skipTo(RBRACKET);
-      break;
-    default:
-      jj_la1[18] = jj_gen;
-      ;
     }
                 addVariable( variable.beginLine, variable.image );
-    label_5:
+    label_6:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case COMMA:
@@ -342,18 +346,22 @@ public abstract class VerilogParserCore implements VerilogParserCoreConstants {
         break;
       default:
         jj_la1[19] = jj_gen;
-        break label_5;
+        break label_6;
       }
       jj_consume_token(COMMA);
       variable = identifier();
-      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case LBRACKET:
+      label_7:
+      while (true) {
+        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+        case LBRACKET:
+          ;
+          break;
+        default:
+          jj_la1[20] = jj_gen;
+          break label_7;
+        }
         jj_consume_token(LBRACKET);
         skipTo(RBRACKET);
-        break;
-      default:
-        jj_la1[20] = jj_gen;
-        ;
       }
                         addVariable( variable.beginLine, variable.image );
     }
@@ -443,7 +451,7 @@ public abstract class VerilogParserCore implements VerilogParserCoreConstants {
   }
 
   final public void statement() throws ParseException {
-    label_6:
+    label_8:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case PARA:
@@ -452,7 +460,7 @@ public abstract class VerilogParserCore implements VerilogParserCoreConstants {
         break;
       default:
         jj_la1[27] = jj_gen;
-        break label_6;
+        break label_8;
       }
       delay();
     }
@@ -524,7 +532,7 @@ public abstract class VerilogParserCore implements VerilogParserCoreConstants {
       jj_consume_token(-1);
       throw new ParseException();
     }
-    label_7:
+    label_9:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case BEGIN:
@@ -549,7 +557,7 @@ public abstract class VerilogParserCore implements VerilogParserCoreConstants {
         break;
       default:
         jj_la1[30] = jj_gen;
-        break label_7;
+        break label_9;
       }
       statement();
     }
@@ -603,7 +611,7 @@ public abstract class VerilogParserCore implements VerilogParserCoreConstants {
 
   final public void generate() throws ParseException {
     jj_consume_token(GENERATE);
-    label_8:
+    label_10:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case SPECIFY:
@@ -625,7 +633,7 @@ public abstract class VerilogParserCore implements VerilogParserCoreConstants {
         break;
       default:
         jj_la1[34] = jj_gen;
-        break label_8;
+        break label_10;
       }
       generateStatement();
     }
@@ -695,7 +703,7 @@ public abstract class VerilogParserCore implements VerilogParserCoreConstants {
     jj_consume_token(LPAREN);
     skipParen();
     jj_consume_token(RPAREN);
-    label_9:
+    label_11:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case BQ:
@@ -704,10 +712,10 @@ public abstract class VerilogParserCore implements VerilogParserCoreConstants {
         break;
       default:
         jj_la1[38] = jj_gen;
-        break label_9;
+        break label_11;
       }
       identifier();
-      label_10:
+      label_12:
       while (true) {
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
         case COMMA:
@@ -715,7 +723,7 @@ public abstract class VerilogParserCore implements VerilogParserCoreConstants {
           break;
         default:
           jj_la1[39] = jj_gen;
-          break label_10;
+          break label_12;
         }
         jj_consume_token(COMMA);
         identifier();
@@ -770,7 +778,7 @@ public abstract class VerilogParserCore implements VerilogParserCoreConstants {
       jj_la1[40] = jj_gen;
       ;
     }
-    label_11:
+    label_13:
     while (true) {
       generateStatement();
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -793,7 +801,7 @@ public abstract class VerilogParserCore implements VerilogParserCoreConstants {
         break;
       default:
         jj_la1[41] = jj_gen;
-        break label_11;
+        break label_13;
       }
     }
     jj_consume_token(END);
@@ -805,7 +813,7 @@ public abstract class VerilogParserCore implements VerilogParserCoreConstants {
     skipParen();
     jj_consume_token(RPAREN);
     jj_consume_token(BEGIN);
-    label_12:
+    label_14:
     while (true) {
       generateStatement();
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -828,7 +836,7 @@ public abstract class VerilogParserCore implements VerilogParserCoreConstants {
         break;
       default:
         jj_la1[42] = jj_gen;
-        break label_12;
+        break label_14;
       }
     }
     jj_consume_token(END);
@@ -836,7 +844,7 @@ public abstract class VerilogParserCore implements VerilogParserCoreConstants {
     case ELSE:
       jj_consume_token(ELSE);
       jj_consume_token(BEGIN);
-      label_13:
+      label_15:
       while (true) {
         generateStatement();
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -859,7 +867,7 @@ public abstract class VerilogParserCore implements VerilogParserCoreConstants {
           break;
         default:
           jj_la1[43] = jj_gen;
-          break label_13;
+          break label_15;
         }
       }
       jj_consume_token(END);

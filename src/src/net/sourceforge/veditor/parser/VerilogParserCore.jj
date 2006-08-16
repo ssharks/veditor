@@ -256,13 +256,13 @@ void variable() :
 }
 {
 	[ "[" skipTo(RBRACKET) ]
-	variable = identifier() [ "[" skipTo(RBRACKET) ]
+	variable = identifier() ( "[" skipTo(RBRACKET) )*
 	{
 		addVariable( variable.beginLine, variable.image );
 	}
 	(
 		","
-		variable = identifier() [ "[" skipTo(RBRACKET) ]
+		variable = identifier() ( "[" skipTo(RBRACKET) )*
 		{
 			addVariable( variable.beginLine, variable.image );
 		}

@@ -165,8 +165,13 @@ abstract public class HdlEditor extends TextEditor
 	{
 		HdlDocument doc = getHdlDocument();
 		ParserManager manager = doc.createParserManager();
-		
-		VerilogPlugin.clearProblemMarker(doc.getFile());
+
+		// check for non-workspace file
+		IFile file = doc.getFile();
+		if (file == null)
+			return;
+
+		VerilogPlugin.clearProblemMarker(file);
 		try
 		{
 			manager.parseSyntax();
