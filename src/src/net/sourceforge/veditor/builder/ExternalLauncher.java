@@ -7,6 +7,7 @@
  *
  * Contributors:
  *    KOBAYASHI Tadashi - initial API and implementation
+ *    Ken Horn - added patch
  *******************************************************************************/
 
 package net.sourceforge.veditor.builder;
@@ -43,6 +44,28 @@ public class ExternalLauncher extends Thread
 		//System.out.println(command);
 
 		File dir = folder.getLocation().toFile();
+		if (!dir.exists())
+		{
+			VerilogPlugin.println("working dir: " + dir.getAbsolutePath()
+					+ " does not exist");
+		}
+		else
+		{
+			if (!dir.isDirectory())
+			{
+				VerilogPlugin.println("working dir: " + dir.getAbsolutePath()
+						+ " is not a directory");
+			}
+			else
+			{
+				if (!dir.canWrite())
+				{
+					VerilogPlugin.println("working dir: "
+							+ dir.getAbsolutePath() + " no write access");
+				}
+			}
+		}
+
 		Runtime runtime = Runtime.getRuntime();
 		try
 		{
