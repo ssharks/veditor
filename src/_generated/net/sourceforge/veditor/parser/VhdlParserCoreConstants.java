@@ -7,60 +7,63 @@ public interface VhdlParserCoreConstants {
   int MULTI_LINE_COMMENT = 2;
   int SINGLE_LINE_COMMENT = 9;
   int LIBRARY = 10;
-  int PACKAGE = 11;
-  int USE = 12;
-  int ENTITY = 13;
-  int ARCHITECTURE = 14;
-  int IS = 15;
-  int OF = 16;
-  int RECORD = 17;
-  int GENERIC = 18;
-  int PORT = 19;
-  int PROCESS = 20;
-  int BEGIN = 21;
-  int END = 22;
-  int CONSTANT = 23;
-  int PROCEDURE = 24;
-  int FUNCTION = 25;
-  int SIGNAL = 26;
-  int SHARED = 27;
-  int VARIABLE = 28;
-  int TYPE = 29;
-  int SUBTYPE = 30;
-  int FILE = 31;
-  int ALIAS = 32;
-  int ATTRIBUTE = 33;
-  int COMPONENT = 34;
-  int FOR = 35;
-  int IF = 36;
-  int CASE = 37;
-  int DISCONNECT = 38;
-  int GROUP = 39;
-  int BLOCK = 40;
-  int ASSERT = 41;
-  int GENERATE = 42;
-  int TO = 43;
-  int RANGE = 44;
-  int WITH = 45;
-  int MODE = 46;
-  int LPAREN = 47;
-  int RPAREN = 48;
-  int LBRACE = 49;
-  int RBRACE = 50;
-  int LBRACKET = 51;
-  int RBRACKET = 52;
-  int EOS = 53;
-  int PARA = 54;
-  int AT = 55;
-  int BQ = 56;
-  int DOLLAR = 57;
-  int COMMA = 58;
-  int COLON = 59;
-  int ASSIGN = 60;
-  int EQUAL = 61;
-  int IDENT = 62;
-  int SPC_CHAR = 63;
-  int OTHER = 64;
+  int BODY = 11;
+  int PACKAGE = 12;
+  int USE = 13;
+  int ENTITY = 14;
+  int ARCHITECTURE = 15;
+  int IS = 16;
+  int OF = 17;
+  int RECORD = 18;
+  int GENERIC = 19;
+  int PORT = 20;
+  int PROCESS = 21;
+  int BEGIN = 22;
+  int END = 23;
+  int CONSTANT = 24;
+  int PROCEDURE = 25;
+  int FUNCTION = 26;
+  int SIGNAL = 27;
+  int SHARED = 28;
+  int VARIABLE = 29;
+  int TYPE = 30;
+  int SUBTYPE = 31;
+  int FILE = 32;
+  int ALIAS = 33;
+  int ATTRIBUTE = 34;
+  int COMPONENT = 35;
+  int FOR = 36;
+  int IF = 37;
+  int CASE = 38;
+  int LOOP = 39;
+  int RETURN = 40;
+  int DISCONNECT = 41;
+  int GROUP = 42;
+  int BLOCK = 43;
+  int ASSERT = 44;
+  int GENERATE = 45;
+  int TO = 46;
+  int RANGE = 47;
+  int WITH = 48;
+  int MODE = 49;
+  int LPAREN = 50;
+  int RPAREN = 51;
+  int LBRACE = 52;
+  int RBRACE = 53;
+  int LBRACKET = 54;
+  int RBRACKET = 55;
+  int EOS = 56;
+  int PARA = 57;
+  int AT = 58;
+  int BQ = 59;
+  int DOLLAR = 60;
+  int COMMA = 61;
+  int COLON = 62;
+  int ASSIGN = 63;
+  int EQUAL = 64;
+  int IDENT = 65;
+  int SPC_CHAR = 66;
+  int OTHER = 67;
 
   int DEFAULT = 0;
   int IN_MULTI_LINE_COMMENT = 1;
@@ -77,6 +80,7 @@ public interface VhdlParserCoreConstants {
     "\"\\f\"",
     "<SINGLE_LINE_COMMENT>",
     "\"library\"",
+    "\"body\"",
     "\"package\"",
     "\"use\"",
     "\"entity\"",
@@ -104,6 +108,8 @@ public interface VhdlParserCoreConstants {
     "\"for\"",
     "\"if\"",
     "\"case\"",
+    "\"loop\"",
+    "\"return\"",
     "\"disconnect\"",
     "\"group\"",
     "\"block\"",

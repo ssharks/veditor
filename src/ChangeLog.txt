@@ -1,4 +1,6 @@
-﻿2006-08-16  tadashi-k
+﻿2006-08-17  tadashi-k
+	* fixed bugs: 1488462, 1519826, 1519835, 1537960
+2006-08-16  tadashi-k
 	* fixed bugs: 1529153, 1538377
 	* fixed bugs: ExtenalLauncher show error if launch in non-exist directory
 2006-08-14  Øyvind Harboe

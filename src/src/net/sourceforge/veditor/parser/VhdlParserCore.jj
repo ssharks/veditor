@@ -84,6 +84,7 @@ SPECIAL_TOKEN :
 TOKEN :
 {
 	<LIBRARY:	"library">
+|	<BODY:		"body">
 |	<PACKAGE:	"package">
 |	<USE:		"use">
 |	<ENTITY:	"entity">
@@ -111,6 +112,8 @@ TOKEN :
 |	<FOR:		"for">
 |	<IF:		"if">
 |	<CASE:		"case">
+|	<LOOP:		"loop">
+|	<RETURN:	"return">
 |	<DISCONNECT:"disconnect">
 |	<GROUP:		"group">
 |	<BLOCK:		"block">
@@ -147,12 +150,10 @@ void modules() :
 	(
 		<LIBRARY> skipTo( EOS )
 	|	<USE> skipTo( EOS )
-	)*
-
-	(
-		entity()
+	|	entity()
+	|	architecture()
 	|	packageDef()
-	)
+	)+
 }
 
 void entity() :
@@ -169,7 +170,17 @@ void entity() :
 		<GENERIC> "(" skipParen() ")" <EOS>
 	|	<PORT> "(" port() ( ";" port() )* ")" <EOS>
 	)*
-	<END> [ <ENTITY> ] [ identifier() ] <EOS>
+	<END> [ <ENTITY> ] [ identifier() ] end = <EOS>
+	{
+		endModule( end.beginLine );
+	}
+}
+
+void architecture() :
+{
+	Token end;
+}
+{
 	<ARCHITECTURE> identifier() <OF> identifier() <IS>
 	moduleBody()
 	[ identifier() ]
@@ -179,17 +190,17 @@ void entity() :
 	}
 }
 
+
 void packageDef() :
 {
 	Token name ;
 	Token end ;
 }
 {
-	<PACKAGE> identifier() <IS>
+	<PACKAGE> [<BODY>] identifier() <IS>
 	(
-		( packageDeclaration() )*
-
-		<COMPONENT> name = identifier() [<IS>]
+		packageDeclaration()
+|		<COMPONENT> name = identifier() [<IS>]
 		{
 			addModule( name.beginLine, name.image );
 		}
@@ -277,6 +288,16 @@ void packageDeclaration() :
 		|	skipTo( EOS )
 		)
 |	( <FILE> | <ALIAS> | <ATTRIBUTE> | <FOR> | <DISCONNECT> | <GROUP> ) skipTo( EOS )
+|	<PROCEDURE> 
+		(
+			<EOS>
+		|	skipTo( BEGIN ) skipEnd() <END> [ identifier() ] <EOS>
+		)
+|	<FUNCTION> skipTo( RETURN ) identifier()
+		(
+			<EOS>
+		|	skipTo( BEGIN ) skipEnd() <END> [ identifier() ] <EOS>
+		)
 }
 
 void declaration() :
@@ -285,7 +306,6 @@ void declaration() :
 {
 	packageDeclaration()
 |	<COMPONENT> skipTo2( END, COMPONENT ) skipTo( EOS )
-|	( <PROCEDURE> | <FUNCTION> ) skipTo( BEGIN ) skipEnd() <END> <EOS>
 }
 
 void statement() :
@@ -305,7 +325,7 @@ void statement() :
 			|	( <IF> | <FOR> ) skipTo( GENERATE )
 				(
 					<BEGIN> ( statement() )* 
-				|	statement()
+				|	( statement() )+
 				)
 				<END> <GENERATE> [identifier()] <EOS>
 			|	<PROCESS> process()
@@ -427,7 +447,7 @@ void skipEnd()
 		token = getToken( 1 );
 		if ( token.kind == EOF )
 			throw new ParseException("unexpected EOF");
-		if ( token.kind == BEGIN || token.kind == IF || token.kind == CASE )
+		if ( token.kind == BEGIN || token.kind == IF || token.kind == CASE || token.kind == LOOP )
 			nesting++;
 		if ( token.kind == END )
 		{
