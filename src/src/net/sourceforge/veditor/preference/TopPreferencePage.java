@@ -28,7 +28,7 @@ public class TopPreferencePage extends AbstractSimplePreferencePage
 				"Outline includes independent comments");
 		addBooleanField("ContentAssist.ModuleParameter",
 				"Generate module parameter with instantiation(Verilog-2001)");
-		addStringField("Compile.command:", "Compile command");
+		addStringField("Compile.command", "Compile command");
 	}
 
 	public void init(IWorkbench workbench)
