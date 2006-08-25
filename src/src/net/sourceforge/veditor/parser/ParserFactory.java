@@ -12,8 +12,10 @@ package net.sourceforge.veditor.parser;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.io.StringReader;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
 
 /**
  * generate Verilog or VHDL parser
@@ -36,28 +38,41 @@ abstract public class ParserFactory
 //			return null;
 //	}
 	
-	public static IParser createVerilogParser(Reader reader, IFile file)
+	public static IParser createVerilogParser(String text, IProject project, IFile file)
 	{
-		return new VerilogParser(new AsciiReader(reader), file);
+		return new VerilogParser(new AsciiReader(text), project, file);
 	}
 
-	public static IParser createVhdlParser(Reader reader, IFile file)
+	public static IParser createVerilogParser(Reader reader, IProject project, IFile file)
 	{
-		return new VhdlParser(new AsciiReader(reader), file);
+		return new VerilogParser(reader, project, file);
 	}
 
+	public static IParser createVhdlParser(String text, IProject project, IFile file)
+	{
+		return new VhdlParser(new AsciiReader(text), project, file);
+	}
+
+	public static IParser createVhdlParser(Reader reader, IProject project, IFile file)
+	{
+		return new VhdlParser(reader, project, file);
+	}
 
 	/**
-	 *	Wrapper of reader to ignore two bytes code because of JavaCC bug.
-	 *	It may be no problem. The two bytes characters are allowed in comment only.
+	 *	Wrapper of StringReader. It can support rewind.
+	 *  @note
+	 *  The earlier version had special code for two byte character.
+	 *  But it is no longer necessary because JavaCC can handle correctly.
 	 */
 	private static class AsciiReader extends Reader
 	{
-		private Reader reference;
+		private String text;
+		private StringReader reference;
 
-		public AsciiReader(Reader reference)
+		public AsciiReader(String text)
 		{
-			this.reference = reference;
+			this.text = text;
+			reset();
 		}
 		
 		public void close() throws IOException
@@ -68,12 +83,12 @@ abstract public class ParserFactory
 		public int read(char[] cbuf, int off, int len) throws IOException
 		{
 			int n = reference.read(cbuf, off, len);
-			for (int i = 0; i < n; i++)
-			{
-				if (cbuf[i] >= 0x100)	// convert from two bytes code to space
-					cbuf[i] = ' ';
-			}
 			return n;
+		}
+
+		public void reset()
+		{
+			reference = new StringReader(text);
 		}
 	}
 }

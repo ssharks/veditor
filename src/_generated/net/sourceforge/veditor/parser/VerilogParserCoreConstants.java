@@ -32,30 +32,36 @@ public interface VerilogParserCoreConstants {
   int ENDTASK = 34;
   int GENERATE = 35;
   int ENDGENERATE = 36;
-  int PORT_HEAD = 37;
-  int VARIABLE_HEAD = 38;
-  int REAL = 39;
-  int PARAMETER = 40;
-  int SIGNED = 41;
-  int STMT_HEAD = 42;
-  int BLOCK_HEAD = 43;
-  int LPAREN = 44;
-  int RPAREN = 45;
-  int LBRACE = 46;
-  int RBRACE = 47;
-  int LBRACKET = 48;
-  int RBRACKET = 49;
-  int EOS = 50;
-  int PARA = 51;
-  int AT = 52;
-  int BQ = 53;
-  int DOLLAR = 54;
-  int COMMA = 55;
-  int COLON = 56;
-  int EQUAL = 57;
-  int IDENT = 58;
-  int SPC_CHAR = 59;
-  int OTHER = 60;
+  int INPUT = 37;
+  int OUTPUT = 38;
+  int INOUT = 39;
+  int INTEGER = 40;
+  int WIRE = 41;
+  int REG = 42;
+  int EVENT = 43;
+  int GENVAR = 44;
+  int REAL = 45;
+  int PARAMETER = 46;
+  int SIGNED = 47;
+  int STMT_HEAD = 48;
+  int BLOCK_HEAD = 49;
+  int LPAREN = 50;
+  int RPAREN = 51;
+  int LBRACE = 52;
+  int RBRACE = 53;
+  int LBRACKET = 54;
+  int RBRACKET = 55;
+  int EOS = 56;
+  int PARA = 57;
+  int AT = 58;
+  int BQ = 59;
+  int DOLLAR = 60;
+  int COMMA = 61;
+  int COLON = 62;
+  int EQUAL = 63;
+  int IDENT = 64;
+  int SPC_CHAR = 65;
+  int OTHER = 66;
 
   int DEFAULT = 0;
   int IN_MULTI_LINE_COMMENT = 1;
@@ -99,8 +105,14 @@ public interface VerilogParserCoreConstants {
     "\"endtask\"",
     "\"generate\"",
     "\"endgenerate\"",
-    "<PORT_HEAD>",
-    "<VARIABLE_HEAD>",
+    "\"input\"",
+    "\"output\"",
+    "\"inout\"",
+    "\"integer\"",
+    "\"wire\"",
+    "\"reg\"",
+    "\"event\"",
+    "\"genvar\"",
     "\"real\"",
     "\"parameter\"",
     "\"signed\"",

@@ -70,7 +70,7 @@ public abstract class Module extends Segment
 	{
 		return null;
 	}
-	public Object[] getVariables()
+	public Object[] getSignals()
 	{
 		return null;
 	}
@@ -78,11 +78,7 @@ public abstract class Module extends Segment
 	{
 		return null;
 	}
-	public Object[] getParameterValues()
-	{
-		return null;
-	}
-	public void addPort(String name)
+	public void addPort(String name, String prefix, String postfix)
 	{
 	}
 	public void addElement(int begin, int end, String typeName, String name)
@@ -91,7 +87,7 @@ public abstract class Module extends Segment
 	public void addInstance(int begin, int end, String typeName, String name)
 	{
 	}
-	public void addVariable(String str)
+	public void addSignal(String str, String prefix, String postfix)
 	{
 	}
 	public void addParameter(String str, String value)
@@ -99,6 +95,47 @@ public abstract class Module extends Segment
 	}
 	public Module findModule(String str)
 	{
+		return null;
+	}
+
+	public ModuleVariable findPorts(String name)
+	{
+		return findFromArray(name, getPorts());
+	}
+
+	public ModuleVariable findSignals(String name)
+	{
+		return findFromArray(name, getSignals());
+	}
+
+	public ModuleVariable findParameters(String name)
+	{
+		return findFromArray(name, getParameters());
+	}
+
+	private static ModuleVariable findFromArray(String name, Object[] objs)
+	{
+		for(int i = 0; i < objs.length ; i++)
+		{
+			if (objs[i].equals(name))
+				return (ModuleVariable)objs[i];
+		}
+		return null;
+	}
+
+	public ModuleVariable findVariable(String name)
+	{
+		ModuleVariable var;
+		
+		var = findPorts(name);
+		if (var != null)
+			return var;
+		var = findSignals(name);
+		if (var != null)
+			return var;
+		var = findParameters(name);
+		if (var != null)
+			return var;
 		return null;
 	}
 }

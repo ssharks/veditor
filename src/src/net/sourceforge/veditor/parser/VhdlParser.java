@@ -13,9 +13,12 @@ package net.sourceforge.veditor.parser;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
 
 /**
  * implementation class of VhdlParserCore<p/>
@@ -25,12 +28,19 @@ class VhdlParser extends VhdlParserCore implements IParser
 {
 	private IFile file;
 	private ParserManager manager;
+	private Reader reader;
+	private List varList = new ArrayList();
+	private int varMode;
+	private final int MODE_PARAMETER = 0;
+	private final int MODE_PORT = 1;
+	private final int MODE_SIGNAL = 2;
 
-	public VhdlParser(Reader reader, IFile file)
+	public VhdlParser(Reader reader, IProject project, IFile file)
 	{
 		super(reader);
+		this.reader = reader;
 		this.file = file;
-		manager = new ParserManager(this);
+		manager = new ParserManager(this, project);
 	}
 
 	public ParserManager getManager()
@@ -54,15 +64,18 @@ class VhdlParser extends VhdlParserCore implements IParser
 	}
 	protected void addPort(int line, String portName)
 	{
-		manager.addPort(line, portName);
+		varMode = MODE_PORT;
+		varList.add(new Variable(line, portName));
 	}
 	protected void addVariable(int line, String varName)
 	{
-		manager.addVariable(line, varName);
+		varMode = MODE_SIGNAL;
+		varList.add(new Variable(line, varName));
 	}
-	protected void addParameter(int line, String name, String value)
+	protected void addParameter(int line, String name)
 	{
-		manager.addParameter(line, name, value);
+		varMode = MODE_PARAMETER;
+		varList.add(new Variable(line, name));
 	}
 	protected void addElement(int begin, int end, String type, String name)
 	{
@@ -80,14 +93,68 @@ class VhdlParser extends VhdlParserCore implements IParser
 	{
 		manager.endStatement();
 	}
+	protected void setPrefix(String fix)
+	{
+		manager.setPrefix(fix);
+	}
+	protected void setPostfix(String fix)
+	{
+		manager.setPostfix(fix);
+		Iterator i; 
+		
+		i = varList.iterator();
+		while(i.hasNext())
+		{
+			Variable var = (Variable)i.next();
+			switch(varMode)
+			{
+				case MODE_PARAMETER:
+					manager.addParameter(var.line, var.name, fix);
+					break;
+				case MODE_PORT:
+					manager.addPort(var.line, var.name);
+					break;
+				case MODE_SIGNAL:
+					manager.addSignal(var.line, var.name);
+					break;
+			}
+		}
+		varList.clear();
+	}
+	
+	private static class Variable
+	{
+		public int line;
+		public String name;
+		
+		Variable(int line, String name)
+		{
+			this.line = line;
+			this.name = name;
+		}
+	}
+
+	public void parse() throws ParseException
+	{
+		try
+		{
+			reader.reset();
+		}
+		catch (IOException e)
+		{
+		}
+		super.parse();
+	}
 
 	/**
 	 * parse line comment for content outline
 	 */
-	public void parseLineComment(Reader reader)
+	public void parseLineComment()
 	{
 		try
 		{
+			reader.reset();
+
 			int line = 1;
 			int column = 0;
 			int c = reader.read();

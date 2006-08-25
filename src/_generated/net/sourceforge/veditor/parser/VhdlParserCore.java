@@ -6,11 +6,13 @@ public abstract class VhdlParserCore implements VhdlParserCoreConstants {
         protected abstract void endModule(int line);
         protected abstract void addPort(int line, String portName);
         protected abstract void addVariable(int line, String varName);
-        protected abstract void addParameter(int line, String name, String value);
+        protected abstract void addParameter(int line, String name);
         protected abstract void addElement(int begin, int end, String type, String name);
         protected abstract void addInstance(int begin, int end, String module, String inst);
         protected abstract void beginStatement();
         protected abstract void endStatement();
+        protected abstract void setPrefix(String fix);
+        protected abstract void setPostfix(String fix);
 
         public void parse() throws ParseException
         {
@@ -78,34 +80,13 @@ public abstract class VhdlParserCore implements VhdlParserCoreConstants {
       }
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case GENERIC:
-        jj_consume_token(GENERIC);
-        jj_consume_token(LPAREN);
-        skipParen();
-        jj_consume_token(RPAREN);
-        jj_consume_token(EOS);
+        genericList();
         break;
       case PORT:
-        jj_consume_token(PORT);
-        jj_consume_token(LPAREN);
-        port();
-        label_3:
-        while (true) {
-          switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-          case EOS:
-            ;
-            break;
-          default:
-            jj_la1[3] = jj_gen;
-            break label_3;
-          }
-          jj_consume_token(EOS);
-          port();
-        }
-        jj_consume_token(RPAREN);
-        jj_consume_token(EOS);
+        portList();
         break;
       default:
-        jj_la1[4] = jj_gen;
+        jj_la1[3] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -116,7 +97,7 @@ public abstract class VhdlParserCore implements VhdlParserCoreConstants {
       jj_consume_token(ENTITY);
       break;
     default:
-      jj_la1[5] = jj_gen;
+      jj_la1[4] = jj_gen;
       ;
     }
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -124,7 +105,7 @@ public abstract class VhdlParserCore implements VhdlParserCoreConstants {
       identifier();
       break;
     default:
-      jj_la1[6] = jj_gen;
+      jj_la1[5] = jj_gen;
       ;
     }
     end = jj_consume_token(EOS);
@@ -144,7 +125,7 @@ public abstract class VhdlParserCore implements VhdlParserCoreConstants {
       identifier();
       break;
     default:
-      jj_la1[7] = jj_gen;
+      jj_la1[6] = jj_gen;
       ;
     }
     end = jj_consume_token(EOS);
@@ -160,12 +141,12 @@ public abstract class VhdlParserCore implements VhdlParserCoreConstants {
       jj_consume_token(BODY);
       break;
     default:
-      jj_la1[8] = jj_gen;
+      jj_la1[7] = jj_gen;
       ;
     }
     identifier();
     jj_consume_token(IS);
-    label_4:
+    label_3:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case CONSTANT:
@@ -192,11 +173,11 @@ public abstract class VhdlParserCore implements VhdlParserCoreConstants {
           jj_consume_token(IS);
           break;
         default:
-          jj_la1[9] = jj_gen;
+          jj_la1[8] = jj_gen;
           ;
         }
                         addModule( name.beginLine, name.image );
-        label_5:
+        label_4:
         while (true) {
           switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
           case GENERIC:
@@ -204,39 +185,18 @@ public abstract class VhdlParserCore implements VhdlParserCoreConstants {
             ;
             break;
           default:
-            jj_la1[10] = jj_gen;
-            break label_5;
+            jj_la1[9] = jj_gen;
+            break label_4;
           }
           switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
           case GENERIC:
-            jj_consume_token(GENERIC);
-            jj_consume_token(LPAREN);
-            skipParen();
-            jj_consume_token(RPAREN);
-            jj_consume_token(EOS);
+            genericList();
             break;
           case PORT:
-            jj_consume_token(PORT);
-            jj_consume_token(LPAREN);
-            port();
-            label_6:
-            while (true) {
-              switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-              case EOS:
-                ;
-                break;
-              default:
-                jj_la1[11] = jj_gen;
-                break label_6;
-              }
-              jj_consume_token(EOS);
-              port();
-            }
-            jj_consume_token(RPAREN);
-            jj_consume_token(EOS);
+            portList();
             break;
           default:
-            jj_la1[12] = jj_gen;
+            jj_la1[10] = jj_gen;
             jj_consume_token(-1);
             throw new ParseException();
           }
@@ -247,7 +207,7 @@ public abstract class VhdlParserCore implements VhdlParserCoreConstants {
                         endModule( end.beginLine );
         break;
       default:
-        jj_la1[13] = jj_gen;
+        jj_la1[11] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -270,8 +230,8 @@ public abstract class VhdlParserCore implements VhdlParserCoreConstants {
         ;
         break;
       default:
-        jj_la1[14] = jj_gen;
-        break label_4;
+        jj_la1[12] = jj_gen;
+        break label_3;
       }
     }
     jj_consume_token(END);
@@ -280,58 +240,155 @@ public abstract class VhdlParserCore implements VhdlParserCoreConstants {
       identifier();
       break;
     default:
-      jj_la1[15] = jj_gen;
+      jj_la1[13] = jj_gen;
       ;
     }
     jj_consume_token(EOS);
   }
 
-  final public void port() throws ParseException {
-        Token port ;
+  final public void genericList() throws ParseException {
+    jj_consume_token(GENERIC);
+    jj_consume_token(LPAREN);
+    genericElement();
+    label_5:
+    while (true) {
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case EOS:
+        ;
+        break;
+      default:
+        jj_la1[14] = jj_gen;
+        break label_5;
+      }
+      jj_consume_token(EOS);
+      genericElement();
+    }
+    jj_consume_token(RPAREN);
+    jj_consume_token(EOS);
+  }
+
+  final public void genericElement() throws ParseException {
+        Token port;
+        Token postfix;
+                setPrefix("port ");
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case CONSTANT:
+    case SIGNAL:
+    case VARIABLE:
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case CONSTANT:
+        jj_consume_token(CONSTANT);
+        break;
+      case SIGNAL:
+        jj_consume_token(SIGNAL);
+        break;
+      case VARIABLE:
+        jj_consume_token(VARIABLE);
+        break;
+      default:
+        jj_la1[15] = jj_gen;
+        jj_consume_token(-1);
+        throw new ParseException();
+      }
+      break;
+    default:
+      jj_la1[16] = jj_gen;
+      ;
+    }
     port = identifier();
-                addPort( port.beginLine, port.image );
-    label_7:
+                addParameter(port.beginLine, port.image);
+    label_6:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case COMMA:
         ;
         break;
       default:
-        jj_la1[16] = jj_gen;
-        break label_7;
+        jj_la1[17] = jj_gen;
+        break label_6;
       }
       jj_consume_token(COMMA);
       port = identifier();
-                        addPort( port.beginLine, port.image );
+                        addParameter(port.beginLine, port.image);
     }
     jj_consume_token(COLON);
-    jj_consume_token(MODE);
-    identifier();
-    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-    case RANGE:
-      jj_consume_token(RANGE);
-      identifier();
-      jj_consume_token(TO);
-      identifier();
-      break;
-    default:
-      jj_la1[18] = jj_gen;
+    postfix = interfaceElementIndication();
+                setPostfix(postfix.image);
+  }
+
+  final public void portList() throws ParseException {
+    jj_consume_token(PORT);
+    jj_consume_token(LPAREN);
+    portElement();
+    label_7:
+    while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case LPAREN:
-        jj_consume_token(LPAREN);
-        skipParen();
-        jj_consume_token(RPAREN);
+      case EOS:
+        ;
         break;
       default:
-        jj_la1[17] = jj_gen;
-        ;
+        jj_la1[18] = jj_gen;
+        break label_7;
       }
+      jj_consume_token(EOS);
+      portElement();
     }
+    jj_consume_token(RPAREN);
+    jj_consume_token(EOS);
+  }
+
+  final public void portElement() throws ParseException {
+        Token port;
+        Token postfix;
+                setPrefix("port ");
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case CONSTANT:
+    case SIGNAL:
+    case VARIABLE:
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case CONSTANT:
+        jj_consume_token(CONSTANT);
+        break;
+      case SIGNAL:
+        jj_consume_token(SIGNAL);
+        break;
+      case VARIABLE:
+        jj_consume_token(VARIABLE);
+        break;
+      default:
+        jj_la1[19] = jj_gen;
+        jj_consume_token(-1);
+        throw new ParseException();
+      }
+      break;
+    default:
+      jj_la1[20] = jj_gen;
+      ;
+    }
+    port = identifier();
+                addPort(port.beginLine, port.image);
+    label_8:
+    while (true) {
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case COMMA:
+        ;
+        break;
+      default:
+        jj_la1[21] = jj_gen;
+        break label_8;
+      }
+      jj_consume_token(COMMA);
+      port = identifier();
+                        addPort(port.beginLine, port.image);
+    }
+    jj_consume_token(COLON);
+    postfix = interfaceElementIndication();
+                setPostfix(" : " + postfix.image);
   }
 
   final public void moduleBody() throws ParseException {
         Token   module, inst, iend ;
-    label_8:
+    label_9:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case CONSTANT:
@@ -352,13 +409,13 @@ public abstract class VhdlParserCore implements VhdlParserCoreConstants {
         ;
         break;
       default:
-        jj_la1[19] = jj_gen;
-        break label_8;
+        jj_la1[22] = jj_gen;
+        break label_9;
       }
       declaration();
     }
     jj_consume_token(BEGIN);
-    label_9:
+    label_10:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case PROCESS:
@@ -369,8 +426,8 @@ public abstract class VhdlParserCore implements VhdlParserCoreConstants {
         ;
         break;
       default:
-        jj_la1[20] = jj_gen;
-        break label_9;
+        jj_la1[23] = jj_gen;
+        break label_10;
       }
       statement();
     }
@@ -386,6 +443,7 @@ public abstract class VhdlParserCore implements VhdlParserCoreConstants {
 
   final public void packageDeclaration() throws ParseException {
         Token variable;
+        Token postfix;
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case CONSTANT:
     case SIGNAL:
@@ -405,34 +463,37 @@ public abstract class VhdlParserCore implements VhdlParserCoreConstants {
           jj_consume_token(SHARED);
           break;
         default:
-          jj_la1[21] = jj_gen;
+          jj_la1[24] = jj_gen;
           ;
         }
         jj_consume_token(VARIABLE);
         break;
       default:
-        jj_la1[22] = jj_gen;
+        jj_la1[25] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
+                        setPrefix(token.image + " ");
       variable = identifier();
-                        addVariable( variable.beginLine, variable.image );
-      label_10:
+                        addVariable(variable.beginLine, variable.image);
+      label_11:
       while (true) {
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
         case COMMA:
           ;
           break;
         default:
-          jj_la1[23] = jj_gen;
-          break label_10;
+          jj_la1[26] = jj_gen;
+          break label_11;
         }
         jj_consume_token(COMMA);
         variable = identifier();
-                                addVariable( variable.beginLine, variable.image );
+                                addVariable(variable.beginLine, variable.image);
       }
       jj_consume_token(COLON);
-      skipTo(EOS);
+      postfix = interfaceElementIndication();
+                        setPostfix(" : " + postfix.image);
+      jj_consume_token(EOS);
       break;
     case TYPE:
     case SUBTYPE:
@@ -444,7 +505,7 @@ public abstract class VhdlParserCore implements VhdlParserCoreConstants {
         jj_consume_token(SUBTYPE);
         break;
       default:
-        jj_la1[24] = jj_gen;
+        jj_la1[27] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -459,7 +520,7 @@ public abstract class VhdlParserCore implements VhdlParserCoreConstants {
         jj_consume_token(EOS);
         break;
       default:
-        jj_la1[25] = jj_gen;
+        jj_la1[28] = jj_gen;
         skipTo(EOS);
       }
       break;
@@ -489,7 +550,7 @@ public abstract class VhdlParserCore implements VhdlParserCoreConstants {
         jj_consume_token(GROUP);
         break;
       default:
-        jj_la1[26] = jj_gen;
+        jj_la1[29] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -502,7 +563,7 @@ public abstract class VhdlParserCore implements VhdlParserCoreConstants {
         jj_consume_token(EOS);
         break;
       default:
-        jj_la1[28] = jj_gen;
+        jj_la1[31] = jj_gen;
         skipTo(BEGIN);
         skipEnd();
         jj_consume_token(END);
@@ -511,7 +572,7 @@ public abstract class VhdlParserCore implements VhdlParserCoreConstants {
           identifier();
           break;
         default:
-          jj_la1[27] = jj_gen;
+          jj_la1[30] = jj_gen;
           ;
         }
         jj_consume_token(EOS);
@@ -526,7 +587,7 @@ public abstract class VhdlParserCore implements VhdlParserCoreConstants {
         jj_consume_token(EOS);
         break;
       default:
-        jj_la1[30] = jj_gen;
+        jj_la1[33] = jj_gen;
         skipTo(BEGIN);
         skipEnd();
         jj_consume_token(END);
@@ -535,14 +596,14 @@ public abstract class VhdlParserCore implements VhdlParserCoreConstants {
           identifier();
           break;
         default:
-          jj_la1[29] = jj_gen;
+          jj_la1[32] = jj_gen;
           ;
         }
         jj_consume_token(EOS);
       }
       break;
     default:
-      jj_la1[31] = jj_gen;
+      jj_la1[34] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -572,7 +633,7 @@ public abstract class VhdlParserCore implements VhdlParserCoreConstants {
       skipTo(EOS);
       break;
     default:
-      jj_la1[32] = jj_gen;
+      jj_la1[35] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -595,7 +656,7 @@ public abstract class VhdlParserCore implements VhdlParserCoreConstants {
             jj_consume_token(ENTITY);
             break;
           default:
-            jj_la1[33] = jj_gen;
+            jj_la1[36] = jj_gen;
             ;
           }
           module = identifier();
@@ -612,7 +673,7 @@ public abstract class VhdlParserCore implements VhdlParserCoreConstants {
             jj_consume_token(FOR);
             break;
           default:
-            jj_la1[34] = jj_gen;
+            jj_la1[37] = jj_gen;
             jj_consume_token(-1);
             throw new ParseException();
           }
@@ -620,7 +681,7 @@ public abstract class VhdlParserCore implements VhdlParserCoreConstants {
           switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
           case BEGIN:
             jj_consume_token(BEGIN);
-            label_11:
+            label_12:
             while (true) {
               switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
               case PROCESS:
@@ -631,8 +692,8 @@ public abstract class VhdlParserCore implements VhdlParserCoreConstants {
                 ;
                 break;
               default:
-                jj_la1[35] = jj_gen;
-                break label_11;
+                jj_la1[38] = jj_gen;
+                break label_12;
               }
               statement();
             }
@@ -642,7 +703,7 @@ public abstract class VhdlParserCore implements VhdlParserCoreConstants {
           case ASSERT:
           case WITH:
           case IDENT:
-            label_12:
+            label_13:
             while (true) {
               statement();
               switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -654,13 +715,13 @@ public abstract class VhdlParserCore implements VhdlParserCoreConstants {
                 ;
                 break;
               default:
-                jj_la1[36] = jj_gen;
-                break label_12;
+                jj_la1[39] = jj_gen;
+                break label_13;
               }
             }
             break;
           default:
-            jj_la1[37] = jj_gen;
+            jj_la1[40] = jj_gen;
             jj_consume_token(-1);
             throw new ParseException();
           }
@@ -671,7 +732,7 @@ public abstract class VhdlParserCore implements VhdlParserCoreConstants {
             identifier();
             break;
           default:
-            jj_la1[38] = jj_gen;
+            jj_la1[41] = jj_gen;
             ;
           }
           jj_consume_token(EOS);
@@ -681,14 +742,14 @@ public abstract class VhdlParserCore implements VhdlParserCoreConstants {
           process();
           break;
         default:
-          jj_la1[39] = jj_gen;
+          jj_la1[42] = jj_gen;
           jj_consume_token(-1);
           throw new ParseException();
         }
                          endStatement();
         break;
       default:
-        jj_la1[41] = jj_gen;
+        jj_la1[44] = jj_gen;
                          beginStatement();
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
         case LPAREN:
@@ -697,7 +758,7 @@ public abstract class VhdlParserCore implements VhdlParserCoreConstants {
           jj_consume_token(RPAREN);
           break;
         default:
-          jj_la1[40] = jj_gen;
+          jj_la1[43] = jj_gen;
           ;
         }
         skipTo(EOS);
@@ -725,7 +786,7 @@ public abstract class VhdlParserCore implements VhdlParserCoreConstants {
         identifier();
         break;
       default:
-        jj_la1[42] = jj_gen;
+        jj_la1[45] = jj_gen;
         ;
       }
       jj_consume_token(EOS);
@@ -738,7 +799,7 @@ public abstract class VhdlParserCore implements VhdlParserCoreConstants {
                                                             endStatement();
       break;
     default:
-      jj_la1[43] = jj_gen;
+      jj_la1[46] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -751,41 +812,55 @@ public abstract class VhdlParserCore implements VhdlParserCoreConstants {
       identifier();
       break;
     default:
-      jj_la1[44] = jj_gen;
+      jj_la1[47] = jj_gen;
       ;
     }
     jj_consume_token(EOS);
   }
 
-  Token skipTo(int skip) throws ParseException {
-        Token token ;
-        for(;;)
-        {
-                token = getToken( 1 );
-                if ( token.kind == EOF )
-                        throw new ParseException("unexpected EOF");
-                if ( token.kind == skip )
-                {
-                        getNextToken();
-                        break ;
-                }
-                getNextToken();
-        }
-        return token ;
+  void unexpectedEof(Token token) throws ParseException {
+        ParseException ex = new ParseException("unexpected EOF");
+        ex.currentToken = token;
+        throw ex;
   }
 
-  Token skipTo2(int skip1, int skip2) throws ParseException {
-        Token token ;
+  Token skipTo(int skip) throws ParseException {
+        Token current = token;
+        Token token;
+        StringBuffer image = new StringBuffer();
+
         for(;;)
         {
-                token = getToken( 1 );
+                token = getToken(1);
                 if ( token.kind == EOF )
-                        throw new ParseException("unexpected EOF");
-                if ( token.kind == skip1 )
+                        unexpectedEof(current);
+                if (token.kind == skip)
                 {
                         getNextToken();
-                        token = getToken( 1 );
-                        if ( token.kind == skip2 )
+                        break;
+                }
+
+                image.append(token.image);
+                getNextToken();
+        }
+        token.image = image.toString();
+        return token;
+  }
+
+  void skipTo2(int skip1, int skip2) throws ParseException {
+        Token current = token;
+        Token token;
+
+        for(;;)
+        {
+                token = getToken(1);
+                if (token.kind == EOF)
+                        unexpectedEof(current);
+                if (token.kind == skip1)
+                {
+                        getNextToken();
+                        token = getToken(1);
+                        if (token.kind == skip2)
                         {
                                 getNextToken();
                                 break ;
@@ -794,43 +869,23 @@ public abstract class VhdlParserCore implements VhdlParserCoreConstants {
                 else
                         getNextToken();
         }
-        return token ;
   }
 
   void skipParen() throws ParseException {
+        Token current = token;
         Token token ;
         int nesting = 1 ;
         for(;;)
         {
-                token = getToken( 1 );
-                if ( token.kind == EOF )
-                        throw new ParseException("unexpected EOF");
-                if ( token.kind == LPAREN )
+                token = getToken(1);
+                if (token.kind == EOF)
+                        unexpectedEof(current);
+                if (token.kind == LPAREN)
                         nesting++;
-                if ( token.kind == RPAREN )
+                if (token.kind == RPAREN)
                 {
                         nesting--;
-                        if ( nesting == 0 )
-                                break;
-                }
-                getNextToken();
-        }
-  }
-
-  void skipBracket() throws ParseException {
-        Token token ;
-        int nesting = 1 ;
-        for(;;)
-        {
-                token = getToken( 1 );
-                if ( token.kind == EOF )
-                        throw new ParseException("unexpected EOF");
-                if ( token.kind == LBRACKET )
-                        nesting++;
-                if ( token.kind == RBRACKET )
-                {
-                        nesting--;
-                        if ( nesting == 0 )
+                        if (nesting == 0)
                                 break;
                 }
                 getNextToken();
@@ -838,19 +893,20 @@ public abstract class VhdlParserCore implements VhdlParserCoreConstants {
   }
 
   void skipEnd() throws ParseException {
-        Token token ;
-        int nesting = 1 ;
+        Token current = token;
+        Token token;
+        int nesting = 1;
         for(;;)
         {
-                token = getToken( 1 );
-                if ( token.kind == EOF )
-                        throw new ParseException("unexpected EOF");
-                if ( token.kind == BEGIN || token.kind == IF || token.kind == CASE || token.kind == LOOP )
+                token = getToken(1);
+                if (token.kind == EOF)
+                        unexpectedEof(current);
+                if (token.kind == BEGIN || token.kind == IF || token.kind == CASE || token.kind == LOOP)
                         nesting++;
-                if ( token.kind == END )
+                if (token.kind == END)
                 {
                         nesting--;
-                        if ( nesting == 0 )
+                        if (nesting == 0)
                                 break;
                         else
                                 getNextToken(); // if or case
@@ -859,12 +915,43 @@ public abstract class VhdlParserCore implements VhdlParserCoreConstants {
         }
   }
 
+  Token interfaceElementIndication() throws ParseException {
+        Token current = token;
+        Token token ;
+        StringBuffer image = new StringBuffer();
+        int nesting = 1;
+
+        for(;;)
+        {
+                token = getToken(1);
+                if (token.kind == EOF)
+                        unexpectedEof(current);
+                if (token.kind == LPAREN)
+                        nesting++;
+                if (token.kind == RPAREN)
+                {
+                        nesting--;
+                        if (nesting == 0)
+                                break;
+                }
+                if (token.kind == EOS)
+                {
+                        break ;
+                }
+
+                image.append(token.image + " ");
+                getNextToken();
+        }
+        token.image = image.toString();
+        return token ;
+  }
+
   public VhdlParserCoreTokenManager token_source;
   JavaCharStream jj_input_stream;
   public Token token, jj_nt;
   private int jj_ntk;
   private int jj_gen;
-  final private int[] jj_la1 = new int[45];
+  final private int[] jj_la1 = new int[48];
   static private int[] jj_la1_0;
   static private int[] jj_la1_1;
   static private int[] jj_la1_2;
@@ -874,13 +961,13 @@ public abstract class VhdlParserCore implements VhdlParserCoreConstants {
       jj_la1_2();
    }
    private static void jj_la1_0() {
-      jj_la1_0 = new int[] {0xf400,0xf400,0x180000,0x0,0x180000,0x4000,0x0,0x0,0x800,0x10000,0x180000,0x0,0x180000,0xff000000,0xff000000,0x0,0x0,0x0,0x0,0xff000000,0x200000,0x10000000,0x39000000,0x0,0xc0000000,0x40000,0x0,0x0,0x0,0x0,0x0,0xff000000,0xff000000,0x4000,0x0,0x200000,0x200000,0x600000,0x0,0x204000,0x0,0x0,0x0,0x200000,0x0,};
+      jj_la1_0 = new int[] {0xf400,0xf400,0x180000,0x180000,0x4000,0x0,0x0,0x800,0x10000,0x180000,0x180000,0xff000000,0xff000000,0x0,0x0,0x29000000,0x29000000,0x0,0x0,0x29000000,0x29000000,0x0,0xff000000,0x200000,0x10000000,0x39000000,0x0,0xc0000000,0x40000,0x0,0x0,0x0,0x0,0x0,0xff000000,0xff000000,0x4000,0x0,0x200000,0x200000,0x600000,0x0,0x204000,0x0,0x0,0x0,0x200000,0x0,};
    }
    private static void jj_la1_1() {
-      jj_la1_1 = new int[] {0x0,0x0,0x0,0x1000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x1000000,0x0,0x61f,0x61f,0x0,0x20000000,0x40000,0x8000,0x61f,0x11800,0x0,0x0,0x20000000,0x0,0x0,0x617,0x0,0x1000000,0x0,0x1000000,0x617,0x61f,0x0,0x30,0x11800,0x11800,0x11800,0x0,0x30,0x40000,0x40000000,0x0,0x11800,0x0,};
+      jj_la1_1 = new int[] {0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x61f,0x61f,0x0,0x1000000,0x0,0x0,0x20000000,0x1000000,0x0,0x0,0x20000000,0x61f,0x11800,0x0,0x0,0x20000000,0x0,0x0,0x617,0x0,0x1000000,0x0,0x1000000,0x617,0x61f,0x0,0x30,0x11800,0x11800,0x11800,0x0,0x30,0x40000,0x40000000,0x0,0x11800,0x0,};
    }
    private static void jj_la1_2() {
-      jj_la1_2 = new int[] {0x0,0x0,0x0,0x0,0x0,0x0,0x2,0x2,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x2,0x0,0x0,0x0,0x0,0x2,0x0,0x0,0x0,0x0,0x0,0x0,0x2,0x0,0x2,0x0,0x0,0x0,0x0,0x0,0x2,0x2,0x2,0x2,0x2,0x0,0x0,0x2,0x2,0x2,};
+      jj_la1_2 = new int[] {0x0,0x0,0x0,0x0,0x0,0x2,0x2,0x0,0x0,0x0,0x0,0x0,0x0,0x2,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x2,0x0,0x0,0x0,0x0,0x0,0x0,0x2,0x0,0x2,0x0,0x0,0x0,0x0,0x0,0x2,0x2,0x2,0x2,0x2,0x0,0x0,0x2,0x2,0x2,};
    }
 
   public VhdlParserCore(java.io.InputStream stream) {
@@ -892,7 +979,7 @@ public abstract class VhdlParserCore implements VhdlParserCoreConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 45; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 48; i++) jj_la1[i] = -1;
   }
 
   public void ReInit(java.io.InputStream stream) {
@@ -904,7 +991,7 @@ public abstract class VhdlParserCore implements VhdlParserCoreConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 45; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 48; i++) jj_la1[i] = -1;
   }
 
   public VhdlParserCore(java.io.Reader stream) {
@@ -913,7 +1000,7 @@ public abstract class VhdlParserCore implements VhdlParserCoreConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 45; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 48; i++) jj_la1[i] = -1;
   }
 
   public void ReInit(java.io.Reader stream) {
@@ -922,7 +1009,7 @@ public abstract class VhdlParserCore implements VhdlParserCoreConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 45; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 48; i++) jj_la1[i] = -1;
   }
 
   public VhdlParserCore(VhdlParserCoreTokenManager tm) {
@@ -930,7 +1017,7 @@ public abstract class VhdlParserCore implements VhdlParserCoreConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 45; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 48; i++) jj_la1[i] = -1;
   }
 
   public void ReInit(VhdlParserCoreTokenManager tm) {
@@ -938,7 +1025,7 @@ public abstract class VhdlParserCore implements VhdlParserCoreConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 45; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 48; i++) jj_la1[i] = -1;
   }
 
   final private Token jj_consume_token(int kind) throws ParseException {
@@ -993,7 +1080,7 @@ public abstract class VhdlParserCore implements VhdlParserCoreConstants {
       la1tokens[jj_kind] = true;
       jj_kind = -1;
     }
-    for (int i = 0; i < 45; i++) {
+    for (int i = 0; i < 48; i++) {
       if (jj_la1[i] == jj_gen) {
         for (int j = 0; j < 32; j++) {
           if ((jj_la1_0[i] & (1<<j)) != 0) {

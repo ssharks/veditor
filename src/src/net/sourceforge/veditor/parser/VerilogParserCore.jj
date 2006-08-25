@@ -29,6 +29,8 @@ public abstract class VerilogParserCore
 	protected abstract void addInstance(int begin, int end, String module, String inst);
 	protected abstract void beginStatement();
 	protected abstract void endStatement();
+	protected abstract void setPrefix(String fix);
+	protected abstract void addPrefix(String fix);
 
 	public void parse() throws ParseException
 	{
@@ -111,8 +113,14 @@ TOKEN :
 |	<ENDTASK:	"endtask">
 |	<GENERATE:	"generate">
 |	<ENDGENERATE:	"endgenerate">
-|	<PORT_HEAD: 	( "input" | "output" | "inout") >
-|	<VARIABLE_HEAD: ( "integer" | "wire" | "reg" | "event" | "genvar" ) >
+|	<INPUT:		"input">
+|	<OUTPUT:	"output">
+|	<INOUT: 	"inout">
+|	<INTEGER:	"integer">
+|	<WIRE:		"wire">
+|	<REG:		"reg">
+|	<EVENT:		"event">
+|	<GENVAR:	"genvar">
 |	<REAL:		"real">
 |	<PARAMETER:	"parameter"> 
 |	<SIGNED:	"signed">
@@ -169,12 +177,29 @@ void argument() :
 	Token ident;
 }
 {
-		<PORT_HEAD> [ variableHead() ] [ "[" skipTo(RBRACKET) ]
+		portHead()
 		ident = identifier()
 		{
 			addPort( ident.beginLine, ident.image );
 		}
 	|	identifier()
+}
+
+void portHead() :
+{
+	String mod, var;
+}
+{
+	(
+		"input"
+	|	"output"
+	|	"inout"
+	)
+	{
+		setPrefix(token.image);
+	}
+	[ var = variableModifier() { addPrefix(" " + var);} ]
+	bitRange()
 }
 
 void moduleBody() :
@@ -183,7 +208,7 @@ void moduleBody() :
 }
 {
 //		LOOKAHEAD( 5 )
-		<PORT_HEAD> [ variableHead() ] {beginStatement();} port() {endStatement();}
+		portHead() {beginStatement();} port() {endStatement();}
 	|	<PARAMETER> {beginStatement();} parameter() {endStatement();}
 	|	variableHead() {beginStatement();} variable() {endStatement();}
 	|	<STMT_HEAD> {beginStatement();} skipTo( EOS ) {endStatement();}
@@ -194,7 +219,7 @@ void moduleBody() :
 	|	generate()
 	|	module = identifier() 
 		{ beginStatement(); }
-		[ "#" ( identifier() | <LPAREN> skipParen() <RPAREN> ) ]
+		[ "#" ( identifier() | "(" skipParen() ")" ) ]
 		inst = identifier() "(" skipParen() ")" iend = ";"
 		{
 			addInstance( module.beginLine, iend.endLine, module.image, inst.image );
@@ -204,11 +229,52 @@ void moduleBody() :
 
 void variableHead() :
 {
+	String mod;
 }
 {
-		<REAL>
-	|	<VARIABLE_HEAD> [ <SIGNED> ]
-	|	<SIGNED>
+	mod = variableModifier()
+	{
+		setPrefix(mod);
+	}
+	bitRange()
+}
+
+String variableModifier() :
+{
+	String value = null;
+}
+{
+	(
+			"real"
+		|	"integer"
+		|	"event"
+		|	"genvar"
+		|	"signed"
+		|	"wire"	["signed" { value = "wire signed"; } ]
+		|	"reg"	["signed" { value = "reg signed"; } ]
+	)
+	{
+		if (value == null)
+			return token.image;
+		else
+			return value;
+	}
+}
+
+void bitRange() :
+{
+	Token msb, lsb;
+}
+{
+	[
+		"[" msb = skipTo(COLON) lsb = skipTo(RBRACKET)
+		{
+			addPrefix("[" + msb.image + ":" + lsb.image + "]");
+		}
+	]
+	{
+		addPrefix(" ");
+	}
 }
 
 Token identifier() :
@@ -227,7 +293,6 @@ void port() :
 	Token port ;
 }
 {
-	[ "[" skipTo(RBRACKET) ]
 	port = identifier()
 	{
 		addPort( port.beginLine, port.image );
@@ -247,7 +312,6 @@ void variable() :
 	Token variable ;
 }
 {
-	[ "[" skipTo(RBRACKET) ]
 	variable = identifier() ( "[" skipTo(RBRACKET) )*
 	{
 		addVariable( variable.beginLine, variable.image );
@@ -267,21 +331,28 @@ void variable() :
 
 void parameter() :
 {
-	Token parameter;
-	Token value;
 }
 {
 	[
 		<REAL>
 	|	"[" skipTo(RBRACKET)
 	]
-	parameter = identifier() [ "[" skipTo(RBRACKET) ]
+	parameterAssign() ( "," parameterAssign() )* ";"
+}
+
+
+void parameterAssign() :
+{
+	Token parameter;
+	Token value;
+}
+{
+	parameter = identifier()
 	"="
-	value = skipWord()
+	value = skipToOr(COMMA, EOS)
 	{
-		addParameter( parameter.beginLine, parameter.image, value.image );
+		addParameter(parameter.beginLine, parameter.image, value.image);
 	}
-	skipTo( EOS )
 }
 
 void delay() :
@@ -325,7 +396,7 @@ void function() :
 	Token name, end ;
 }
 {
-	[ "[" skipBracket() "]" ]
+	[ "[" skipParen() "]" ]
 	name = identifier()
 	end = skipTo( ENDFUNCTION )
 	{
@@ -338,7 +409,6 @@ void task() :
 	Token name, end ;
 }
 {
-	[ "[" skipBracket() "]" ]
 	name = identifier()
 	end = skipTo( ENDTASK )
 	{
@@ -431,50 +501,78 @@ void generateIfStatement() :
 	[ LOOKAHEAD(1) <ELSE> <BEGIN> ( generateStatement() )+ <END> ]
 }
 
-
 JAVACODE
-Token skipWord()
+void unexpectedEof(Token token)
 {
-	Token token ;
-	token = getToken( 1 );
-	if ( token.kind == EOF )
-		throw new ParseException("unexpected EOF");
-	getNextToken();
-	return token ;
+	ParseException ex = new ParseException("unexpected EOF");
+	ex.currentToken = token;
+	throw ex;
 }
 
 JAVACODE
-Token skipTo( int skip )
+Token skipTo(int skip)
 {
+	Token current = token;
 	Token token ;
+	StringBuffer image = new StringBuffer();
+
 	for(;;)
 	{
-		token = getToken( 1 );
-		if ( token.kind == EOF )
-			throw new ParseException("unexpected EOF");
-		if ( token.kind == skip )
+		token = getToken(1);
+		if (token.kind == EOF)
+			unexpectedEof(current);
+		if (token.kind == skip)
 		{
 			getNextToken();
 			break ;
 		}
+
+		image.append(token.image);
 		getNextToken();
 	}
+	token.image = image.toString();
+	return token ;
+}
+
+JAVACODE
+Token skipToOr(int skip1, int skip2)
+{
+	Token current = token;
+	Token token ;
+	StringBuffer image = new StringBuffer();
+
+	for(;;)
+	{
+		token = getToken(1);
+		if (token.kind == EOF)
+			unexpectedEof(current);
+		if (token.kind == skip1 || token.kind == skip2)
+		{
+			// preserve skip token
+			break ;
+		}
+
+		image.append(token.image);
+		getNextToken();
+	}
+	token.image = image.toString();
 	return token ;
 }
 
 JAVACODE
 void skipParen()
 {
-	Token token ;
+	Token current = token;
+	Token token;
 	int nesting = 1 ;
 	for(;;)
 	{
-		token = getToken( 1 );
-		if ( token.kind == EOF )
-			throw new ParseException("unexpected EOF");
-		if ( token.kind == LPAREN )
+		token = getToken(1);
+		if (token.kind == EOF)
+			unexpectedEof(current);
+		if (token.kind == LPAREN || token.kind == LBRACKET)
 			nesting++;
-		if ( token.kind == RPAREN )
+		if (token.kind == RPAREN || token.kind == RBRACKET)
 		{
 			nesting--;
 			if ( nesting == 0 )
@@ -483,40 +581,18 @@ void skipParen()
 		getNextToken();
 	}
 }
-
-JAVACODE
-void skipBracket()
-{
-	Token token ;
-	int nesting = 1 ;
-	for(;;)
-	{
-		token = getToken( 1 );
-		if ( token.kind == EOF )
-			throw new ParseException("unexpected EOF");
-		if ( token.kind == LBRACKET )
-			nesting++;
-		if ( token.kind == RBRACKET )
-		{
-			nesting--;
-			if ( nesting == 0 )
-				break;
-		}
-		getNextToken();
-	}
-}
-
 
 JAVACODE
 void skipToEndcase()
 {
+	Token current = token;
 	Token token ;
 	int nesting = 1 ;
 	for(;;)
 	{
 		token = getToken( 1 );
 		if ( token.kind == EOF )
-			throw new ParseException("unexpected EOF");
+			unexpectedEof(current);
 		if ( token.kind == CASE )
 			nesting++;
 		if ( token.kind == ENDCASE )

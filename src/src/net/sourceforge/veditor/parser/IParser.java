@@ -10,8 +10,6 @@
  *******************************************************************************/
 package net.sourceforge.veditor.parser;
 
-import java.io.Reader;
-
 import org.eclipse.core.resources.IFile;
 
 public interface IParser
@@ -23,6 +21,6 @@ public interface IParser
 	public ParserManager getManager();
 	public IFile getFile();
 	public void parse() throws ParseException;
-	public void parseLineComment(Reader reader);
+	public void parseLineComment();
 }
 

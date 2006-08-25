@@ -212,11 +212,11 @@ public final class ModuleList
 			InputStreamReader reader = new InputStreamReader(file.getContents());
 			IParser parser;
 			if (isVerilog)
-				parser = ParserFactory.createVerilogParser(reader, file);
+				parser = ParserFactory.createVerilogParser(reader, project, file);
 			else
-				parser = ParserFactory.createVhdlParser(reader, file);
+				parser = ParserFactory.createVhdlParser(reader, project, file);
 			ParserManager manager = parser.getManager();
-			manager.parse(project);
+			manager.parse();
 			manager.dispose();
 		}
 		catch (CoreException e)
@@ -350,39 +350,33 @@ public final class ModuleList
 		/**
 		 * wire, reg, integer
 		 */
-		private List variables = new ArrayList();
-		public Object[] getVariables()
+		private List signals = new ArrayList();
+		public Object[] getSignals()
 		{
-			return variables.toArray();
+			return signals.toArray();
 		}
 		
 		/**
 		 * parameter
 		 */
 		private List parameters = new ArrayList();
-		private List paramvalues = new ArrayList();
 		public Object[] getParameters()
 		{
 			return parameters.toArray();
 		}
-		public Object[] getParameterValues()
-		{
-			return paramvalues.toArray();
-		}
 
 		//  called by parser
-		public void addPort(String name)
+		public void addPort(String name, String prefix, String postfix)
 		{
-			ports.add(name);
+			ports.add(new ModuleVariable(name, prefix, postfix));
 		}
-		public void addVariable(String name)
+		public void addSignal(String name, String prefix, String postfix)
 		{
-			variables.add(name);
+			signals.add(new ModuleVariable(name, prefix, postfix));
 		}
 		public void addParameter(String name, String value)
 		{
-			parameters.add(name);
-			paramvalues.add(value);
+			parameters.add(new ModuleParameter(name, value));
 		}
 		public void addElement(int begin, int end, String typeName, String name)
 		{
@@ -402,7 +396,28 @@ public final class ModuleList
 			return findModuleFromList(name);
 		}
 	}
+	
+	private static class ModuleParameter extends ModuleVariable
+	{
+		private String value;
 
+		public ModuleParameter(String name, String value)
+		{
+			super(name);
+			this.value = value;
+		}
+		
+		public String getValue()
+		{
+			return value;
+		}
+
+		public String getDetail()
+		{
+			return toString() + " = " + value;
+		}
+	}
+	
 	/**
 	 * line comparator<p/>
 	 * used by Collectoins.sort

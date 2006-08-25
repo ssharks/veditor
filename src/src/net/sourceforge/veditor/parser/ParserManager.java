@@ -10,7 +10,6 @@
  *******************************************************************************/
 package net.sourceforge.veditor.parser;
 
-import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -26,13 +25,16 @@ public class ParserManager
 {
 	private int context = IParser.OUT_OF_MODULE;
 	private IParser parser;
+	private IProject project;
+	private String prefix, postfix;
 
 	//  depend on calling parse or getContext
 	private boolean updateDatabase;
 
-	public ParserManager(IParser parser)
+	public ParserManager(IParser parser, IProject project)
 	{
 		this.parser = parser;
+		this.project = project;
 	}
 	
 	private Module getCurrentModule()
@@ -82,17 +84,17 @@ public class ParserManager
 		{
 			Module module = getCurrentModule();
 			if (module != null)
-				module.addPort(portName);
+				module.addPort(portName, prefix, postfix);
 			// addElement(line, line, "port", portName);
 		}
 	}
-	protected void addVariable(int line, String varName)
+	protected void addSignal(int line, String varName)
 	{
 		if (updateDatabase)
 		{
 			Module module = getCurrentModule();
 			if (module != null)
-				module.addVariable(varName);
+				module.addSignal(varName, prefix, postfix);
 		}
 	}
 	protected void addParameter(int line, String name, String value)
@@ -133,6 +135,15 @@ public class ParserManager
 	{
 		context = IParser.IN_MODULE;
 	}
+	protected void setPrefix(String fix)
+	{
+		prefix = fix;
+	}
+	protected void setPostfix(String fix)
+	{
+		postfix = fix;
+	}
+	
 	protected Iterator getModuleIterator()
 	{
 		return mods.iterator();
@@ -183,6 +194,10 @@ public class ParserManager
 		catch (ParseException e)
 		{
 		}
+		catch (TokenMgrError e)
+		{
+			return IParser.OUT_OF_MODULE;
+		}
 		return getContext();
 	}
 	
@@ -204,7 +219,7 @@ public class ParserManager
 	 * @param file
 	 * @return if error, return false
 	 */
-	public boolean parse(IProject project)
+	public boolean parse()
 	{
 		setUpdateDatabase(true);
 		setContext(IParser.OUT_OF_MODULE);
@@ -225,9 +240,9 @@ public class ParserManager
 		}
 	}
 	
-	public void parseLineComment(Reader reader)
+	public void parseLineComment()
 	{
-		parser.parseLineComment(reader);
+		parser.parseLineComment();
 	}
 
 }

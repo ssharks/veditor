@@ -25,11 +25,13 @@ public abstract class VhdlParserCore
 	protected abstract void endModule(int line);
 	protected abstract void addPort(int line, String portName);
 	protected abstract void addVariable(int line, String varName);
-	protected abstract void addParameter(int line, String name, String value);
+	protected abstract void addParameter(int line, String name);
 	protected abstract void addElement(int begin, int end, String type, String name);
 	protected abstract void addInstance(int begin, int end, String module, String inst);
 	protected abstract void beginStatement();
 	protected abstract void endStatement();
+	protected abstract void setPrefix(String fix);
+	protected abstract void setPostfix(String fix);
 
 	public void parse() throws ParseException
 	{
@@ -159,8 +161,8 @@ void entity() :
 		addModule( name.beginLine, name.image );
 	}
 	(
-		<GENERIC> "(" skipParen() ")" <EOS>
-	|	<PORT> "(" port() ( ";" port() )* ")" <EOS>
+		genericList()
+	|	portList()
 	)*
 	<END> [ <ENTITY> ] [ identifier() ] end = <EOS>
 	{
@@ -197,8 +199,8 @@ void packageDef() :
 			addModule( name.beginLine, name.image );
 		}
 		(
-			<GENERIC> "(" skipParen() ")" <EOS>
-		|	<PORT> "(" port() ( ";" port() )* ")" <EOS>
+			genericList()
+		|	portList()
 		)*
 		end = <END> <COMPONENT> <EOS>
 		{
@@ -209,27 +211,74 @@ void packageDef() :
 	<END> [identifier()] <EOS>
 }
 
-void port() :
+void genericList() :
 {
-	Token port ;
 }
 {
+	<GENERIC> "(" genericElement() ( ";" genericElement() )* ")" <EOS>
+}
+
+void genericElement() :
+{
+	Token port;
+	Token postfix;
+}
+{
+	{
+		setPrefix("port ");
+	}
+	[ <CONSTANT> | <SIGNAL> | <VARIABLE> ]
 	port = identifier()
 	{
-		addPort( port.beginLine, port.image );
+		addParameter(port.beginLine, port.image);
 	}
 	(
 		","
 		port = identifier()
 		{
-			addPort( port.beginLine, port.image );
+			addParameter(port.beginLine, port.image);
 		}
 	)*
-	":" <MODE> identifier()
+	":"
+	postfix = interfaceElementIndication()
+	{
+		setPostfix(postfix.image);
+	}
+}
+
+void portList() :
+{
+}
+{
+	<PORT> "(" portElement() ( ";" portElement() )* ")" <EOS>
+}
+
+void portElement() :
+{
+	Token port;
+	Token postfix;
+}
+{
+	{
+		setPrefix("port ");
+	}
+	[ <CONSTANT> | <SIGNAL> | <VARIABLE> ]
+	port = identifier()
+	{
+		addPort(port.beginLine, port.image);
+	}
 	(
-		<RANGE> identifier() <TO> identifier()
-	|	[ "(" skipParen() ")" ]
-	)
+		","
+		port = identifier()
+		{
+			addPort(port.beginLine, port.image);
+		}
+	)*
+	":"
+	postfix = interfaceElementIndication()
+	{
+		setPostfix(" : " + postfix.image);
+	}
 }
 
 void moduleBody() :
@@ -257,22 +306,31 @@ Token identifier() :
 void packageDeclaration() :
 {
 	Token variable;
+	Token postfix;
 }
 {
 	(
 		( <CONSTANT> | <SIGNAL> | [ <SHARED> ] <VARIABLE> )
+		{
+			setPrefix(token.image + " ");
+		}
 		variable = identifier()
 		{
-			addVariable( variable.beginLine, variable.image );
+			addVariable(variable.beginLine, variable.image);
 		}
 		(
 			","
 			variable = identifier()
 			{
-				addVariable( variable.beginLine, variable.image );
+				addVariable(variable.beginLine, variable.image);
 			}
 		)*
-		":" skipTo( EOS )
+		":"
+		postfix = interfaceElementIndication()
+		{
+			setPostfix(" : " + postfix.image);
+		}
+		<EOS>
 	)
 |	( <TYPE> | <SUBTYPE> ) identifier() <IS> 
 		(
@@ -342,38 +400,54 @@ void process() :
 }
 
 JAVACODE
-Token skipTo( int skip )
+void unexpectedEof(Token token)
 {
-	Token token ;
-	for(;;)
-	{
-		token = getToken( 1 );
-		if ( token.kind == EOF )
-			throw new ParseException("unexpected EOF");
-		if ( token.kind == skip )
-		{
-			getNextToken();
-			break ;
-		}
-		getNextToken();
-	}
-	return token ;
+	ParseException ex = new ParseException("unexpected EOF");
+	ex.currentToken = token;
+	throw ex;
 }
 
 JAVACODE
-Token skipTo2( int skip1, int skip2 )
+Token skipTo( int skip )
 {
-	Token token ;
+	Token current = token;
+	Token token;
+	StringBuffer image = new StringBuffer();
+
 	for(;;)
 	{
-		token = getToken( 1 );
+		token = getToken(1);
 		if ( token.kind == EOF )
-			throw new ParseException("unexpected EOF");
-		if ( token.kind == skip1 )
+			unexpectedEof(current);
+		if (token.kind == skip)
 		{
 			getNextToken();
-			token = getToken( 1 );
-			if ( token.kind == skip2 )
+			break;
+		}
+
+		image.append(token.image);
+		getNextToken();
+	}
+	token.image = image.toString();
+	return token;
+}
+
+JAVACODE
+void skipTo2(int skip1, int skip2)
+{
+	Token current = token;
+	Token token;
+
+	for(;;)
+	{
+		token = getToken(1);
+		if (token.kind == EOF)
+			unexpectedEof(current);
+		if (token.kind == skip1)
+		{
+			getNextToken();
+			token = getToken(1);
+			if (token.kind == skip2)
 			{
 				getNextToken();
 				break ;
@@ -382,47 +456,25 @@ Token skipTo2( int skip1, int skip2 )
 		else
 			getNextToken();
 	}
-	return token ;
 }
 
 JAVACODE
 void skipParen()
 {
+	Token current = token;
 	Token token ;
 	int nesting = 1 ;
 	for(;;)
 	{
-		token = getToken( 1 );
-		if ( token.kind == EOF )
-			throw new ParseException("unexpected EOF");
-		if ( token.kind == LPAREN )
+		token = getToken(1);
+		if (token.kind == EOF)
+			unexpectedEof(current);
+		if (token.kind == LPAREN)
 			nesting++;
-		if ( token.kind == RPAREN )
+		if (token.kind == RPAREN)
 		{
 			nesting--;
-			if ( nesting == 0 )
-				break;
-		}
-		getNextToken();
-	}
-}
-
-JAVACODE
-void skipBracket()
-{
-	Token token ;
-	int nesting = 1 ;
-	for(;;)
-	{
-		token = getToken( 1 );
-		if ( token.kind == EOF )
-			throw new ParseException("unexpected EOF");
-		if ( token.kind == LBRACKET )
-			nesting++;
-		if ( token.kind == RBRACKET )
-		{
-			nesting--;
-			if ( nesting == 0 )
+			if (nesting == 0)
 				break;
 		}
 		getNextToken();
@@ -432,25 +484,59 @@ void skipBracket()
 JAVACODE
 void skipEnd()
 {
-	Token token ;
-	int nesting = 1 ;
+	Token current = token;
+	Token token;
+	int nesting = 1;
 	for(;;)
 	{
-		token = getToken( 1 );
-		if ( token.kind == EOF )
-			throw new ParseException("unexpected EOF");
-		if ( token.kind == BEGIN || token.kind == IF || token.kind == CASE || token.kind == LOOP )
+		token = getToken(1);
+		if (token.kind == EOF)
+			unexpectedEof(current);
+		if (token.kind == BEGIN || token.kind == IF || token.kind == CASE || token.kind == LOOP)
 			nesting++;
-		if ( token.kind == END )
+		if (token.kind == END)
 		{
 			nesting--;
-			if ( nesting == 0 )
+			if (nesting == 0)
 				break;
 			else
 				getNextToken();	// if or case
 		}
 		getNextToken();
 	}
+}
+
+JAVACODE
+Token interfaceElementIndication()
+{
+	Token current = token;
+	Token token ;
+	StringBuffer image = new StringBuffer();
+	int nesting = 1;
+
+	for(;;)
+	{
+		token = getToken(1);
+		if (token.kind == EOF)
+			unexpectedEof(current);
+		if (token.kind == LPAREN)
+			nesting++;
+		if (token.kind == RPAREN)
+		{
+			nesting--;
+			if (nesting == 0)
+				break;
+		}
+		if (token.kind == EOS)
+		{
+			break ;
+		}
+
+		image.append(token.image + " ");
+		getNextToken();
+	}
+	token.image = image.toString();
+	return token ;
 }
 
 

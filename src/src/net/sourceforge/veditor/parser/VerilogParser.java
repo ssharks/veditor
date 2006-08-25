@@ -16,6 +16,7 @@ import java.io.Reader;
 import java.util.Iterator;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
 
 /**
  * implementation class of VerilogParserCore<p/>
@@ -25,12 +26,15 @@ class VerilogParser extends VerilogParserCore implements IParser
 {
 	private IFile file;
 	private ParserManager manager;
+	private Reader reader;
+	private String prefix;
 
-	public VerilogParser(Reader reader, IFile file)
+	public VerilogParser(Reader reader, IProject project, IFile file)
 	{
 		super(reader);
+		this.reader = reader;
 		this.file = file;
-		manager = new ParserManager(this);
+		manager = new ParserManager(this, project);
 	}
 	
 	public ParserManager getManager()
@@ -58,7 +62,7 @@ class VerilogParser extends VerilogParserCore implements IParser
 	}
 	protected void addVariable(int line, String varName)
 	{
-		manager.addVariable(line, varName);
+		manager.addSignal(line, varName);
 	}
 	protected void addParameter(int line, String name, String value)
 	{
@@ -80,14 +84,38 @@ class VerilogParser extends VerilogParserCore implements IParser
 	{
 		manager.endStatement();
 	}
+	protected void setPrefix(String fix)
+	{
+		prefix = fix;
+		manager.setPrefix(prefix);
+	}
+	protected void addPrefix(String fix)
+	{
+		prefix = prefix + fix;
+		manager.setPrefix(prefix);
+	}
 
-	/**
-	 * parse line comment for content outline
-	 */
-	public void parseLineComment(Reader reader)
+	public void parse() throws ParseException
 	{
 		try
 		{
+			reader.reset();
+		}
+		catch (IOException e)
+		{
+		}
+		super.parse();
+	}
+	
+	/**
+	 * parse line comment for content outline
+	 */
+	public void parseLineComment()
+	{
+		try
+		{
+			reader.reset();
+
 			int line = 1;
 			int column = 0;
 			int c = reader.read();
@@ -179,6 +207,7 @@ class VerilogParser extends VerilogParserCore implements IParser
 		}
 	}
 	private int prevCommentLine;
+
 }
 
 
