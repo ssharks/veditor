@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Verilog/VHDL Plugin 
 Bundle-SymbolicName: net.sourceforge.veditor; singleton:=true
-Bundle-Version: 0.4.2
+Bundle-Version: 0.5.0
 Bundle-ClassPath: veditor.jar
 Bundle-Activator: net.sourceforge.veditor.VerilogPlugin
 Bundle-Vendor: tadashi
@@ -17,4 +17,4 @@ Require-Bundle:
  org.eclipse.ui.views,
  org.eclipse.ui.ide,
  org.eclipse.ui.console
-Eclipse-AutoStart: true
+Eclipse-LazyStart: true
