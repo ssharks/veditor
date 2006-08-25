@@ -10,8 +10,6 @@
  *******************************************************************************/
 package net.sourceforge.veditor.editor;
 
-import java.io.StringReader;
-
 import net.sourceforge.veditor.VerilogPlugin;
 import net.sourceforge.veditor.parser.ParserManager;
 import net.sourceforge.veditor.parser.Segment;
@@ -69,13 +67,13 @@ public abstract class TreeProviderBase implements ITreeContentProvider
 	{
 		String text = doc.get();
 
-		manager = doc.createParserManager(new StringReader(text));
-		if (manager.parse(doc.getProject()) == false)
+		manager = doc.createParserManager(text);
+		if (manager.parse() == false)
 			return;
 			
 		boolean comment = VerilogPlugin.getPreferenceBoolean("Outline.Comment");
 		if (comment)
-			manager.parseLineComment(new StringReader(text));
+			manager.parseLineComment();
 	}
 }
 

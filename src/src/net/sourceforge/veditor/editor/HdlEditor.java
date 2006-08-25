@@ -284,7 +284,7 @@ abstract public class HdlEditor extends TextEditor
 		if (doc != null)
 		{
 			ParserManager manager = doc.createParserManager();
-			manager.parse(doc.getProject());
+			manager.parse();
 
 			int size = manager.size();
 			Segment[] elements = new Segment[size];

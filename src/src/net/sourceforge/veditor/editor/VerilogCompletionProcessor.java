@@ -16,6 +16,7 @@ import java.util.List;
 import net.sourceforge.veditor.VerilogPlugin;
 import net.sourceforge.veditor.parser.Module;
 import net.sourceforge.veditor.parser.ModuleList;
+import net.sourceforge.veditor.parser.ModuleVariable;
 
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
@@ -75,14 +76,7 @@ public class VerilogCompletionProcessor extends HdlCompletionProcessor
 			matchList.add(createBeginEnd(doc, offset, replace.length()));
 
 		//  variable
-		ModuleList mlist = ModuleList.find(doc.getProject());
-		Module module = mlist.findModule(mname);
-		if (module != null)
-		{
-			addProposals(matchList, offset, replace, module.getPorts());
-			addProposals(matchList, offset, replace, module.getVariables());
-		}
-		return matchList;
+		return addVariableProposals(doc, offset, replace, mname, matchList);
 	}
 
 	// code templates
@@ -151,14 +145,12 @@ public class VerilogCompletionProcessor extends HdlCompletionProcessor
 			
 			if (isParams)
 			{
-				Object[] values = module.getParameterValues();
 				replace.append("#(");
 				for (int i = 0; i < params.length; i++)
 				{
 					replace.append(indent + "\t");
-					String param = params[i].toString();
-					String value = values[i].toString();
-					replace.append("." + param + "(" + value + ")");
+					ModuleVariable param = (ModuleVariable)params[i];
+					replace.append("." + param + "(" + param.getValue() + ")");
 					if (i < params.length - 1)
 						replace.append(",");
 				}

@@ -11,7 +11,6 @@
 
 package net.sourceforge.veditor.editor;
 
-import java.io.StringReader;
 import java.util.Collections;
 import java.util.List;
 
@@ -50,8 +49,8 @@ abstract public class HdlCompletionProcessor implements IContentAssistProcessor
 		String moduleName = "";
 		try
 		{
-			ParserManager manager = doc.createParserManager(new StringReader(doc.get(0,
-					documentOffset - length)));
+			ParserManager manager = doc.createParserManager(doc.get(0,
+					documentOffset - length));
 			context = manager.parseContext();
 			moduleName = manager.getCurrentModuleName();
 		}
@@ -102,6 +101,26 @@ abstract public class HdlCompletionProcessor implements IContentAssistProcessor
 						.length()));
 			}
 		}
+	}
+	
+	protected List addVariableProposals(HdlDocument doc, int offset, String replace, String mname, List matchList)
+	{
+		ModuleList mlist = ModuleList.find(doc.getProject());
+		
+		if (mlist != null)
+		{
+			// FIX!!! should we do something more advanced when there
+			// are no modules?
+
+			Module module = mlist.findModule(mname);
+			if (module != null)
+			{
+				addProposals(matchList, offset, replace, module.getPorts());
+				addProposals(matchList, offset, replace, module.getSignals());
+				addProposals(matchList, offset, replace, module.getParameters());
+			}
+		}
+		return matchList;
 	}
 
 	protected static boolean isMatch(String replace, String name)

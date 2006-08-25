@@ -10,13 +10,11 @@
  *******************************************************************************/
 package net.sourceforge.veditor.editor;
 
-import java.io.Reader;
+import net.sourceforge.veditor.parser.IParser;
+import net.sourceforge.veditor.parser.ParserFactory;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
-
-import net.sourceforge.veditor.parser.IParser;
-import net.sourceforge.veditor.parser.ParserFactory;
 
 public class VhdlDocument extends HdlDocument
 {
@@ -30,9 +28,9 @@ public class VhdlDocument extends HdlDocument
 		return HdlPartitionScanner.createVhdlPartitionScanner();
 	}
 	
-	public IParser createParser(Reader reader)
+	public IParser createParser(String text)
 	{
-		return ParserFactory.createVhdlParser(reader, getFile());
+		return ParserFactory.createVhdlParser(text, getProject(), getFile());
 	}
 
 }

@@ -13,8 +13,19 @@ package net.sourceforge.veditor.editor;
 
 import java.util.Iterator;
 
+import net.sourceforge.veditor.parser.IParser;
+import net.sourceforge.veditor.parser.Module;
+import net.sourceforge.veditor.parser.ModuleList;
+import net.sourceforge.veditor.parser.ModuleVariable;
+import net.sourceforge.veditor.parser.ParserManager;
+
 import org.eclipse.core.resources.IMarker;
+import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IRegion;
+import org.eclipse.jface.text.ITextHover;
+import org.eclipse.jface.text.ITextViewer;
+import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.contentassist.ContentAssistant;
 import org.eclipse.jface.text.contentassist.IContentAssistant;
 import org.eclipse.jface.text.presentation.IPresentationReconciler;
@@ -150,6 +161,12 @@ abstract public class HdlSourceViewerConfiguration extends
 	{
 		return new AnnotationHover();
 	}
+	
+	public ITextHover getTextHover(ISourceViewer sourceViewer,
+			String contentType)
+	{
+		return new TextHover();
+	}
 
 	private static class AnnotationHover implements IAnnotationHover
 	{
@@ -186,7 +203,92 @@ abstract public class HdlSourceViewerConfiguration extends
 			return messages;
 		}
 	}
+	private static class TextHover implements ITextHover
+	{
+		public IRegion getHoverRegion(ITextViewer textViewer, int offset)
+		{
+			String text = textViewer.getDocument().get();
+			int length = text.length();
+
+			int begin = offset;
+			while(begin >= 0 && isWordCharacter(text.charAt(begin)))
+			{
+				begin --;
+			}
+			begin++;
+			
+			int end = offset;
+			while(end < length && isWordCharacter(text.charAt(end)))
+			{
+				end++;
+			}
+			
+			if (end - begin > 0)
+				return new Region(begin, end - begin);
+			else
+				return null;
+		}
+		
+		public String getHoverInfo(ITextViewer textViewer, IRegion region)
+		{
+			String text;
+
+			// FIXME: module and signal is contents dependent
+			HdlDocument doc = (HdlDocument)textViewer.getDocument(); 
+			try
+			{
+				text = doc.get(region.getOffset(), region.getLength());
+			}
+			catch (BadLocationException e)
+			{
+				return null;
+			}
+
+			String hover = getVariableHover(text, doc, region.getOffset());
+			return hover;
+		}
+
+		private boolean isWordCharacter(char ch)
+		{
+			return Character.isJavaIdentifierPart(ch);
+		}
+		
+		private String getVariableHover(String text, HdlDocument doc, int offset)
+		{
+			String moduleName = null;
+			try
+			{
+				ParserManager manager = doc.createParserManager(doc.get(0,
+						offset));
+				int context = manager.parseContext();
+				if (context == IParser.OUT_OF_MODULE)
+					return null;
+				moduleName = manager.getCurrentModuleName();
+			}
+			catch (BadLocationException e)
+			{
+			}
+			if (moduleName == null)
+				return null;
+			
+			ModuleList mlist = ModuleList.find(doc.getProject());
+			if (mlist == null)
+				return null;
+
+			Module module = mlist.findModule(moduleName);
+			ModuleVariable var = module.findVariable(text);
+			if (var != null)
+				return var.getDetail();
+
+			return null;
+		}
+	}
 }
+
+
+
+
+
 
 
 

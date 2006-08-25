@@ -57,20 +57,10 @@ public class VhdlCompletionProcessor extends HdlCompletionProcessor
 	{
 		List matchList = new ArrayList();
 
+		// TODO: add template
+
 		//  variable
-		ModuleList mlist = ModuleList.find(doc.getProject());
-		// FIX!!! should we do something more advanced when there
-		// are no modules?
-		if (mlist!=null)
-		{
-			Module module = mlist.findModule(mname);
-			if (module != null)
-			{
-				addProposals(matchList, offset, replace, module.getPorts());
-				addProposals(matchList, offset, replace, module.getVariables());
-			}
-		}
-		return matchList;
+		return addVariableProposals(doc, offset, replace, mname, matchList);
 	}
 	
 	private ICompletionProposal createProcess(IDocument doc, int offset, int length)

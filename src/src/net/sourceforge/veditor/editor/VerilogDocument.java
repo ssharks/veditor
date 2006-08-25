@@ -10,8 +10,6 @@
  *******************************************************************************/
 package net.sourceforge.veditor.editor;
 
-import java.io.Reader;
-
 import net.sourceforge.veditor.parser.IParser;
 import net.sourceforge.veditor.parser.ParserFactory;
 
@@ -30,8 +28,8 @@ public class VerilogDocument extends HdlDocument
 		return HdlPartitionScanner.createVerilogPartitionScanner();
 	}
 	
-	public IParser createParser(Reader reader)
+	public IParser createParser(String text)
 	{
-		return ParserFactory.createVerilogParser(reader, getFile());
+		return ParserFactory.createVerilogParser(text, getProject(), getFile());
 	}
 }
