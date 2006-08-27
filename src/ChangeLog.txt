@@ -1,4 +1,6 @@
-﻿2006-08-26  tadashi-k
+﻿2006-08-27  tadashi-k
+	* add a new contributor to CONTRIBUTORS.txt
+2006-08-26  tadashi-k
 	* refactored ParserCore.jj and other files.
 	* implemented TextHover with declaration lines
 2006-08-17  tadashi-k

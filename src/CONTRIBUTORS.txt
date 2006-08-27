@@ -1,6 +1,3 @@
 ﻿KOBAYASHI Tadashi - initial API and implementation
 Øyvind Harboe - various odd bugfixes to VHDL and update site.
-
-
-、私は3つのビールを食べるように! 
-
+Ken Horn - bugfixes
