@@ -7,10 +7,10 @@
 </HEAD>
 <BODY>
 <H2 align="center">Eclipse Verilog editor</H2>
-<P align="right">Last updated: May 14, 2006</P>
+<P align="right">Last updated: August 27, 2006</P>
 <H3>News</H3>
-<P>Eclipse Verilog editor 0.4.1 released. The new version has user customized
-error parser and simulation log viewer.</P>
+<P>Eclipse Verilog editor 0.5.0 is released. The new version is distributed
+under EPL - <A href="http://www.eclipse.org/legal/epl-v10.html">Eclipse Public License v 1.0</A>.</P>
 <P>
 Eclipse Verilog editor version 0.2.0 was distributed with <A href="http://www.opencores.org/projects.cgi/web/opentech/">OpenTech</A> package for Open source EDA tools and open source hardware designs.</P>
 <H3>Introduction</H3>
@@ -18,7 +18,7 @@ Eclipse Verilog editor version 0.2.0 was distributed with <A href="http://www.op
 or VHDL.<BR>
 <A href="http://sourceforge.net/projects/veditor/">Here</A> is the project summary page in SourceForge.<BR>
 <BR>
-Eclipse Verilog Editor is tested on Eclipse 3.1.</P>
+Eclipse Verilog Editor is tested on Eclipse 3.2.</P>
 <P><A href="screenshot.html">Screenshot samples</A></P>
 <H3>Features</H3>
 <UL>
@@ -42,7 +42,7 @@ Eclipse Verilog Editor is tested on Eclipse 3.1.</P>
   <P>Go to module declaration of selected word by searching a project hierarchy.<BR>
   It is valid when you defined a same module name with file name, e.g. module
   &quot;adder&quot; is defined in file &quot;adder.v&quot;.</P>
-  <LI>Automatic port connection for instantiation <IMG src="update.gif" width="61" height="13" border="0">
+  <LI>Automatic port connection for instantiation
   <P>When you enter module name only, Eclipse Verilog Editor completes module
   instantiation code with named port connection.<BR>
   <BR>
@@ -88,7 +88,6 @@ endmodule</PRE></BLOCKQUOTE>
   You can copy hierarchical view as text to clipboard. So you can paste it
   to any other text editors.</P>
   <LI>Problems view
-  <IMG src="update.gif" width="61" height="13" border="0">
   <P>Eclipse Verilog Editor provides &quot;Problems&quot; view.<BR>
   The Problems view shows compiler error and warning messages. The compiler
   is out of Eclipse. Now you can use <A href="http://icarus.com/eda/verilog/">Icarus Verilog</A>, <A href="http://www.pragmatic-c.com/gpl-cver/index.htm">CVer</A> or <A href="http://www.freehdl.seul.org/">FreeHDL</A>..</P>
@@ -115,25 +114,33 @@ endmodule</PRE></BLOCKQUOTE>
   <P>New Verilog module, new VHDL entity and new Verilog/VHDL project wizard
   are supported.</P>
   <LI>Simulator builder
-  <IMG src="update.gif" width="61" height="13" border="0">
   <P>Verilog/VHDL project supports simulator builder, which can launch external
   circuit simulators, then parse error messages and reflect problems view
   from them. New <A href="http://icarus.com/eda/verilog/">Icarus Verilog</A>, <A href="http://www.pragmatic-c.com/gpl-cver/index.htm">CVer</A> and <A href="http://www.freehdl.seul.org/">FreeHDL</A> are supported. And other compiler can be supported, using custom error
   parser.</P>
 </UL>
 <UL>
-  <LI>Custom error parser<IMG src="new.gif" width="61" height="13" border="0">
+  <LI>Custom error parser
   <P>Custom error parser can support any complier error message. It match pattern
   with user defined regular expressions.</P>
 </UL>
 <UL>
-  <LI>Log viewer <IMG src="new.gif" width="61" height="13" border="0">
+  <LI>Log viewer
   <P>Log viewer reads the compiler log files, then parse and update problems
   view. So you can launch simulator outside Eclipse and reflect problems
   view. Log viewer opens *.log files by default. You can also change file
   associations.</P>
 </UL>
-  <H3>How to use Eclipse Verilog editor</H3>
+<UL>
+  <LI>Text hover
+  <IMG src="new.gif" width="61" height="13" border="0">
+  <P>When the mouse pointer is on any signals, the text hover show a declaration
+  line of the signal.</P>
+</UL>
+<H3>License</H3>
+<P>Eclipse Verilog editor 0.5.0 is distributed under <A href="http://www.eclipse.org/legal/epl-v10.html">Eclipse Public License v 1.0</A> The later version will be released on the same license.</P>
+<P>The earlier versions than 0.5.0 were distributed under <A href="http://www.gnu.org/licenses/gpl.html">GNU General Public License</A>. They are still available now.</P>
+<H3>How to use Eclipse Verilog editor</H3>
 <P><A href="install.html">Install Eclipse and Eclipse Verilog editor plug-in</A></P>
 <P><A href="project.html">Start Verilog/VHDL project in Eclipse</A></P>
 <P><A href="feature.html">How to use features</A></P>
@@ -173,6 +180,10 @@ endmodule</PRE></BLOCKQUOTE>
   supported log viewer<BR>
   fixed bugs which are 1476699, 1480879, 1480884<BR>
   add some keywords of VHDL
+  <DT>0.5.0
+  <DD>change license from GPL to EPL<BR>
+  supported text hover of signals<BR>
+  fixed bugs which are 1488462, 1519826, 1519835, 1537960, 1529153, 1538377
 </DL>
 <H3>Future plan</H3>
 <UL>
