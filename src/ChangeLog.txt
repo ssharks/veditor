@@ -1,4 +1,6 @@
-﻿2006-08-27  tadashi-k
+﻿2006-09-10  tadashi-k
+	* add Export-Package in MANIFEST.MF for test
+2006-08-27  tadashi-k
 	* add a new contributor to CONTRIBUTORS.txt
 2006-08-26  tadashi-k
 	* refactored ParserCore.jj and other files.

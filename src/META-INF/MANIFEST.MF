@@ -7,6 +7,15 @@ Bundle-ClassPath: veditor.jar
 Bundle-Activator: net.sourceforge.veditor.VerilogPlugin
 Bundle-Vendor: tadashi
 Bundle-Localization: plugin
+Export-Package: 
+ net.sourceforge.veditor,
+ net.sourceforge.veditor.actions,
+ net.sourceforge.veditor.builder,
+ net.sourceforge.veditor.editor,
+ net.sourceforge.veditor.log,
+ net.sourceforge.veditor.parser,
+ net.sourceforge.veditor.preference,
+ net.sourceforge.veditor.wizard
 Require-Bundle: 
  org.eclipse.ui,
  org.eclipse.ui.editors,
