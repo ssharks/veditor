@@ -169,14 +169,13 @@ public class ErrorParser
 	{
 		this.folder = folder;
 
-		IContainer parent = folder.getParent();
-		while (parent instanceof IFolder)
+		while (folder instanceof IFolder)
 		{
-			parent = parent.getParent();
+			folder = folder.getParent();
 		}
-		if (parent instanceof IProject)
+		if (folder instanceof IProject)
 		{
-			project = (IProject)parent;
+			project = (IProject)folder;
 		}
 		else
 		{

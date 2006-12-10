@@ -42,52 +42,61 @@ public class ExternalLauncher extends Thread
 	public void run()
 	{
 		//System.out.println(command);
-
-		File dir = folder.getLocation().toFile();
-		if (!dir.exists())
+		
+		//is the command valid
+		command=command.trim();
+		if(command.equals(""))
 		{
-			VerilogPlugin.println("working dir: " + dir.getAbsolutePath()
-					+ " does not exist");
+			String msg = "Compile command is empty!";
+			VerilogPlugin.println(msg);	
 		}
-		else
-		{
-			if (!dir.isDirectory())
+		else{
+			File dir = folder.getLocation().toFile();
+			if (!dir.exists())
 			{
 				VerilogPlugin.println("working dir: " + dir.getAbsolutePath()
-						+ " is not a directory");
+						+ " does not exist");
 			}
 			else
 			{
-				if (!dir.canWrite())
+				if (!dir.isDirectory())
 				{
-					VerilogPlugin.println("working dir: "
-							+ dir.getAbsolutePath() + " no write access");
+					VerilogPlugin.println("working dir: " + dir.getAbsolutePath()
+							+ " is not a directory");
+				}
+				else
+				{
+					if (!dir.canWrite())
+					{
+						VerilogPlugin.println("working dir: "
+								+ dir.getAbsolutePath() + " no write access");
+					}
 				}
 			}
-		}
-
-		Runtime runtime = Runtime.getRuntime();
-		try
-		{
-			Process process = runtime.exec(command, null, dir);
-			MessageThread stderr = new MessageThread(process.getErrorStream());
-			MessageThread stdout = new MessageThread(process.getInputStream());
-			stderr.start();
-			stdout.start();
-			
+	
+			Runtime runtime = Runtime.getRuntime();
 			try
 			{
-				process.waitFor();
+				Process process = runtime.exec(command, null, dir);
+				MessageThread stderr = new MessageThread(process.getErrorStream());
+				MessageThread stdout = new MessageThread(process.getInputStream());
+				stderr.start();
+				stdout.start();
+				
+				try
+				{
+					process.waitFor();
+				}
+				catch (InterruptedException e)
+				{
+					process.destroy();
+				}
 			}
-			catch (InterruptedException e)
+			catch (IOException e)
 			{
-				process.destroy();
+				String msg = "Runtime error: cannot execute " + command;
+				VerilogPlugin.println(msg);
 			}
-		}
-		catch (IOException e)
-		{
-			String msg = "Runtime error: cannot execute " + command;
-			VerilogPlugin.println(msg);
 		}
 	}
 
