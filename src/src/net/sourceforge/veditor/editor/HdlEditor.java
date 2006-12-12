@@ -14,6 +14,8 @@ package net.sourceforge.veditor.editor;
 import net.sourceforge.veditor.VerilogPlugin;
 import net.sourceforge.veditor.actions.CompileAction;
 import net.sourceforge.veditor.actions.FormatAction;
+import net.sourceforge.veditor.actions.CommentAction;
+import net.sourceforge.veditor.actions.UnCommentAction;
 import net.sourceforge.veditor.actions.GotoMatchingBracketAction;
 import net.sourceforge.veditor.actions.OpenDeclarationAction;
 import net.sourceforge.veditor.parser.Module;
@@ -106,6 +108,8 @@ abstract public class HdlEditor extends TextEditor
 		setAction("OpenDeclaration", new OpenDeclarationAction());
 		setAction("Format", new FormatAction());
 		setAction("Compile", new CompileAction());
+		setAction("Comment", new CommentAction());
+		setAction("Unomment", new UnCommentAction());
 	}
 
 //	for content assist?
