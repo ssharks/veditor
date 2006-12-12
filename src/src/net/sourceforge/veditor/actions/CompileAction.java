@@ -13,6 +13,7 @@ package net.sourceforge.veditor.actions;
 import net.sourceforge.veditor.VerilogPlugin;
 import net.sourceforge.veditor.builder.ErrorParser;
 import net.sourceforge.veditor.builder.ExternalLauncher;
+import org.eclipse.ui.internal.ide.actions.BuildUtilities;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
@@ -33,6 +34,11 @@ public class CompileAction extends AbstractAction
 		String command = VerilogPlugin.getPreferenceString("Compile.command")
 				+ " " + file.getName();
 
+		
+		//
+		// Save all resources prior to doing build
+        BuildUtilities.saveEditors(null);
+        
 		ExternalLauncher launchar = new ExternalLauncher(folder, command);
 		launchar.run();
 		
