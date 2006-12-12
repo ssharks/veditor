@@ -17,6 +17,8 @@ import net.sourceforge.veditor.actions.CompileAction;
 import net.sourceforge.veditor.actions.FormatAction;
 import net.sourceforge.veditor.actions.GotoMatchingBracketAction;
 import net.sourceforge.veditor.actions.OpenDeclarationAction;
+import net.sourceforge.veditor.actions.CommentAction;
+import net.sourceforge.veditor.actions.UnCommentAction;
 
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
@@ -36,6 +38,8 @@ public class HdlActionContributor extends TextEditorActionContributor
 	private IAction openDeclaration;
 	private IAction format;
 	private IAction compile;
+	private IAction comment;
+	private IAction uncomment;
 
 	private static final String CONTENT_ASSIST_PROPOSAL = "ContentAssistProposal";
 
@@ -56,6 +60,8 @@ public class HdlActionContributor extends TextEditorActionContributor
 		openDeclaration = new OpenDeclarationAction();
 		format = new FormatAction();
 		compile = new CompileAction();
+		comment = new CommentAction();
+		uncomment = new UnCommentAction();
 	}
 
 	private RetargetTextEditorAction createAction(String name, String id)
@@ -79,7 +85,15 @@ public class HdlActionContributor extends TextEditorActionContributor
 			editMenu.add(new Separator());
 			editMenu.add(contentAssistProposal);
 			editMenu.add(format);
-			editMenu.add(compile);
+			editMenu.add(comment);
+			editMenu.add(uncomment);
+		}
+
+		IMenuManager projectMenu = menuManager
+		.findMenuUsingPath(IWorkbenchActionConstants.M_PROJECT);
+		if (projectMenu != null)
+		{			
+			projectMenu.insertAfter("buildProject", compile);
 		}
 
 		IMenuManager navigateMenu = menuManager
