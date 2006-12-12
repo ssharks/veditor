@@ -39,7 +39,7 @@ public class SimulateBuilder extends IncrementalProjectBuilder
 		
 		IProject project = getProject();
 		IContainer folder;
-		if (dir.equals("") || dir.equals("/") || dir.equals(".\\"))
+		if (dir.equals("") || dir.equals("./") || dir.equals(".\\"))
 			folder = project;
 		else
 			folder = project.getFolder(dir);
