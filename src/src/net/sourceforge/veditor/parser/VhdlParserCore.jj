@@ -177,7 +177,7 @@ void architecture() :
 {
 	<ARCHITECTURE> identifier() <OF> identifier() <IS>
 	moduleBody()
-	[ identifier() ]
+	[<ARCHITECTURE>] [ identifier() ]
 	end = <EOS>
 	{
 		endModule( end.beginLine );
