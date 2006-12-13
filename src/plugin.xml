@@ -160,6 +160,18 @@
             categoryId="net.sourceforge.veditor.commands"
             id="net.sourceforge.veditor.actions.OpenDeclaration">
       </command>
+      <command
+            name="Comment"
+            description="Comments a block of code"
+            categoryId="net.sourceforge.veditor.commands"
+            id="net.sourceforge.veditor.actions.Comment">
+      </command>
+       <command
+            name="Uncomment"
+            description="Remove block comments from code"
+            categoryId="net.sourceforge.veditor.commands"
+            id="net.sourceforge.veditor.actions.Uncomment">
+      </command>
    </extension>
 
    <extension
@@ -187,6 +199,18 @@
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             contextId="net.sourceforge.veditor.scope"
             commandId="net.sourceforge.veditor.actions.OpenDeclaration">
+      </key>
+      <key
+            sequence="M1+M2+/"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="net.sourceforge.veditor.scope"
+            commandId="net.sourceforge.veditor.actions.Comment">
+      </key>
+      <key
+            sequence="M1+M2+\"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="net.sourceforge.veditor.scope"
+            commandId="net.sourceforge.veditor.actions.Uncomment">
       </key>
    </extension>
 
