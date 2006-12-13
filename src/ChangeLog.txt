@@ -1,4 +1,11 @@
-﻿2006-12-10  tadashi-k
+﻿2006-12-12 Ghorashi-A
+	* Fixed a problem with "end architecture" in vhdl parser
+	* Fixed a builder bug that looked at "/" as the current directry
+	* Fixed compile action so that all the files are saved before compiling if 
+	  the "Save Automatically Before Build" option is checked. 
+	* Moved Compile Action to build menu
+	* Added Block Command and Block Uncomment
+2006-12-10  tadashi-k
 	* fixed bugs about error parser and simulation
 2006-09-10  tadashi-k
 	* add Export-Package in MANIFEST.MF for test
