@@ -35,9 +35,10 @@ public class UnCommentAction extends AbstractAction
 		String commentString="//";
 		
 		//get some vitals on the selection
-		int StartingLine = widget.getLineAtOffset(begin);
+		int StartingLine = widget.getLineAtOffset(begin);		
 		begin = widget.getOffsetAtLine(StartingLine);
-		String region = widget.getText();
+		
+		String region = widget.getTextRange(begin, end-begin);
 		
 		//are we using VHDL or verilog
 		//Note: is there a better way to do this?
