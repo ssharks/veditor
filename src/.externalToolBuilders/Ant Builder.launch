@@ -16,5 +16,5 @@
 <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
 <listEntry value="/veditor/buildjavacc.xml"/>
 </listAttribute>
-<stringAttribute key="org.eclipse.ui.externaltools.ATTR_LOCATION" value="${workspace_loc:/veditor/buildjavacc.xml}"/>
+<stringAttribute key="org.eclipse.ui.externaltools.ATTR_LOCATION" value="${project_loc}/buildjavacc.xml"/>
 </launchConfiguration>
