@@ -10,6 +10,9 @@
  *******************************************************************************/
 package net.sourceforge.veditor.actions;
 
+import net.sourceforge.veditor.editor.VerilogEditor;
+import net.sourceforge.veditor.editor.VhdlEditor;
+
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.graphics.Point;
 
@@ -41,11 +44,10 @@ public class UnCommentAction extends AbstractAction
 		String region = widget.getTextRange(begin, end-begin);
 		
 		//are we using VHDL or verilog
-		//Note: is there a better way to do this?
-		if(getEditor().getEditorId().endsWith("VhdlEditor")){
+		if(getEditor() instanceof VhdlEditor){
 			commentString="--";
 		}
-		else if (getEditor().getEditorId().endsWith("VerilogEditor")){
+		else if (getEditor() instanceof VerilogEditor){
 			commentString="//";
 		}
 		else{
