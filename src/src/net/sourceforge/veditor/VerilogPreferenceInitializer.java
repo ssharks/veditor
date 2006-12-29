@@ -34,6 +34,10 @@ public class VerilogPreferenceInitializer extends AbstractPreferenceInitializer
 	 */
 	private static final String DEFAULT_ERROR_PARSER_REGEX =
 		"1"
+		+ "\n" + "ModelSim"
+		+ "\n" + "[#|\\*].*Error: ([^\\(]*)\\(([0-9]*)\\): (.*)"		
+		+ "\n" + "[#|\\*].*Warning: \\[.*\\] ([^\\(]*)\\(([0-9]*)\\): (.*)"		
+		+ "\n" + ""
 		+ "\n" + "Cver"
 		+ "\n" + "\\*\\*(.*)\\(([0-9]+)\\) ERROR\\*\\* (.*)"
 		+ "\n" + "\\*\\*(.*)\\(([0-9]+)\\) WARN\\*\\* (.*)"
@@ -45,9 +49,9 @@ public class VerilogPreferenceInitializer extends AbstractPreferenceInitializer
 		+ "\n" + "FreeHDL"
 		+ "\n" + "(.*):([0-9]+): error: (.*)" 
 		+ "\n" + "(.*):([0-9]+): warning: (.*)" 
-		+ "\n" + ""
+		+ "\n" + ""	
 		+ "\n";
-	public static final int NUM_OF_DEFAULT_ERROR_PARSERS = 3;
+	public static final int NUM_OF_DEFAULT_ERROR_PARSERS = 4;
 	
 	public void initializeDefaultPreferences()
 	{
