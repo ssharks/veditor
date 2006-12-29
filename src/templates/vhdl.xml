@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates>
+<template 
+	autoinsert="false" 
+	context="net.sourceforge.veditor.vhdlOutModule" 
+	deleted="false" 
+	description="Defines an architecture block" 
+	enabled="true" 
+	id="net.sourceforge.veditor.architecture"
+	name="architecture">architecture  ${name} of ${entity} is &#13;
+&#13;
+end architecture  ${name};
+</template>
+
+<template 
+	autoinsert="false" 
+	context="net.sourceforge.veditor.vhdlOutModule" 
+	deleted="false" 
+	description="creates an entity block"
+	id="net.sourceforge.veditor.entity" 
+	enabled="true" 
+	name="entity">--&#13;
+-- Created: ${date}&#13;
+-- Author: ${user}&#13;
+--&#13;
+entity ${name} is
+	port( ${cursor}
+	);
+end entity ${name};
+</template>
+
+<template 
+	autoinsert="false" 
+	context="net.sourceforge.veditor.vhdlInModule" 
+	deleted="false" 
+	description="Port definitions"
+	id="net.sourceforge.veditor.port" 
+	enabled="true" 
+	name="port">port (
+	
+);
+</template>
+
+<template
+	name="package"	
+	description="Package definitions"
+	id="net.sourceforge.veditor.package"	
+	autoinsert="false" 
+	context="net.sourceforge.veditor.vhdlOutModule" 
+	deleted="false" 
+	enabled="true">package ${name} is
+	${cursor}	
+end package ${name};
+</template>
+
+<template
+	name="packagebody"	
+	description="Package body definitions"
+	id="net.sourceforge.veditor.packageBody"	
+	autoinsert="false" 
+	context="net.sourceforge.veditor.vhdlOutModule" 
+	deleted="false" 
+	enabled="true">package body ${name} is
+	${cursor}
+	end package body ${name};
+</template>
+
+<template
+	name="component"	
+	description="component definition"
+	id="net.sourceforge.veditor.component"	
+	autoinsert="false" 
+	context="net.sourceforge.veditor.vhdlOutModule" 
+	deleted="false" 
+	enabled="true">component ${name} is
+		${cursor}	
+	end component ${name};
+</template>
+
+<template 
+	autoinsert="false" 
+	context="net.sourceforge.veditor.vhdlInModule" 
+	deleted="false" 
+	description="Define a process"
+	id="net.sourceforge.veditor.process" 
+	enabled="true" 
+	name="process">process ${name} is
+	begin
+		${cursor}
+	end process ${name};
+</template>
+
+<template 
+	autoinsert="false" 
+	context="net.sourceforge.veditor.vhdlOutModule" 
+	deleted="false" 
+	description="Test Bench Template"
+	id="net.sourceforge.veditor.testBench" 
+	enabled="true" 
+	name="testbench">library ieee;
+use ieee.std_logic_1164.all;
+
+entity test_bench is
+end test_bench;
+
+architecture Test of test_bench is
+	begin
+	${cursor}
+end architure Test;
+</template>
+
+</templates>

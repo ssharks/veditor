@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates>
+<template 
+	autoinsert="false" 
+	context="net.sourceforge.veditor.verilog" 
+	deleted="false" 
+	description="Defines a module" 
+	enabled="true" 
+	id="net.sourceforge.veditor.verilog.module"
+	name="module">module  ${name}(
+	
+);
+	
+endmodule
+</template>
+<template 
+	autoinsert="false" 
+	context="net.sourceforge.veditor.verilog" 
+	deleted="false" 
+	description="Always block" 
+	enabled="true" 
+	id="net.sourceforge.veditor.verilog.always"
+	name="always">always @(${name})
+	begin 
+	
+	end
+</template>
+</templates>
