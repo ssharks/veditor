@@ -13,23 +13,21 @@ package net.sourceforge.veditor.editor;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.sourceforge.veditor.parser.IParser;
 import net.sourceforge.veditor.parser.Module;
 import net.sourceforge.veditor.parser.ModuleList;
+import net.sourceforge.veditor.template.VhdlOutModuleContextType;
+import org.eclipse.jface.text.templates.Template;
 
-import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.contentassist.ICompletionProposal;
+
 
 public class VhdlCompletionProcessor extends HdlCompletionProcessor
-{
+{	
 	public List getInModuleProposals(HdlDocument doc, int offset, String replace)
 	{
 		int length = replace.length();
 		List matchList = new ArrayList();
-
-		//  template
-		if (isMatch(replace, "process"))
-			matchList.add(createProcess(doc, offset, length));
-
+		
 		//  module instantiation
 		ModuleList mlist = ModuleList.find(doc.getProject());
 		String[] mnames = mlist.getModuleNames();
@@ -43,7 +41,7 @@ public class VhdlCompletionProcessor extends HdlCompletionProcessor
 		}
 
 		//  reserved word
-		String[] rwords = {"architecture ", "constant ", "signal "};
+		String[] rwords = {"constant ", "signal "};
 		for(int i = 0 ; i < rwords.length ; i++)
 		{
 			if (isMatch(replace, rwords[i]))
@@ -63,14 +61,44 @@ public class VhdlCompletionProcessor extends HdlCompletionProcessor
 		return addVariableProposals(doc, offset, replace, mname, matchList);
 	}
 	
-	private ICompletionProposal createProcess(IDocument doc, int offset, int length)
+	public List getOutOfModuleProposals(HdlDocument doc, int offset, String replace)
 	{
-		String indent = getIndent(doc, offset);
-		String first = "process(";
-		String second = ")\n" + indent + "begin\n" + indent + "\t\n" + indent
-				+ "end process;\n";
-		return getCompletionProposal(first + second, offset, length, first
-				.length(), "process");
+		List matchList = new ArrayList();
+		
+		return matchList;
+	}
+	
+	/**
+	 * Returns the relevance scale of the template given the prefix. 
+	 * This value is used to sort the suggestions made during template completion 
+	 * 
+	 * @param template the template
+	 * @param prefix the prefix
+	 * @return the relevance of the <code>template</code> for the given <code>prefix</code>
+	 */
+	protected int getRelevance(Template template, String prefix) {
+		//for now, all are equal
+		return 0;
+	}
+	
+	/**
+	 * This function should return a context string for the given context.
+	 * This value will be used to lookup the templates in the TemplateStore
+	 * @param context
+	 * @return Context string used to lookup the templates in the TemplateStore
+	 */
+	protected String getTemplateContextString(int context){
+		final String results;
+		switch(context){
+		case IParser.OUT_OF_MODULE:
+			results=VhdlOutModuleContextType.CONTEXT_TYPE;
+			break;
+		default:
+		case IParser.IN_MODULE:
+			results=VhdlOutModuleContextType.CONTEXT_TYPE;
+			break;			
+		}
+		return results;
 	}
 
 	private class VhdlInstanceCompletionProposal extends
