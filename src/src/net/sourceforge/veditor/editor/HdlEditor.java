@@ -38,6 +38,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.TextEditor;
@@ -46,6 +47,7 @@ import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.eclipse.ui.texteditor.TextOperationAction;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
+
 /**
  *  main class
  */
@@ -53,9 +55,9 @@ abstract public class HdlEditor extends TextEditor
 {
 	private ColorManager colorManager;
 	private HdlContentOutlinePage outlinePage;
-	private ModuleHierarchyPage modulePage;
-
-	private static HdlEditor current;
+	private ModuleHierarchyPage modulePage;	
+	
+	protected static HdlEditor current;
 	public static HdlEditor current()
 	{
 		return current;
@@ -65,11 +67,22 @@ abstract public class HdlEditor extends TextEditor
 	{
 		super();
 
+		setCurrent();
+		colorManager = new ColorManager();	
+		HdlTextAttribute.init();	
+		
+	}	
+	
+	/**
+	 * Makes this instance of the editor the current one
+	 * @return the old editor
+	 */
+	public HdlEditor setCurrent(){
+		HdlEditor old=current;
 		current = this;
-		colorManager = new ColorManager();
-		HdlTextAttribute.init();
+		return old;
 	}
-
+		
 	public void updatePartControl(IEditorInput input)
 	{
 		super.updatePartControl(input);
@@ -87,6 +100,7 @@ abstract public class HdlEditor extends TextEditor
 	}
 
 	abstract public String getEditorId();
+
 
 	protected void createActions()
 	{
@@ -368,7 +382,8 @@ abstract public class HdlEditor extends TextEditor
 	public ColorManager getColorManager()
 	{
 		return colorManager;
-	}
+	}	
+
 }
 
 
