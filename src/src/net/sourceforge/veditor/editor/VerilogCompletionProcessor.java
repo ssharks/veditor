@@ -17,6 +17,8 @@ import net.sourceforge.veditor.VerilogPlugin;
 import net.sourceforge.veditor.parser.Module;
 import net.sourceforge.veditor.parser.ModuleList;
 import net.sourceforge.veditor.parser.ModuleVariable;
+import net.sourceforge.veditor.template.VerilogContextType;
+
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.templates.Template;
@@ -116,7 +118,7 @@ public class VerilogCompletionProcessor extends HdlCompletionProcessor
 	 * @return Context string used to lookup the templates in the TemplateStore
 	 */
 	protected String getTemplateContextString(int context){
-		return VerilogEditor.TEMPLATES_CONTEXT_TYPE_ID;
+		return VerilogContextType.CONTEXT_TYPE;
 	}
 	
 	private ICompletionProposal createAlways(IDocument doc, int offset, int length)
