@@ -11,22 +11,35 @@
 
 package net.sourceforge.veditor.editor;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import net.sourceforge.veditor.VerilogPlugin;
 import net.sourceforge.veditor.parser.IParser;
 import net.sourceforge.veditor.parser.Module;
 import net.sourceforge.veditor.parser.ModuleList;
 import net.sourceforge.veditor.parser.ParserManager;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IRegion;
+import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.ITextViewer;
+import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
 import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.text.contentassist.IContextInformationValidator;
+import org.eclipse.jface.text.templates.DocumentTemplateContext;
+import org.eclipse.jface.text.templates.Template;
+import org.eclipse.jface.text.templates.TemplateContext;
+import org.eclipse.jface.text.templates.TemplateContextType;
+import org.eclipse.jface.text.templates.TemplateException;
+import org.eclipse.jface.text.templates.TemplateProposal;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Display;
@@ -37,6 +50,8 @@ import org.eclipse.swt.widgets.Display;
  */
 abstract public class HdlCompletionProcessor implements IContentAssistProcessor
 {
+	protected static final String TEMPLATE_IMAGE= "$nl$/icons/template.gif";
+	
 	public ICompletionProposal[] computeCompletionProposals(
 		ITextViewer viewer,
 		int documentOffset)
@@ -69,11 +84,14 @@ abstract public class HdlCompletionProcessor implements IContentAssistProcessor
 				matchList = getInStatmentProposals(doc, documentOffset, match, moduleName);
 				break;
 			case IParser.OUT_OF_MODULE:
+				matchList = getOutOfModuleProposals(doc, documentOffset, match);				
+				break;
 			default:
 				Display.getCurrent().beep();
 				return null;
 		}
-
+		
+		matchList.addAll(getTemplates(viewer, documentOffset, context));
 		Collections.sort(matchList);
 		ICompletionProposal[] result = new ICompletionProposal[matchList.size()];
 		for (int i = 0; i < matchList.size(); i++)
@@ -85,10 +103,29 @@ abstract public class HdlCompletionProcessor implements IContentAssistProcessor
 	
 	abstract public List getInModuleProposals(HdlDocument doc, int offset,
 			String replace);
-
+	abstract public List getOutOfModuleProposals(HdlDocument doc, int offset,
+			String replace);
 	abstract public List getInStatmentProposals(HdlDocument doc, int offset,
 			String replace, String mname);
+	/** This should return the relevance of the template which will be used to sort
+	 * the suggestions
+	 * @param template
+	 * @param prefix
+	 * @return scalar relevance of the template in the given context
+	 */
+	abstract protected int getRelevance(Template template, String prefix);
+	
+	/**
+	 * This function should return a context string for the given context.
+	 * This value will be used to lookup the templates in the TemplateStore
+	 * @param context
+	 * @return Context string used to lookup the templates in the TemplateStore
+	 */
+	abstract protected String getTemplateContextString(int context);
+	
+	
 
+	
 	protected static void addProposals(List matchList, int offset,
 			String replace, Object[] vars)
 	{
@@ -350,6 +387,117 @@ abstract public class HdlCompletionProcessor implements IContentAssistProcessor
 		{
 			return indentString;
 		}
+	}
+	
+	/**
+	 * This class extends the Template proposal class in order to add a compareTo function
+	 *
+	 */
+	class HdlTemplateProposal extends TemplateProposal implements Comparable
+	{
+		protected final String templateName;
+		
+		public int compareTo(Object object) {
+			HdlTemplateProposal operand=(HdlTemplateProposal) object;
+			int results=getRelevance()-operand.getRelevance();		
+			
+			//if the two templates are equal, then compare names
+			if(results == 0)
+			{
+				results=templateName.compareTo(operand.templateName);
+			}
+			
+			return results;
+		}
+		public HdlTemplateProposal(Template template, TemplateContext context, IRegion region, Image image, int relevance){
+			super(template,context,region,image,relevance);
+			templateName=template.getName();			
+		}
+	}
+	/**
+	 * Creates a list of template proposals
+	 * @param viewer
+	 * @param offset
+	 * @return
+	 */
+	protected List getTemplates(ITextViewer viewer, int offset,int context){		
+		List results=new ArrayList();
+		
+		ITextSelection selection= (ITextSelection) viewer.getSelectionProvider().getSelection();
+
+		// adjust offset to end of normalized selection
+		if (selection.getOffset() == offset)
+			offset= selection.getOffset() + selection.getLength();
+		
+		//walk backwards to find the beginning of the word we are replacing
+		int beginning= offset;
+		IDocument document= viewer.getDocument();
+		while (beginning > 0) {
+			try{
+				char ch= document.getChar(beginning - 1);
+				if (!Character.isJavaIdentifierPart(ch))
+					break;
+				beginning--;			
+			}
+			catch (BadLocationException e)
+			{
+				//empty list
+				return results;
+			}
+		}
+		
+		Region region= new Region(beginning, offset-beginning);
+		String prefix=null;
+		try{
+			prefix=document.get(beginning, offset-beginning);
+		}
+		catch (BadLocationException e)
+		{
+			//empty list
+			return results;
+		}
+		//get a list of templates
+		String contextString=getTemplateContextString(context);
+		TemplateContextType contextType=VerilogPlugin.getPlugin().getContextTypeRegistry().getContextType(contextString);
+		Template[] templates= VerilogPlugin.getPlugin().getTemplateStore().getTemplates(contextType.getId());
+		DocumentTemplateContext documnetTemplateContext= new DocumentTemplateContext(contextType, document, region.getOffset(), region.getLength());
+		//find a matching template
+		for (int i= 0; i < templates.length; i++) {
+			Template template= templates[i];
+			try {
+				contextType.validate(template.getPattern());
+			} catch (TemplateException e) {
+				continue;
+			}
+			if (template.matches(prefix, contextType.getId()) && template.getName().startsWith(prefix)){
+				HdlTemplateProposal hdlTemplateProposal=new HdlTemplateProposal(template,
+															documnetTemplateContext, 
+															region, 
+															getTemplateImage(template),
+															getRelevance(template, prefix));
+				results.add(hdlTemplateProposal);
+			}
+		}	
+		
+		return results;
+	}
+	
+	/**
+	 * Returns an image used for template suggestions
+	 * 
+	 * @param template the template, ignored in this implementation
+	 * @return the default template image
+	 */
+	protected Image getTemplateImage(Template template) {
+		VerilogPlugin plugin=VerilogPlugin.getPlugin();
+		ImageRegistry registry=plugin.getImageRegistry();		
+		Image image= registry.get(TEMPLATE_IMAGE);
+		if (image == null) {
+			ImageDescriptor desc= VerilogPlugin.imageDescriptorFromPlugin(VerilogPlugin.ID, TEMPLATE_IMAGE);
+			registry.put(TEMPLATE_IMAGE, desc);
+			image= registry.get(TEMPLATE_IMAGE);
+		}
+		return image;		
 	}
 }
 
