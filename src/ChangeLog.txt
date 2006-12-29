@@ -1,4 +1,8 @@
-﻿2006-12-19  Øyvind Harboe
+﻿2006-12-28 Ali Ghorashi
+	* Added Templates Support
+	* Added Toolbar menus for compiling
+	* Fixed 1613455
+2006-12-19  Øyvind Harboe
 	* The project now does not need to be named "veditor" to compile.
 2006-12-12 Ghorashi-A
 	* Fixed a problem with "end architecture" in vhdl parser
