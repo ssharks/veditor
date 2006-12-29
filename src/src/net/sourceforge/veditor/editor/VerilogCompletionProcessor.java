@@ -17,9 +17,9 @@ import net.sourceforge.veditor.VerilogPlugin;
 import net.sourceforge.veditor.parser.Module;
 import net.sourceforge.veditor.parser.ModuleList;
 import net.sourceforge.veditor.parser.ModuleVariable;
-
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
+import org.eclipse.jface.text.templates.Template;
 
 public class VerilogCompletionProcessor extends HdlCompletionProcessor
 {
@@ -88,6 +88,37 @@ public class VerilogCompletionProcessor extends HdlCompletionProcessor
 		int cursor = 7 + indent.length();
 		return getCompletionProposal(str, offset, length, cursor, "begin/end");
 	}
+	
+	public List getOutOfModuleProposals(HdlDocument doc, int offset, String replace)
+	{
+		List matchList = new ArrayList();
+		
+		return matchList;
+	}	
+	
+	/**
+	 * Returns the relevance scale of the template given the prefix. 
+	 * This value is used to sort the suggestions made during template completion 
+	 * 
+	 * @param template the template
+	 * @param prefix the prefix
+	 * @return the relevance of the <code>template</code> for the given <code>prefix</code>
+	 */
+	protected int getRelevance(Template template, String prefix) {
+		//for now, all are equal
+		return 0;
+	}
+	
+	/**
+	 * This function should return a context string for the given context.
+	 * This value will be used to lookup the templates in the TemplateStore
+	 * @param context
+	 * @return Context string used to lookup the templates in the TemplateStore
+	 */
+	protected String getTemplateContextString(int context){
+		return VerilogEditor.TEMPLATES_CONTEXT_TYPE_ID;
+	}
+	
 	private ICompletionProposal createAlways(IDocument doc, int offset, int length)
 	{
 		String first = "always @(posedge clk) begin\n\t";
