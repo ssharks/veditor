@@ -77,6 +77,12 @@
       </page>
       <page
             category="net.sourceforge.veditor.preference.TopPreferencePage"
+            id="net.sourceforge.veditor.preference.TemplatePreferencePage"
+            class="net.sourceforge.veditor.preference.TemplatePreferencePage"
+            name="Templates">
+      </page>
+      <page
+            category="net.sourceforge.veditor.preference.TopPreferencePage"
             id="net.sourceforge.veditor.preference.ErrorParserPreferencePage"
             class="net.sourceforge.veditor.preference.ErrorParserPreferencePage"
             name="Error Parser">
@@ -262,6 +268,92 @@
                 value="net.sourceforge.veditor.hdlNature">
             </filter>            
       </page>
+   </extension>
+   
+   <extension point="org.eclipse.ui.editorActions"> 
+      <editorContribution 
+         id="org.eclipse.ui.articles.action.contribution.editor" 
+         targetID="net.sourceforge.veditor.editor.VhdlEditor">
+         <action
+            id="net.sourceforge.veditor.compile" 
+            label="Compile" 
+            icon="icons/compile.gif"
+            tooltip="Compile File"
+            toolbarPath="normal/buildProject"
+            class="net.sourceforge.veditor.actions.HdlEditorActionDelegate"> 
+         </action> 
+         <action
+            id="net.sourceforge.veditor.simulate" 
+            label="Simulate" 
+            icon="icons/simulate.gif"
+            tooltip="Simulate Project"
+            toolbarPath="normal/buildProject"
+            class="net.sourceforge.veditor.actions.HdlEditorActionDelegate"> 
+         </action>
+         <action
+            id="net.sourceforge.veditor.build" 
+            label="Build" 
+            icon="icons/build.gif"
+            tooltip="Build Project"
+            toolbarPath="normal/buildProject"
+            class="net.sourceforge.veditor.actions.HdlEditorActionDelegate"> 
+         </action>               
+      </editorContribution> 
+      
+      <editorContribution 
+         id="org.eclipse.ui.articles.action.contribution.editor" 
+         targetID="net.sourceforge.veditor.editor.VerilogEditor">
+        <action
+            id="net.sourceforge.veditor.compile" 
+            label="Compile" 
+            icon="icons/compile.gif"
+            tooltip="Compile File"
+            toolbarPath="normal/buildProject"
+            class="net.sourceforge.veditor.actions.HdlEditorActionDelegate"> 
+         </action> 
+         <action
+            id="net.sourceforge.veditor.simulate" 
+            label="Simulate" 
+            icon="icons/simulate.gif"
+            tooltip="Simulate Project"
+            toolbarPath="normal/buildProject"
+            class="net.sourceforge.veditor.actions.HdlEditorActionDelegate"> 
+         </action>
+         <action
+            id="net.sourceforge.veditor.build" 
+            label="Build" 
+            icon="icons/build.gif"
+            tooltip="Build Project"
+            toolbarPath="normal/buildProject"
+            class="net.sourceforge.veditor.actions.HdlEditorActionDelegate"> 
+         </action> 
+      </editorContribution>
+   </extension>
+   
+   
+   <extension
+         point="org.eclipse.ui.editors.templates">
+        <contextType
+            name="VHDL In Modules"
+            class="net.sourceforge.veditor.template.VhdlInModuleContextType"
+            id="net.sourceforge.veditor.vhdlInModule">
+	  </contextType>
+	  <contextType
+            name="VHDL Out of Modules"
+            class="net.sourceforge.veditor.template.VhdlOutModuleContextType"
+            id="net.sourceforge.veditor.vhdlOutModule">
+	  </contextType>
+	  <contextType
+            name="Verilog"
+            class="net.sourceforge.veditor.template.VerilogContextType"
+            id="net.sourceforge.veditor.verilog">
+	  </contextType>
+      <include
+      		file="templates/vhdl.xml">      		
+      </include>
+      <include
+      		file="templates/verilog.xml">      		
+      </include>
    </extension>
 </plugin>
 
