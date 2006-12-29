@@ -202,13 +202,13 @@ void packageDef() :
 			genericList()
 		|	portList()
 		)*
-		end = <END> <COMPONENT> <EOS>
+		end = <END> <COMPONENT> [identifier()] <EOS>
 		{
 			endModule( end.beginLine );
 		}
 	
 	)+
-	<END> [identifier()] <EOS>
+	<END> [ <PACKAGE> ] [<BODY>] [identifier()] <EOS>
 }
 
 void genericList() :
@@ -341,12 +341,12 @@ void packageDeclaration() :
 |	<PROCEDURE> 
 		(
 			<EOS>
-		|	skipTo( BEGIN ) skipEnd() <END> [ identifier() ] <EOS>
+		|	skipTo( BEGIN ) skipEnd() <END> [ <PROCEDURE> ][ identifier() ] <EOS>
 		)
 |	<FUNCTION> skipTo( RETURN ) identifier()
 		(
 			<EOS>
-		|	skipTo( BEGIN ) skipEnd() <END> [ identifier() ] <EOS>
+		|	skipTo( BEGIN ) skipEnd() <END> [ <FUNCTION> ] [ identifier() ] <EOS>
 		)
 }
 
@@ -367,8 +367,12 @@ void statement() :
 		ident = identifier()
 		(
 			":" {beginStatement();}
-			(
-				[<ENTITY>] module = identifier() iend = skipTo( EOS )
+			(				
+			[<ENTITY>] module = identifier() iend = skipTo( EOS )
+				{
+					addInstance( ident.beginLine, iend.endLine, module.image, ident.image );
+				}
+			| <COMPONENT>  module = identifier() iend = skipTo( EOS )
 				{
 					addInstance( ident.beginLine, iend.endLine, module.image, ident.image );
 				}
