@@ -189,11 +189,12 @@ public class ErrorParser
 		Pattern errPattern = Pattern.compile(errRegex);
 		Pattern warnPattern = Pattern.compile(warnRegex);
 		Pattern infoPattern = Pattern.compile(infoRegex);
-		
-		String[] segs = new String[3]; 
+				
 		String lineStr;
 		for (lineStr = getLine(); lineStr != null; lineStr = getLine())
 		{
+			//declare the segments here to ensure that they are empty
+			String[] segs = new String[3]; 
 			if (!lineStr.equals(""))
 			{
 				Matcher m;
