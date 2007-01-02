@@ -3,8 +3,10 @@
 <project name="veditor" default="compile" basedir=".">
 
 	<!-- Eclipse & JavaCC installation directry -->
-	<property name="eclipse_plugin_dir" value="${eclipse_home}/plugins"/>
-	<property name="javacc_dir" value="${javacc_home}"/>
+	<property file="build.properties"/>
+	<property environment="env"/>
+	<property name="eclipse_plugin_dir" value="/${env.ECLIPSE_HOME}/plugins"/>
+	<property name="javacc_dir" value="/${env.JAVACC_HOME}"/>
 
 	<!-- must be linked with plugin.xml -->
 	<property name="project" value="net.sourceforge.veditor"/>
