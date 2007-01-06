@@ -71,6 +71,7 @@
 		<mkdir dir="plugins"/>
 		<mkdir dir="${plugin_dir}"/>
 		<copydir src="icons" dest="${plugin_dir}/icons"/>
+		<copydir src="templates" dest="${plugin_dir}/templates"/>
 		<copydir src="META-INF" dest="${plugin_dir}/META-INF"/>
 		<copy file="plugin.xml" todir="${plugin_dir}"/>
 		<copy file="about.html" todir="${plugin_dir}"/>
