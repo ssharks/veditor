@@ -6,10 +6,10 @@
       <editor
             name="Verilog Editor"
             icon="icons/vsrc.gif"
-            extensions="v"
             contributorClass="net.sourceforge.veditor.editor.HdlActionContributor"
             class="net.sourceforge.veditor.editor.VerilogEditor"
             id="net.sourceforge.veditor.editor.VerilogEditor">
+             <contentTypeBinding contentTypeId="net.sourceforge.veditor.verilogSource"/>
       </editor>
    </extension>
 
@@ -18,10 +18,10 @@
       <editor
             name="VHDL Editor"
             icon="icons/vsrc.gif"
-            extensions="vhd"
             contributorClass="net.sourceforge.veditor.editor.HdlActionContributor"
             class="net.sourceforge.veditor.editor.VhdlEditor"
             id="net.sourceforge.veditor.editor.VhdlEditor">
+            <contentTypeBinding contentTypeId="net.sourceforge.veditor.vhdlSource"/>
       </editor>
    </extension>
    
@@ -30,10 +30,10 @@
       <editor
             name="Verilog/VHDL Log Viewer"
             icon="icons/vsrc.gif"
-            extensions="log"
             class="net.sourceforge.veditor.log.LogEditor"
             contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
             id="net.sourceforge.veditor.log.LogEditor">
+             <contentTypeBinding contentTypeId="net.sourceforge.veditor.simulationLog"/>
       </editor>
    </extension>
 
@@ -365,5 +365,33 @@
       		file="templates/verilog.xml">      		
       </include>
    </extension>
+
+   <extension point="org.eclipse.core.runtime.contentTypes">
+	  <content-type id="verilogSource" name="Verilog Source File" 
+		  base-type="org.eclipse.core.runtime.text"
+		  priority="high"/>
+      <content-type id="vhdlSource" name="VHDL Source File" 
+		  base-type="org.eclipse.core.runtime.text"
+          priority="high"/>
+      <content-type id="simulationLog" name="Simulation Log File" 
+		  base-type="org.eclipse.core.runtime.text"
+          priority="high"/>
+    </extension>
+
+    <extension point="org.eclipse.core.runtime.contentTypes"> 
+      <file-association 
+       content-type="net.sourceforge.veditor.verilogSource"
+       file-extensions="v"/>
+    </extension>
+    <extension point="org.eclipse.core.runtime.contentTypes"> 
+      <file-association 
+       content-type="net.sourceforge.veditor.vhdlSource"
+       file-extensions="vhd"/>
+    </extension>
+    <extension point="org.eclipse.core.runtime.contentTypes"> 
+      <file-association 
+       content-type="net.sourceforge.veditor.simulationLog"
+       file-extensions="log"/>
+    </extension>
 </plugin>
 
