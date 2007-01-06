@@ -16,7 +16,9 @@ import java.util.List;
 import net.sourceforge.veditor.parser.IParser;
 import net.sourceforge.veditor.parser.Module;
 import net.sourceforge.veditor.parser.ModuleList;
+import net.sourceforge.veditor.template.VhdlInModuleContextType;
 import net.sourceforge.veditor.template.VhdlOutModuleContextType;
+
 import org.eclipse.jface.text.templates.Template;
 
 
@@ -95,7 +97,7 @@ public class VhdlCompletionProcessor extends HdlCompletionProcessor
 			break;
 		default:
 		case IParser.IN_MODULE:
-			results=VhdlOutModuleContextType.CONTEXT_TYPE;
+			results=VhdlInModuleContextType.CONTEXT_TYPE;
 			break;			
 		}
 		return results;
