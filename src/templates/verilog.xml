@@ -2,7 +2,7 @@
 <templates>
 <template 
 	autoinsert="false" 
-	context="net.sourceforge.veditor.verilog" 
+	context="net.sourceforge.veditor.verilogOutModule" 
 	deleted="false" 
 	description="Defines a module" 
 	enabled="true" 
@@ -13,16 +13,82 @@
 	
 endmodule
 </template>
+
 <template 
 	autoinsert="false" 
-	context="net.sourceforge.veditor.verilog" 
+	context="net.sourceforge.veditor.verilogInModule" 
 	deleted="false" 
 	description="Always block" 
 	enabled="true" 
 	id="net.sourceforge.veditor.verilog.always"
-	name="always">always @(${name})
-	begin 
-	
-	end
+	name="always">always @(${name}) begin 
+	${cursor}
+end
 </template>
+
+<template 
+	autoinsert="false" 
+	context="net.sourceforge.veditor.verilogInModule" 
+	deleted="false" 
+	description="Always block with posedge clk" 
+	enabled="true" 
+	id="net.sourceforge.veditor.verilog.alwaysWithClock"
+	name="always">always @(posedge clk) begin 
+	${cursor}
+end
+</template>
+
+<template 
+	autoinsert="false" 
+	context="net.sourceforge.veditor.verilogInModule" 
+	deleted="false" 
+	description="Initial block" 
+	enabled="true" 
+	id="net.sourceforge.veditor.verilog.initial"
+	name="initial">initial begin 
+	${cursor}
+end
+</template>
+
+<template 
+	autoinsert="false" 
+	context="net.sourceforge.veditor.verilogInModule" 
+	deleted="false" 
+	description="Function" 
+	enabled="true" 
+	id="net.sourceforge.veditor.verilog.function"
+	name="function">function[${bit_range}] ${name};
+begin
+	${cursor}
+end
+endfunction
+</template>
+
+<template 
+	autoinsert="false" 
+	context="net.sourceforge.veditor.verilogInModule" 
+	deleted="false" 
+	description="Task" 
+	enabled="true" 
+	id="net.sourceforge.veditor.verilog.task"
+	name="task">task ${name};
+begin
+	${cursor}
+end
+endtask
+</template>
+
+<template 
+	autoinsert="false" 
+	context="net.sourceforge.veditor.verilogInModule" 
+	deleted="false" 
+	description="Generate" 
+	enabled="true" 
+	id="net.sourceforge.veditor.verilog.generate"
+	name="generate">generate
+	${cursor}
+endgenerate
+</template>
+
+
 </templates>

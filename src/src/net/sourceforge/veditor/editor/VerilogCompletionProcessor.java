@@ -14,10 +14,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.sourceforge.veditor.VerilogPlugin;
+import net.sourceforge.veditor.parser.IParser;
 import net.sourceforge.veditor.parser.Module;
 import net.sourceforge.veditor.parser.ModuleList;
 import net.sourceforge.veditor.parser.ModuleVariable;
-import net.sourceforge.veditor.template.VerilogContextType;
+import net.sourceforge.veditor.template.VerilogInModuleContextType;
+import net.sourceforge.veditor.template.VerilogInStatementContextType;
+import net.sourceforge.veditor.template.VerilogOutModuleContextType;
 
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
@@ -30,18 +33,6 @@ public class VerilogCompletionProcessor extends HdlCompletionProcessor
 	{
 		int length = replace.length();
 		List matchList = new ArrayList();
-
-		//  template
-		if (isMatch(replace, "always"))
-			matchList.add(createAlways(doc, offset, length));
-		if (isMatch(replace, "initial"))
-			matchList.add(createInitial(doc, offset, length));
-		if (isMatch(replace, "function"))
-			matchList.add(createFunction(doc, offset, length));
-		if (isMatch(replace, "task"))
-			matchList.add(createTask(doc, offset, length));
-		if (isMatch(replace, "generate"))
-			matchList.add(createGenerate(doc, offset, length));
 
 		//  reserved word
 		String[] rwords = {"assign ", "integer ", "parameter "};
@@ -117,39 +108,23 @@ public class VerilogCompletionProcessor extends HdlCompletionProcessor
 	 * @param context
 	 * @return Context string used to lookup the templates in the TemplateStore
 	 */
-	protected String getTemplateContextString(int context){
-		return VerilogContextType.CONTEXT_TYPE;
-	}
-	
-	private ICompletionProposal createAlways(IDocument doc, int offset, int length)
+	protected String getTemplateContextString(int context)
 	{
-		String first = "always @(posedge clk) begin\n\t";
-		String second = "\nend\n";
-		return getCompletionProposal(first + second, offset, length, first.length(), "always");
-	}
-	private ICompletionProposal createInitial(IDocument doc, int offset, int length)
-	{
-		String first = "initial begin\n\t";
-		String second = "\nend\n";
-		return getCompletionProposal(first + second, offset, length, first.length(), "initial");
-	}
-	private ICompletionProposal createFunction(IDocument doc, int offset, int length)
-	{
-		String first = "function ";
-		String second = ";\nbegin\n\t\nend\nendfunction\n";
-		return getCompletionProposal(first + second, offset, length, first.length(), "function");
-	}
-	private ICompletionProposal createTask(IDocument doc, int offset, int length)
-	{
-		String first = "task ";
-		String second = ";\nbegin\n\t\nend\nendtask\n";
-		return getCompletionProposal(first + second, offset, length, first.length(), "task");
-	}
-	private ICompletionProposal createGenerate(IDocument doc, int offset, int length)
-	{
-		String first = "generate\n";
-		String second = "\nendgenerate\n";
-		return getCompletionProposal(first + second, offset, length, first.length(), "generate");
+		final String results;
+		switch (context)
+		{
+			case IParser.OUT_OF_MODULE:
+				results = VerilogOutModuleContextType.CONTEXT_TYPE;
+				break;
+			case IParser.IN_MODULE:
+				results = VerilogInModuleContextType.CONTEXT_TYPE;
+				break;
+			case IParser.IN_STATEMENT:
+			default:
+				results = VerilogInStatementContextType.CONTEXT_TYPE;
+				break;
+		}
+		return results;
 	}
 
 	private class VerilogInstanceCompletionProposal extends

@@ -344,9 +344,19 @@
             id="net.sourceforge.veditor.vhdlOutModule">
 	  </contextType>
 	  <contextType
-            name="Verilog"
-            class="net.sourceforge.veditor.template.VerilogContextType"
-            id="net.sourceforge.veditor.verilog">
+            name="Verilog In Statement"
+            class="net.sourceforge.veditor.template.VerilogInStatementContextType"
+            id="net.sourceforge.veditor.verilogInStatement">
+	  </contextType>
+	  <contextType
+            name="Verilog In Module"
+            class="net.sourceforge.veditor.template.VerilogInModuleContextType"
+            id="net.sourceforge.veditor.verilogInModule">
+	  </contextType>
+	  <contextType
+            name="Verilog Out of Module"
+            class="net.sourceforge.veditor.template.VerilogOutModuleContextType"
+            id="net.sourceforge.veditor.verilogOutModule">
 	  </contextType>
       <include
       		file="templates/vhdl.xml">      		

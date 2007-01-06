@@ -16,7 +16,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import net.sourceforge.veditor.template.VerilogContextType;
+import net.sourceforge.veditor.template.VerilogInModuleContextType;
+import net.sourceforge.veditor.template.VerilogInStatementContextType;
+import net.sourceforge.veditor.template.VerilogOutModuleContextType;
 import net.sourceforge.veditor.template.VhdlInModuleContextType;
 import net.sourceforge.veditor.template.VhdlOutModuleContextType;
 
@@ -297,7 +299,9 @@ public class VerilogPlugin extends AbstractUIPlugin
 			contextTypeRegistry= new ContributionContextTypeRegistry();
 			contextTypeRegistry.addContextType(VhdlInModuleContextType.CONTEXT_TYPE);			
 			contextTypeRegistry.addContextType(VhdlOutModuleContextType.CONTEXT_TYPE);
-			contextTypeRegistry.addContextType(VerilogContextType.CONTEXT_TYPE);
+			contextTypeRegistry.addContextType(VerilogInStatementContextType.CONTEXT_TYPE);
+			contextTypeRegistry.addContextType(VerilogInModuleContextType.CONTEXT_TYPE);
+			contextTypeRegistry.addContextType(VerilogOutModuleContextType.CONTEXT_TYPE);
 		}
 		return contextTypeRegistry;
 	}
