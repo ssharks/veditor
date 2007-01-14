@@ -2,15 +2,14 @@
 <HTML><HEAD>
 <META http-equiv="Content-Style-Type" content="text/css">
 <META http-equiv="Content-Type" content="text/html; charset=SHIFT_JIS">
-<META name="GENERATOR" content="IBM WebSphere Studio Homepage Builder Version 9.0.0.0 for Windows">
 <TITLE>Eclipse Verilog editor</TITLE>
 </HEAD>
 <BODY>
 <H2 align="center">Eclipse Verilog editor</H2>
-<P align="right">Last updated: August 27, 2006</P>
+<P align="right">Last updated: January 14, 2007</P>
 <H3>News</H3>
-<P>Eclipse Verilog editor 0.5.0 is released. The new version is distributed
-under EPL - <A href="http://www.eclipse.org/legal/epl-v10.html">Eclipse Public License v 1.0</A>.</P>
+<P>Eclipse Verilog editor 0.5.1 is released. The new version adds new features and fixes some bugs.</P>
+<P>Eclipse Verilog editor 0.5.0 and later version are distributed under EPL - <A href="http://www.eclipse.org/legal/epl-v10.html">Eclipse Public License v 1.0</A>.</P>
 <P>
 Eclipse Verilog editor version 0.2.0 was distributed with <A href="http://www.opencores.org/projects.cgi/web/opentech/">OpenTech</A> package for Open source EDA tools and open source hardware designs.</P>
 <H3>Introduction</H3>
@@ -18,7 +17,7 @@ Eclipse Verilog editor version 0.2.0 was distributed with <A href="http://www.op
 or VHDL.<BR>
 <A href="http://sourceforge.net/projects/veditor/">Here</A> is the project summary page in SourceForge.<BR>
 <BR>
-Eclipse Verilog Editor is tested on Eclipse 3.2.</P>
+Eclipse Verilog Editor is tested on Eclipse 3.2.1.</P>
 <P><A href="screenshot.html">Screenshot samples</A></P>
 <H3>Features</H3>
 <UL>
@@ -116,29 +115,31 @@ endmodule</PRE></BLOCKQUOTE>
   <LI>Simulator builder
   <P>Verilog/VHDL project supports simulator builder, which can launch external
   circuit simulators, then parse error messages and reflect problems view
-  from them. New <A href="http://icarus.com/eda/verilog/">Icarus Verilog</A>, <A href="http://www.pragmatic-c.com/gpl-cver/index.htm">CVer</A> and <A href="http://www.freehdl.seul.org/">FreeHDL</A> are supported. And other compiler can be supported, using custom error
-  parser.</P>
-</UL>
-<UL>
+  from them. Now <A href="http://icarus.com/eda/verilog/">Icarus Verilog</A>, <A href="http://www.pragmatic-c.com/gpl-cver/index.htm">CVer</A> and <A href="http://www.freehdl.seul.org/">FreeHDL</A> are supported. And other compiler can be supported, using custom error
+  parser.
+  </P>
   <LI>Custom error parser
   <P>Custom error parser can support any complier error message. It match pattern
   with user defined regular expressions.</P>
-</UL>
-<UL>
   <LI>Log viewer
   <P>Log viewer reads the compiler log files, then parse and update problems
   view. So you can launch simulator outside Eclipse and reflect problems
   view. Log viewer opens *.log files by default. You can also change file
   associations.</P>
-</UL>
-<UL>
   <LI>Text hover
-  <IMG src="new.gif" width="61" height="13" border="0">
   <P>When the mouse pointer is on any signals, the text hover show a declaration
   line of the signal.</P>
+  <LI>Block Comment and Block Uncomment
+  <IMG src="new.gif" width="61" height="13" border="0">
+  <P>JDT style block comment and uncomment are supported. The default key assigns are Ctrl+Shift+/ and Ctrl+Shift+\.
+  </P>
+  <LI>Custom code template
+  <IMG src="new.gif" width="61" height="13" border="0">
+  <P>JDT style code template are supported. The template pattern can be defined by user.
+  </P>
 </UL>
 <H3>License</H3>
-<P>Eclipse Verilog editor 0.5.0 is distributed under <A href="http://www.eclipse.org/legal/epl-v10.html">Eclipse Public License v 1.0</A> The later version will be released on the same license.</P>
+<P>Eclipse Verilog editor 0.5.0 and later versions are distributed under <A href="http://www.eclipse.org/legal/epl-v10.html">Eclipse Public License v 1.0.</A></P>
 <P>The earlier versions than 0.5.0 were distributed under <A href="http://www.gnu.org/licenses/gpl.html">GNU General Public License</A>. They are still available now.</P>
 <H3>How to use Eclipse Verilog editor</H3>
 <P><A href="install.html">Install Eclipse and Eclipse Verilog editor plug-in</A></P>
@@ -184,10 +185,15 @@ endmodule</PRE></BLOCKQUOTE>
   <DD>change license from GPL to EPL<BR>
   supported text hover of signals<BR>
   fixed bugs which are 1488462, 1519826, 1519835, 1537960, 1529153, 1538377
+  <DT>0.5.1
+  <DD>supported block comment and block uncomment<BR>
+  supported code template<BR>
+  added toolbar menu for compiling<BR>
+  fixed bugs about compile and build actions<BR>
+  fixed bugs which are 1573514, 1613455
 </DL>
 <H3>Future plan</H3>
 <UL>
-  <LI>add code templates
   <LI>preference page of code formatter
   <LI>lint tool
   <LI>wave form view - Signals are selected from source code view
@@ -195,7 +201,7 @@ endmodule</PRE></BLOCKQUOTE>
 <H3>Report and comment</H3>
 <P>Please send bug report, support request and other comment to <A href="http://sourceforge.net/projects/veditor/">the project summary page</A> in SourceForge.</P>
 <H3>Author</H3>
-<P>Eclipse Verilog editor is written by <A href="mailto:tadashi-k@users.sourceforge.net">tadashi-k@users.sourceforge.net</A>.</P>
+<P>Eclipse Verilog editor is written by <A href="mailto:tadashi-k@users.sourceforge.net">tadashi-k@users.sourceforge.net</A> and other <A href="http://sourceforge.net/project/memberlist.php?group_id=103963">developers</A>.</P>
 <H3>This project is hosted by</H3>
 <P align="center"><A href="http://sourceforge.net"><IMG src="http://sourceforge.net/sflogo.php?group_id=103963&amp;type=2" width="125" height="37" border="0" alt="SourceForge.net Logo" align="middle"></A></P>
 </BODY>
