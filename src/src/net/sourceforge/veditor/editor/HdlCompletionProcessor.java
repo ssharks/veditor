@@ -414,6 +414,32 @@ abstract public class HdlCompletionProcessor implements IContentAssistProcessor
 			templateName=template.getName();			
 		}
 	}
+	
+	class TemplateWithIndent extends Template
+	{
+		private String indent;
+
+		TemplateWithIndent(Template parent, String indent)
+		{
+			super(parent);
+			this.indent = indent;
+		}
+		
+		public String getPattern()
+		{
+			StringBuffer pattern = new StringBuffer();
+			int length = super.getPattern().length();
+			for(int i = 0; i < length; i++)
+			{
+				char c = super.getPattern().charAt(i);
+				pattern.append(c);
+				if (c == '\n')
+					pattern.append(indent);
+			}
+			return pattern.toString();
+		}
+	}
+	
 	/**
 	 * Creates a list of template proposals
 	 * @param viewer
@@ -470,6 +496,8 @@ abstract public class HdlCompletionProcessor implements IContentAssistProcessor
 				continue;
 			}
 			if (template.matches(prefix, contextType.getId()) && template.getName().startsWith(prefix)){
+				String indent = getIndent(viewer.getDocument(), offset);
+				template = new TemplateWithIndent(template, indent);
 				HdlTemplateProposal hdlTemplateProposal=new HdlTemplateProposal(template,
 															documnetTemplateContext, 
 															region, 

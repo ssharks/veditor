@@ -90,5 +90,31 @@ endtask
 endgenerate
 </template>
 
+<template 
+	autoinsert="false" 
+	context="net.sourceforge.veditor.verilogInModule" 
+	deleted="false" 
+	description="Generate with for" 
+	enabled="true" 
+	id="net.sourceforge.veditor.verilog.generateWithFor"
+	name="generate">genvar ${var};
+generate
+	for (${var} = 0; ${var} &lt; ${nloop}; ${var} = ${var} + 1) begin : ${block}
+		${cursor}
+	end
+endgenerate
+</template>
+
+<template 
+	autoinsert="false" 
+	context="net.sourceforge.veditor.verilogInStatement" 
+	deleted="false" 
+	description="block" 
+	enabled="true" 
+	id="net.sourceforge.veditor.verilog.block"
+	name="begin/end">begin
+	${cursor}
+end
+</template>
 
 </templates>

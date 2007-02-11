@@ -22,8 +22,6 @@ import net.sourceforge.veditor.template.VerilogInModuleContextType;
 import net.sourceforge.veditor.template.VerilogInStatementContextType;
 import net.sourceforge.veditor.template.VerilogOutModuleContextType;
 
-import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.templates.Template;
 
 public class VerilogCompletionProcessor extends HdlCompletionProcessor
@@ -35,7 +33,7 @@ public class VerilogCompletionProcessor extends HdlCompletionProcessor
 		List matchList = new ArrayList();
 
 		//  reserved word
-		String[] rwords = {"assign ", "integer ", "parameter "};
+		String[] rwords = {"assign ", "reg ", "wire ", "integer ", "parameter "};
 		for(int i = 0 ; i < rwords.length ; i++)
 		{
 			if (isMatch(replace, rwords[i]))
@@ -64,24 +62,10 @@ public class VerilogCompletionProcessor extends HdlCompletionProcessor
 	{
 		List matchList = new ArrayList();
 
-		//  template
-		if (isMatch(replace, "begin"))
-			matchList.add(createBeginEnd(doc, offset, replace.length()));
-
 		//  variable
 		return addVariableProposals(doc, offset, replace, mname, matchList);
 	}
 
-	// code templates
-	// TODO: need refactoring
-	private ICompletionProposal createBeginEnd(IDocument doc, int offset, int length)
-	{
-		String indent = getIndent(doc, offset);
-		String str = "begin\n" + indent + "\t\n" + indent + "end";
-		int cursor = 7 + indent.length();
-		return getCompletionProposal(str, offset, length, cursor, "begin/end");
-	}
-	
 	public List getOutOfModuleProposals(HdlDocument doc, int offset, String replace)
 	{
 		List matchList = new ArrayList();
