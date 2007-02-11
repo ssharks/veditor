@@ -1,4 +1,7 @@
-﻿2007-01-06 tadashi-k
+﻿2007-02-11 tadashi-k
+	* Fixed parsing parameter statement in Verilog
+	* Preserve indent in template pattern
+2007-01-06 tadashi-k
 	* Added Verilog context types and templates
 	* Fixed a problem of VHDL "inModule" template
 	* Fixed 1573514

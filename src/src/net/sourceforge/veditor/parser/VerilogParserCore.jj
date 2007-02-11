@@ -335,6 +335,7 @@ void parameter() :
 {
 	[
 		<REAL>
+	|	<INTEGER>
 	|	"[" skipTo(RBRACKET)
 	]
 	parameterAssign() ( "," parameterAssign() )* ";"
