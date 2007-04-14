@@ -19,10 +19,4 @@ public class VhdlEditor extends HdlEditor
 		setSourceViewerConfiguration(HdlSourceViewerConfiguration
 				.createForVhdl(getColorManager()));
 	}
-	
-	public String getEditorId()
-	{
-		return "net.sourceforge.veditor.editor.VhdlEditor"; 
-	}
-
 }

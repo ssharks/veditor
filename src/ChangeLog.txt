@@ -1,4 +1,7 @@
-﻿2007-02-11 tadashi-k
+﻿2007-04-14 tadashi-k
+	* Fixed indent bug in module instantiation
+	* Fixed openPage bug in Verilog and VHDL mixed design
+2007-02-11 tadashi-k
 	* Fixed parsing parameter statement in Verilog
 	* Preserve indent in template pattern
 2007-01-06 tadashi-k

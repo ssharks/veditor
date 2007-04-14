@@ -19,9 +19,4 @@ public class VerilogEditor extends HdlEditor
 		setSourceViewerConfiguration(HdlSourceViewerConfiguration
 				.createForVerilog(getColorManager()));
 	}
-
-	public String getEditorId()
-	{
-		return "net.sourceforge.veditor.editor.VerilogEditor"; 
-	}
 }

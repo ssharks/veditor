@@ -12,12 +12,12 @@
 package net.sourceforge.veditor.editor;
 
 import net.sourceforge.veditor.VerilogPlugin;
+import net.sourceforge.veditor.actions.CommentAction;
 import net.sourceforge.veditor.actions.CompileAction;
 import net.sourceforge.veditor.actions.FormatAction;
-import net.sourceforge.veditor.actions.CommentAction;
-import net.sourceforge.veditor.actions.UnCommentAction;
 import net.sourceforge.veditor.actions.GotoMatchingBracketAction;
 import net.sourceforge.veditor.actions.OpenDeclarationAction;
+import net.sourceforge.veditor.actions.UnCommentAction;
 import net.sourceforge.veditor.parser.Module;
 import net.sourceforge.veditor.parser.ModuleList;
 import net.sourceforge.veditor.parser.ParseException;
@@ -35,12 +35,14 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.IEditorDescriptor;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.TextEditor;
+import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.eclipse.ui.texteditor.TextOperationAction;
@@ -97,9 +99,6 @@ abstract public class HdlEditor extends TextEditor
 	{
 		return getDocumentProvider().getDocument(getEditorInput());
 	}
-
-	abstract public String getEditorId();
-
 
 	protected void createActions()
 	{
@@ -325,9 +324,12 @@ abstract public class HdlEditor extends TextEditor
 				.getActiveWorkbenchWindow().getActivePage();
 		try
 		{
-			IEditorPart editorPart = page.openEditor(new FileEditorInput(file),
-					getEditorId());
-					
+	        // Determine the editor descriptor for the given file (generally VHDL or verilog)
+	        IEditorDescriptor editorDesc = IDE.getEditorDescriptor(file, true);
+	        
+	        // Create the editor instance
+			IEditorPart editorPart = page.openEditor(new FileEditorInput(file), editorDesc.getId());
+
 			if (editorPart instanceof HdlEditor)
 			{
 				HdlEditor editor = (HdlEditor)editorPart;
