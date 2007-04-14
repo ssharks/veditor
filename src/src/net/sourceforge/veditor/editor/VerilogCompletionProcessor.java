@@ -146,7 +146,7 @@ public class VerilogCompletionProcessor extends HdlCompletionProcessor
 					if (i < params.length - 1)
 						replace.append(",");
 				}
-				replace.append("\n)\n");
+				replace.append(indent + ")" + indent);
 			}
 			
 			replace.append(name + "(");
