@@ -42,28 +42,34 @@ public interface VhdlParserCoreConstants {
   int BLOCK = 43;
   int ASSERT = 44;
   int GENERATE = 45;
-  int TO = 46;
-  int RANGE = 47;
-  int WITH = 48;
-  int MODE = 49;
-  int LPAREN = 50;
-  int RPAREN = 51;
-  int LBRACE = 52;
-  int RBRACE = 53;
-  int LBRACKET = 54;
-  int RBRACKET = 55;
-  int EOS = 56;
-  int PARA = 57;
-  int AT = 58;
-  int BQ = 59;
-  int DOLLAR = 60;
-  int COMMA = 61;
-  int COLON = 62;
-  int ASSIGN = 63;
-  int EQUAL = 64;
-  int IDENT = 65;
-  int SPC_CHAR = 66;
-  int OTHER = 67;
+  int CONFIGURATION = 46;
+  int LABEL = 47;
+  int LITERAL = 48;
+  int UNITS = 49;
+  int TO = 50;
+  int RANGE = 51;
+  int WITH = 52;
+  int OTHERS = 53;
+  int ALL = 54;
+  int MODE = 55;
+  int LPAREN = 56;
+  int RPAREN = 57;
+  int LBRACE = 58;
+  int RBRACE = 59;
+  int LBRACKET = 60;
+  int RBRACKET = 61;
+  int EOS = 62;
+  int PARA = 63;
+  int AT = 64;
+  int BQ = 65;
+  int DOLLAR = 66;
+  int COMMA = 67;
+  int COLON = 68;
+  int ASSIGN = 69;
+  int EQUAL = 70;
+  int IDENT = 71;
+  int SPC_CHAR = 72;
+  int OTHER = 73;
 
   int DEFAULT = 0;
   int IN_MULTI_LINE_COMMENT = 1;
@@ -115,9 +121,15 @@ public interface VhdlParserCoreConstants {
     "\"block\"",
     "\"assert\"",
     "\"generate\"",
+    "\"configuration\"",
+    "\"lable\"",
+    "\"literal\"",
+    "\"units\"",
     "\"to\"",
     "\"range\"",
     "\"with\"",
+    "\"others\"",
+    "\"all\"",
     "<MODE>",
     "\"(\"",
     "\")\"",

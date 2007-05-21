@@ -113,9 +113,15 @@ TOKEN :
 |	<BLOCK:		"block">
 |	<ASSERT:	"assert">
 |	<GENERATE:	"generate">
+|   <CONFIGURATION: "configuration">
+|   <LABEL:     "lable">
+|   <LITERAL:   "literal">
+|   <UNITS:     "units">
 |	<TO:		"to">
 |	<RANGE:		"range">
 |	<WITH:		"with">
+|   <OTHERS:    "others">
+|   <ALL:       "all">
 |	<MODE:		( "in" | "out" | "inout" | "buffer" | "linkage" )>
 |	<LPAREN:	"(" >
 |	<RPAREN:	")" >
@@ -164,6 +170,10 @@ void entity() :
 		genericList()
 	|	portList()
 	)*
+    
+    (attributeList())*
+    
+        
 	<END> [ <ENTITY> ] [ identifier() ] end = <EOS>
 	{
 		endModule( end.beginLine );
@@ -202,6 +212,7 @@ void packageDef() :
 			genericList()
 		|	portList()
 		)*
+	
 		end = <END> <COMPONENT> [identifier()] <EOS>
 		{
 			endModule( end.beginLine );
@@ -251,6 +262,33 @@ void portList() :
 }
 {
 	<PORT> "(" portElement() ( ";" portElement() )* ")" <EOS>
+}
+
+void attributeList():
+{
+}
+{
+	<ATTRIBUTE> identifier() (
+		("of" entityNameList() ":" entityClass() "is" ) 	|
+		( ":" identifier() )
+	)
+	skipTo( EOS )
+}
+
+void entityClass() :
+{
+}
+{
+	(<ENTITY> |	<ARCHITECTURE> | <CONFIGURATION> | <PACKAGE> |	<PROCEDURE> |
+	 <FUNCTION> |<TYPE> |<SUBTYPE> |<CONSTANT> |<SIGNAL> |<VARIABLE> | <FILE> |
+	 <COMPONENT> |	<LABEL> |	<LITERAL> |	<UNITS> |<GROUP>)
+}
+
+void entityNameList() :
+{
+}
+{
+	(identifier() | <OTHERS> | <ALL> )
 }
 
 void portElement() :
@@ -377,6 +415,7 @@ void statement() :
 					addInstance( ident.beginLine, iend.endLine, module.image, ident.image );
 				}
 			|	( <IF> | <FOR> ) skipTo( GENERATE )
+				( declaration() )*
 				(
 					<BEGIN> ( statement() )* 
 				|	( statement() )+
