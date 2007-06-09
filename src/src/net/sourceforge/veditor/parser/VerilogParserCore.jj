@@ -498,8 +498,16 @@ void generateIfStatement() :
 }
 {
 	<IF> "(" skipParen() ")"
-	<BEGIN> ( generateStatement() )+ <END>
-	[ LOOKAHEAD(1) <ELSE> <BEGIN> ( generateStatement() )+ <END> ]
+	<BEGIN> 
+	[ ":" identifier() ]
+	( generateStatement() )+
+	<END>
+	[ LOOKAHEAD(1) <ELSE> 
+	  <BEGIN>
+	  [ ":" identifier() ]
+	  ( generateStatement() )+ 
+	  <END>
+	]
 }
 
 JAVACODE
