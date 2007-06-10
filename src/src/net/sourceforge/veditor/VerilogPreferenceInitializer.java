@@ -70,6 +70,11 @@ public class VerilogPreferenceInitializer extends AbstractPreferenceInitializer
 		preferences.setDefault("Compile.command", "iverilog -tnull -y . -Wall");
 		
 		preferences.setDefault("ErrorParser", DEFAULT_ERROR_PARSER_REGEX);
+		
+		preferences.setDefault("Style.indent","Tab");
+		preferences.setDefault("Style.indentSize", "4");
+		preferences.setDefault("Style.noSpaceInBracket", true);
+		setDefaultStyleSpace(preferences);
 	}
 	
 	private void setDefaultAttr(Preferences preferences, String name,
@@ -84,6 +89,38 @@ public class VerilogPreferenceInitializer extends AbstractPreferenceInitializer
 		preferences.setDefault("Color." + name, color);
 		preferences.setDefault("Bold." + name, bold);
 		preferences.setDefault("Italic." + name, false);
+	}
+	
+	private void setDefaultStyleSpace(Preferences preferences)
+	{
+		Object values[][] = new Object[][] {
+				{ "Style.spaceBeforeOperator2", true },
+				{ "Style.spaceAfterOperator2", true },
+				{ "Style.spaceBeforeOperator1", true },
+				{ "Style.spaceAfterOperator1", false },
+				{ "Style.spaceBeforeComma", false },
+				{ "Style.spaceAfterComma", true },
+				{ "Style.spaceBeforeSemicolon", false },
+				{ "Style.spaceBeforeOpenParen", false },
+				{ "Style.spaceAfterOpenParen", false },
+				{ "Style.spaceBeforeCloseParen", false },
+				{ "Style.spaceBeforeOpenBracket", false },
+				{ "Style.spaceAfterOpenBracket", false },
+				{ "Style.spaceBeforeCloseBracket", false },
+				{ "Style.spaceBeforeOpenBrace", false },
+				{ "Style.spaceAfterOpenBrace", false },
+				{ "Style.spaceBeforeCloseBrace", false },
+				{ "Style.spaceBeforeCaseColon", false },
+				{ "Style.spaceAfterCaseColon", true },
+				{ "Style.spaceAfterIf", true },
+				{ "Style.spaceAfterFor", true },
+				{ "Style.spaceAfterWhile", true },
+				{ "Style.spaceAfterRepeat", true } };
+		for (int i = 0; i < values.length; i++)
+		{
+			boolean flag = ((Boolean)values[i][1]).booleanValue();
+			preferences.setDefault(values[i][0].toString(), flag);
+		}
 	}
 }
 

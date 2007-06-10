@@ -87,6 +87,18 @@
             class="net.sourceforge.veditor.preference.ErrorParserPreferencePage"
             name="Error Parser">
       </page>
+      <page
+            category="net.sourceforge.veditor.preference.TopPreferencePage"
+            id="net.sourceforge.veditor.preference.CodeStylePreferencePage"
+            class="net.sourceforge.veditor.preference.CodeStylePreferencePage"
+            name="Code Style">
+      </page>
+      <page
+            category="net.sourceforge.veditor.preference.CodeStylePreferencePage"
+            id="net.sourceforge.veditor.preference.CodeStyleSpacePreferencePage"
+            class="net.sourceforge.veditor.preference.CodeStyleSpacePreferencePage"
+            name="Insert Space">
+      </page>
    </extension>
 
    <extension
