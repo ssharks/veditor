@@ -21,7 +21,7 @@ endmodule
 	description="Always block" 
 	enabled="true" 
 	id="net.sourceforge.veditor.verilog.always"
-	name="always">always @(${name}) begin 
+	name="always">always @(${name}) begin
 	${cursor}
 end
 </template>
@@ -33,7 +33,7 @@ end
 	description="Always block with posedge clk" 
 	enabled="true" 
 	id="net.sourceforge.veditor.verilog.alwaysWithClock"
-	name="always">always @(posedge clk) begin 
+	name="always">always @(posedge clk) begin
 	${cursor}
 end
 </template>
@@ -45,7 +45,7 @@ end
 	description="Initial block" 
 	enabled="true" 
 	id="net.sourceforge.veditor.verilog.initial"
-	name="initial">initial begin 
+	name="initial">initial begin
 	${cursor}
 end
 </template>
