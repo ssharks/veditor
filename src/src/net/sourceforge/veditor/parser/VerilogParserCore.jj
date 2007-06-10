@@ -85,7 +85,7 @@ SPECIAL_TOKEN :
 {
 	<SINGLE_LINE_COMMENT: "//" (~["\n"])* >
 |	<DELSE:     "\n`else" > : IN_ELSE_BLOCK
-|	<DIRECTIVE: "\n`" ["a"-"z"] (~["\n"])* >  // directive must be lower case
+|   <DIRECTIVE: "\n" (" ")* "`" ["a"-"z"] (~["\n"])* >  // directive must be lower case
 }
 
 TOKEN :
@@ -449,7 +449,9 @@ void caseStatement() :
 {
 	(<CASE>|<CASEX>) "(" skipParen() ")"
 	(
-		identifier() ( "," identifier() )* ":" statement()
+			identifier() ( "," identifier() )* ":" statement()
+		|	("{") identifier() ( "," identifier() )* ("}")
+			( (",")  ("{") identifier() ( "," identifier() )* ("}") )*  ":" statement()
 	)*
 	<ENDCASE>
 }
