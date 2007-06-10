@@ -6,9 +6,10 @@
 </HEAD>
 <BODY>
 <H2 align="center">Eclipse Verilog editor</H2>
-<P align="right">Last updated: January 14, 2007</P>
+<P align="right">Last updated: June 10, 2007</P>
 <H3>News</H3>
-<P>Eclipse Verilog editor 0.5.1 is released. The new version adds new features and fixes some bugs.</P>
+<P>Eclipse Verilog editor 0.5.2 is released. The new version supports preference
+page for Verilog code formatter and fixes some bugs.</P>
 <P>Eclipse Verilog editor 0.5.0 and later version are distributed under EPL - <A href="http://www.eclipse.org/legal/epl-v10.html">Eclipse Public License v 1.0</A>.</P>
 <P>
 Eclipse Verilog editor version 0.2.0 was distributed with <A href="http://www.opencores.org/projects.cgi/web/opentech/">OpenTech</A> package for Open source EDA tools and open source hardware designs.</P>
@@ -95,14 +96,12 @@ endmodule</PRE></BLOCKQUOTE>
   <LI>Preference page
   <P>It can modify colors and font styles in editor and command line option
   for external Verilog compiler.</P>
-  <LI>Code Formatter (beta)
+  <LI>Code Formatter
+  <IMG src="new.gif" width="61" height="13" border="0">
   <P>Code formatter arranges Verilog source code just like same function with
   JDT. It corrects indent and space characters before/after operators.<BR>
-  Now you are forced to my own code style because there are no preference
-  page of Verilog code style. Please report your required preference of code
-  style. Of course welcome to bug report with your expected code too.<BR>
-  Code formatter can do on Verilog language only now. Please contribute about
-  VHDL. </P>
+  Now you can customize your own code style, using preference pages.<BR>
+  Code formatter can do on Verilog language only now. Please contribute about VHDL.</P>
   <LI>Console view
   <P>Console view show output messages from external compiler and error messages
   from internal code parser. It make you easy to fix problems.</P>
@@ -130,11 +129,9 @@ endmodule</PRE></BLOCKQUOTE>
   <P>When the mouse pointer is on any signals, the text hover show a declaration
   line of the signal.</P>
   <LI>Block Comment and Block Uncomment
-  <IMG src="new.gif" width="61" height="13" border="0">
   <P>JDT style block comment and uncomment are supported. The default key assigns are Ctrl+Shift+/ and Ctrl+Shift+\.
   </P>
   <LI>Custom code template
-  <IMG src="new.gif" width="61" height="13" border="0">
   <P>JDT style code template are supported. The template pattern can be defined by user.
   </P>
 </UL>
@@ -191,12 +188,17 @@ endmodule</PRE></BLOCKQUOTE>
   added toolbar menu for compiling<BR>
   fixed bugs about compile and build actions<BR>
   fixed bugs which are 1573514, 1613455
+  <DT>0.5.2
+  <DD>supported Verilog code formatter with preference<BR>
+  fixed bugs which are 1723048, 1703662.<BR>
+  fixed bugs in Verilog parser
 </DL>
 <H3>Future plan</H3>
 <UL>
-  <LI>preference page of code formatter
+  <LI>VHDL code formatter
   <LI>lint tool
   <LI>wave form view - Signals are selected from source code view
+  <LI>refactoring helper
 </UL>
 <H3>Report and comment</H3>
 <P>Please send bug report, support request and other comment to <A href="http://sourceforge.net/projects/veditor/">the project summary page</A> in SourceForge.</P>
