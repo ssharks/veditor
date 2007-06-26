@@ -57,8 +57,6 @@ public class VhdlCompletionProcessor extends HdlCompletionProcessor
 	{
 		List matchList = new ArrayList();
 
-		// TODO: add template
-
 		//  variable
 		return addVariableProposals(doc, offset, replace, mname, matchList);
 	}
