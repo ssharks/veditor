@@ -21,10 +21,15 @@ import net.sourceforge.veditor.VerilogPlugin;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.swt.widgets.MessageBox;
+import org.eclipse.ui.texteditor.MarkerAnnotation;
+import org.eclipse.ui.texteditor.SimpleMarkerAnnotation;
 
 public class ErrorParser
 {
@@ -40,10 +45,10 @@ public class ErrorParser
 		}
 		return parsers;
 	}
-	public static List getParserList()
+	public static List<ErrorParser> getParserList()
 	{
-		List list = new ArrayList();
-		List strings = VerilogPlugin.getPreferenceStrings(PREFERENCE_NAME);
+		List<ErrorParser> list = new ArrayList<ErrorParser>();
+		List<String> strings = VerilogPlugin.getPreferenceStrings(PREFERENCE_NAME);
 
 		if (strings != null)
 		{
@@ -56,7 +61,7 @@ public class ErrorParser
 	}
 	public static ErrorParser getParser(String compiler)
 	{
-		List strings = VerilogPlugin.getPreferenceStrings(PREFERENCE_NAME);
+		List<String> strings = VerilogPlugin.getPreferenceStrings(PREFERENCE_NAME);
 		
 		for (int i = 0; i < strings.size(); i += 4)
 		{
@@ -67,7 +72,7 @@ public class ErrorParser
 		}
 		return null;
 	}
-	private static ErrorParser createParser(List strings, int top)
+	private static ErrorParser createParser(List<String> strings, int top)
 	{
 		String name = strings.get(top).toString();
 		String err = strings.get(top + 1).toString();
@@ -80,7 +85,7 @@ public class ErrorParser
 	}
 	public static void setParsers(ErrorParser[] parsers)
 	{
-		List strings = new ArrayList();
+		List<String> strings = new ArrayList<String>();
 		for (int i = 0; i < parsers.length; i++)
 		{
 			strings.add(parsers[i].compilerName);
@@ -90,10 +95,10 @@ public class ErrorParser
 		}
 		VerilogPlugin.setPreference(PREFERENCE_NAME, strings);
 	}
-	public static void setParserList(List list)
+	public static void setParserList(List<ErrorParser> list)
 	{
-		List strings = new ArrayList();
-		Iterator i = list.iterator();
+		List<String> strings = new ArrayList<String>();
+		Iterator<ErrorParser> i = list.iterator();
 		while(i.hasNext())
 		{
 			ErrorParser parser = (ErrorParser)i.next();
@@ -260,28 +265,52 @@ public class ErrorParser
 		}
 	}
 	
+	private void reportMissingFile(String filename){
+		String message = new String();
+		message=String.format("\"%s\" is not found in the project. MS Windows users, check filename case!!!", filename);			
+		try{
+			IMarker marker=project.createMarker("org.eclipse.core.resources.problemmarker");
+			marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);			
+			marker.setAttribute(IMarker.MESSAGE, message);
+		}
+		catch (CoreException e)
+		{
+		}		
+	}
 	private void setErrorMarker(String filename, String line, String msg)
 	{
 		IResource file = getFile(filename);
 		int lineNumber = parseLineNumber(line);
-		if (file != null && lineNumber > 0)
+		if (file != null && lineNumber > 0){
 			VerilogPlugin.setErrorMarker(file, lineNumber, msg);
+		}
+		else{
+			reportMissingFile(filename);
+		}
 	}
 
 	private void setWarningMarker(String filename, String line, String msg)
 	{
 		IResource file = getFile(filename);
 		int lineNumber = parseLineNumber(line);
-		if (file != null && lineNumber > 0)
+		if (file != null && lineNumber > 0){
 			VerilogPlugin.setWarningMarker(file, lineNumber, msg);
+		}
+		else{
+			reportMissingFile(filename);
+		}
 	}
 
 	private void setInfoMarker(String filename, String line, String msg)
 	{
 		IResource file = getFile(filename);
 		int lineNumber = parseLineNumber(line);
-		if (file != null && lineNumber > 0)
+		if (file != null && lineNumber > 0){
 			VerilogPlugin.setInfoMarker(file, lineNumber, msg);
+		}
+		else{
+			reportMissingFile(filename);
+		}
 	}
 	
 	private IResource getFile(String filename)
