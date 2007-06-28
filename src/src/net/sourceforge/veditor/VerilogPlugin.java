@@ -115,7 +115,7 @@ public class VerilogPlugin extends AbstractUIPlugin
 	/**
 	 * Returns the string list separated by "\n" from the plugin preferences
 	 */
-	public static List getPreferenceStrings(String key)
+	public static List<String> getPreferenceStrings(String key)
 	{
 		String string = getPreferenceString(key);
 		if (string == null)
@@ -129,7 +129,7 @@ public class VerilogPlugin extends AbstractUIPlugin
 				return null;
 		}
 	
-		List list = new ArrayList();
+		List<String> list = new ArrayList<String>();
 		int length = string.length();
 		while(index >= 0 && index < length - 1)
 		{
