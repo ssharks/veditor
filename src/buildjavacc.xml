@@ -54,10 +54,7 @@
 			srcdir="${src};${javacc_generated}"
 			destdir="${dst}">
 			<classpath refid="compile.classpath"/>
-		</javac>
-		<copy todir="${dst}" >
-			<fileset dir="${src}" includes="**/*.properties"/>
-		</copy>
+		</javac>		
 	</target>
 
 	<target name="jar" depends="compile">
