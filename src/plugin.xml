@@ -285,60 +285,12 @@
    <extension point="org.eclipse.ui.editorActions"> 
       <editorContribution 
          id="org.eclipse.ui.articles.action.contribution.editor" 
-         targetID="net.sourceforge.veditor.editor.VhdlEditor">
-         <action
-            id="net.sourceforge.veditor.compile" 
-            label="Compile" 
-            icon="icons/compile.gif"
-            tooltip="Compile File"
-            toolbarPath="normal/buildProject"
-            class="net.sourceforge.veditor.actions.HdlEditorActionDelegate"> 
-         </action> 
-         <action
-            id="net.sourceforge.veditor.simulate" 
-            label="Simulate" 
-            icon="icons/simulate.gif"
-            tooltip="Simulate Project"
-            toolbarPath="normal/buildProject"
-            class="net.sourceforge.veditor.actions.HdlEditorActionDelegate"> 
-         </action>
-         <action
-            id="net.sourceforge.veditor.build" 
-            label="Build" 
-            icon="icons/build.gif"
-            tooltip="Build Project"
-            toolbarPath="normal/buildProject"
-            class="net.sourceforge.veditor.actions.HdlEditorActionDelegate"> 
-         </action>               
+         targetID="net.sourceforge.veditor.editor.VhdlEditor">               
       </editorContribution> 
       
       <editorContribution 
          id="org.eclipse.ui.articles.action.contribution.editor" 
-         targetID="net.sourceforge.veditor.editor.VerilogEditor">
-        <action
-            id="net.sourceforge.veditor.compile" 
-            label="Compile" 
-            icon="icons/compile.gif"
-            tooltip="Compile File"
-            toolbarPath="normal/buildProject"
-            class="net.sourceforge.veditor.actions.HdlEditorActionDelegate"> 
-         </action> 
-         <action
-            id="net.sourceforge.veditor.simulate" 
-            label="Simulate" 
-            icon="icons/simulate.gif"
-            tooltip="Simulate Project"
-            toolbarPath="normal/buildProject"
-            class="net.sourceforge.veditor.actions.HdlEditorActionDelegate"> 
-         </action>
-         <action
-            id="net.sourceforge.veditor.build" 
-            label="Build" 
-            icon="icons/build.gif"
-            tooltip="Build Project"
-            toolbarPath="normal/buildProject"
-            class="net.sourceforge.veditor.actions.HdlEditorActionDelegate"> 
-         </action> 
+         targetID="net.sourceforge.veditor.editor.VerilogEditor">        
       </editorContribution>
    </extension>
    
