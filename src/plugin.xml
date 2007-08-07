@@ -179,6 +179,18 @@
             id="net.sourceforge.veditor.actions.OpenDeclaration">
       </command>
       <command
+            name="Collapse All"
+            description="Collapse all foldable sections"
+            categoryId="net.sourceforge.veditor.commands"
+            id="net.sourceforge.veditor.actions.CollapseAll">
+      </command>
+      <command
+            name="Expand All"
+            description="Expand all foldable sections"
+            categoryId="net.sourceforge.veditor.commands"
+            id="net.sourceforge.veditor.actions.ExpandAll">
+      </command>
+      <command
             name="Comment"
             description="Comments a block of code"
             categoryId="net.sourceforge.veditor.commands"
@@ -217,6 +229,18 @@
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             contextId="net.sourceforge.veditor.scope"
             commandId="net.sourceforge.veditor.actions.OpenDeclaration">
+      </key>
+      <key
+            sequence="M1+F"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="net.sourceforge.veditor.scope"
+            commandId="net.sourceforge.veditor.actions.CollapseAll">
+      </key>
+      <key
+            sequence="M2+F"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="net.sourceforge.veditor.scope"
+            commandId="net.sourceforge.veditor.actions.ExpandAll">
       </key>
       <key
             sequence="M1+M2+/"
