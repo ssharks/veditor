@@ -191,6 +191,18 @@
             id="net.sourceforge.veditor.actions.ExpandAll">
       </command>
       <command
+            name="Show in Hierarchy"
+            description="Shows the current element in the hierarchy"
+            categoryId="net.sourceforge.veditor.commands"
+            id="net.sourceforge.veditor.actions.ShowInHierarchy">
+      </command>
+      <command
+            name="Show in Outline"
+            description="Shows the current element in the outline"
+            categoryId="net.sourceforge.veditor.commands"
+            id="net.sourceforge.veditor.actions.ShowInOutline">
+      </command>
+      <command
             name="Comment"
             description="Comments a block of code"
             categoryId="net.sourceforge.veditor.commands"
