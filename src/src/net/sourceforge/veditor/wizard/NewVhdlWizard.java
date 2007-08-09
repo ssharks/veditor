@@ -20,19 +20,15 @@ public class NewVhdlWizard extends NewHdlWizard
 
 	String getInitialContents(String moduleName)
 	{
-		String contents[] = {
-				"entity " + moduleName + " is",
-				"\tport(",
-				"\t);",
-				"end " + moduleName + ";" };
-
-		StringBuffer buf = new StringBuffer();
-		for (int i = 0; i < contents.length; i++)
-		{
-			buf.append(contents[i]);
-			buf.append("\n");
-		}
-		return buf.toString();
+		String results=
+			"-- \n"+
+			"-- "+moduleName+" \n"+
+			"-- \n"+
+			"\n"+
+			"library ieee;\n"+
+			"use ieee.std_logic_1164.all;"+"\n";
+		
+		return results.toString();
 	}
 
 }
