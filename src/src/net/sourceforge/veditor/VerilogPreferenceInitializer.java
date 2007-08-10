@@ -36,7 +36,7 @@ public class VerilogPreferenceInitializer extends AbstractPreferenceInitializer
 		"1"
 		+ "\n" + "ModelSim"
 		+ "\n" + "[#|\\*].*Error: ([^\\(]*)\\(([0-9]*)\\): (.*)"		
-		+ "\n" + "[#|\\*].*Warning: \\[.*\\] ([^\\(]*)\\(([0-9]*)\\): (.*)"		
+		+ "\n" + "[#|\\*].*Warning: ([^\\(]*)\\(([0-9]*)\\): (.*)"		
 		+ "\n" + ""
 		+ "\n" + "Cver"
 		+ "\n" + "\\*\\*(.*)\\(([0-9]+)\\) ERROR\\*\\* (.*)"
