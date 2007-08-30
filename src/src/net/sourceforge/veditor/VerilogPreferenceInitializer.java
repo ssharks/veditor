@@ -10,6 +10,8 @@
  *******************************************************************************/
 package net.sourceforge.veditor;
 
+import net.sourceforge.veditor.preference.VhdlCodeStylePreferencePage;
+
 import org.eclipse.core.runtime.Preferences;
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 
@@ -74,6 +76,7 @@ public class VerilogPreferenceInitializer extends AbstractPreferenceInitializer
 		preferences.setDefault("Style.indent","Tab");
 		preferences.setDefault("Style.indentSize", "4");
 		preferences.setDefault("Style.noSpaceInBracket", true);
+		preferences.setDefault(VhdlCodeStylePreferencePage.PAD_OPERATORS, true);
 		setDefaultStyleSpace(preferences);
 	}
 	
