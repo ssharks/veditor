@@ -95,9 +95,15 @@
       </page>
       <page
             category="net.sourceforge.veditor.preference.CodeStylePreferencePage"
-            id="net.sourceforge.veditor.preference.CodeStyleSpacePreferencePage"
-            class="net.sourceforge.veditor.preference.CodeStyleSpacePreferencePage"
-            name="Insert Space">
+            id="net.sourceforge.veditor.preference.VerilogCodeStylePreferencePage"
+            class="net.sourceforge.veditor.preference.VerilogCodeStylePreferencePage"
+            name="Verilog Code Style">
+      </page>
+      <page
+            category="net.sourceforge.veditor.preference.CodeStylePreferencePage"
+            id="net.sourceforge.veditor.preference.VhdlCodeStylePreferencePage"
+            class="net.sourceforge.veditor.preference.VhdlCodeStylePreferencePage"
+            name="VHDL Code Style">
       </page>
    </extension>
 
@@ -179,6 +185,30 @@
             id="net.sourceforge.veditor.actions.OpenDeclaration">
       </command>
       <command
+            name="Collapse All"
+            description="Collapse all foldable sections"
+            categoryId="net.sourceforge.veditor.commands"
+            id="net.sourceforge.veditor.actions.CollapseAll">
+      </command>
+      <command
+            name="Expand All"
+            description="Expand all foldable sections"
+            categoryId="net.sourceforge.veditor.commands"
+            id="net.sourceforge.veditor.actions.ExpandAll">
+      </command>
+      <command
+            name="Show in Hierarchy"
+            description="Shows the current element in the hierarchy"
+            categoryId="net.sourceforge.veditor.commands"
+            id="net.sourceforge.veditor.actions.ShowInHierarchy">
+      </command>
+      <command
+            name="Show in Outline"
+            description="Shows the current element in the outline"
+            categoryId="net.sourceforge.veditor.commands"
+            id="net.sourceforge.veditor.actions.ShowInOutline">
+      </command>
+      <command
             name="Comment"
             description="Comments a block of code"
             categoryId="net.sourceforge.veditor.commands"
@@ -189,6 +219,18 @@
             description="Remove block comments from code"
             categoryId="net.sourceforge.veditor.commands"
             id="net.sourceforge.veditor.actions.Uncomment">
+      </command>
+      <command
+            name="Show In Navigator"
+            description="Shows the current file in the navigator"
+            categoryId="net.sourceforge.veditor.commands"
+            id="net.sourceforge.veditor.actions.ShowInNavigator">
+      </command>
+      <command
+            name="Clear Error Markers"
+            description="Clears the error markers for this file"
+            categoryId="net.sourceforge.veditor.commands"
+            id="net.sourceforge.veditor.actions.ClearErrorMarkers">
       </command>
    </extension>
 
@@ -219,6 +261,18 @@
             commandId="net.sourceforge.veditor.actions.OpenDeclaration">
       </key>
       <key
+            sequence="M1+F12"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="net.sourceforge.veditor.scope"
+            commandId="net.sourceforge.veditor.actions.CollapseAll">
+      </key>
+      <key
+            sequence="M2+F12"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="net.sourceforge.veditor.scope"
+            commandId="net.sourceforge.veditor.actions.ExpandAll">
+      </key>
+      <key
             sequence="M1+M2+/"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             contextId="net.sourceforge.veditor.scope"
@@ -234,7 +288,7 @@
 
    <extension
          id="simulateBuilder"
-         name="Verilog/VHDL Simulator"
+         name="VEdiot Builder"
          point="org.eclipse.core.resources.builders">
       <builder 
             hasNature="true">
@@ -245,12 +299,12 @@
    </extension>
 
    <extension
-         id="hdlNature"
+         id="HdlNature"
          name="Verilog/VHDL Project Nature"
          point="org.eclipse.core.resources.natures">
       <runtime>
          <run
-               class="net.sourceforge.veditor.builder.HdlNature">
+               class="net.sourceforge.veditor.HdlNature">
          </run>
       </runtime>
       <builder
@@ -262,7 +316,7 @@
          point="org.eclipse.ui.ide.projectNatureImages">
       <image
             icon="icons/ovr.gif"
-            natureId="net.sourceforge.veditor.hdlNature"
+            natureId="net.sourceforge.veditor.HdlNature"
             id="net.sourceforge.veditor.natureImage">
       </image>
    </extension>
@@ -272,12 +326,12 @@
       <page
             adaptable="true"
             objectClass="org.eclipse.core.resources.IProject"
-            name="Verilog/VHDL Simulator"
+            name="VEditor Builds"
             class="net.sourceforge.veditor.builder.SimulatorPropertyPage"
             id="net.sourceforge.veditor.simulatorProperty">
             <filter
                 name="nature"
-                value="net.sourceforge.veditor.hdlNature">
+                value="net.sourceforge.veditor.HdlNature">
             </filter>            
       </page>
    </extension>
@@ -297,29 +351,24 @@
    
    <extension
          point="org.eclipse.ui.editors.templates">
-        <contextType
-            name="VHDL In Modules"
-            class="net.sourceforge.veditor.template.VhdlInModuleContextType"
-            id="net.sourceforge.veditor.vhdlInModule">
-	  </contextType>
 	  <contextType
-            name="VHDL Out of Modules"
-            class="net.sourceforge.veditor.template.VhdlOutModuleContextType"
-            id="net.sourceforge.veditor.vhdlOutModule">
+            name="VHDL Global"
+            class="net.sourceforge.veditor.templates.VhdlGlobalContext"
+            id="net.sourceforge.veditor.templates.vhdl.context.global">
 	  </contextType>
 	  <contextType
             name="Verilog In Statement"
-            class="net.sourceforge.veditor.template.VerilogInStatementContextType"
+            class="net.sourceforge.veditor.templates.VerilogInStatementContextType"
             id="net.sourceforge.veditor.verilogInStatement">
 	  </contextType>
 	  <contextType
             name="Verilog In Module"
-            class="net.sourceforge.veditor.template.VerilogInModuleContextType"
+            class="net.sourceforge.veditor.templates.VerilogInModuleContextType"
             id="net.sourceforge.veditor.verilogInModule">
 	  </contextType>
 	  <contextType
             name="Verilog Out of Module"
-            class="net.sourceforge.veditor.template.VerilogOutModuleContextType"
+            class="net.sourceforge.veditor.templates.VerilogOutModuleContextType"
             id="net.sourceforge.veditor.verilogOutModule">
 	  </contextType>
       <include

@@ -1,12 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates>
+
 <template 
 	autoinsert="false" 
-	context="net.sourceforge.veditor.vhdlOutModule" 
+	context="net.sourceforge.veditor.templates.vhdl.context.global" 
+	deleted="false" 
+	description="This is a special template that is used to create new files. Do not change its name or its context" 
+	enabled="true" 
+	id="net.sourceforge.veditor.templates.vhdl.newFile"
+	name="NewFile">--
+-- ${modulename}
+--
+library ieee;
+use ieee.std_logic_1164.all;
+</template>
+
+<template 
+	autoinsert="false" 
+	context="net.sourceforge.veditor.templates.vhdl.context.global" 
 	deleted="false" 
 	description="Defines an architecture block" 
 	enabled="true" 
-	id="net.sourceforge.veditor.architecture"
+	id="net.sourceforge.veditor.templates.vhdl.architecture"
 	name="architecture">architecture  ${name} of ${entity} is &#13;
 &#13;
 end architecture  ${name};
@@ -14,10 +29,10 @@ end architecture  ${name};
 
 <template 
 	autoinsert="false" 
-	context="net.sourceforge.veditor.vhdlOutModule" 
+	context="net.sourceforge.veditor.templates.vhdl.context.global" 
 	deleted="false" 
 	description="creates an entity block"
-	id="net.sourceforge.veditor.entity" 
+	id="net.sourceforge.veditor.templates.vhdl.entity" 
 	enabled="true" 
 	name="entity">--&#13;
 -- Created: ${date}&#13;
@@ -31,10 +46,10 @@ end entity ${name};
 
 <template 
 	autoinsert="false" 
-	context="net.sourceforge.veditor.vhdlInModule" 
+	context="net.sourceforge.veditor.templates.vhdl.context.global" 
 	deleted="false" 
 	description="Port definitions"
-	id="net.sourceforge.veditor.port" 
+	id="net.sourceforge.veditor.templates.vhdl.port" 
 	enabled="true" 
 	name="port">port (
 	
@@ -44,9 +59,9 @@ end entity ${name};
 <template
 	name="package"	
 	description="Package definitions"
-	id="net.sourceforge.veditor.package"	
+	id="net.sourceforge.veditor.templates.vhdl.package"	
 	autoinsert="false" 
-	context="net.sourceforge.veditor.vhdlOutModule" 
+	context="net.sourceforge.veditor.templates.vhdl.context.global" 
 	deleted="false" 
 	enabled="true">package ${name} is
 	${cursor}	
@@ -56,9 +71,9 @@ end package ${name};
 <template
 	name="packagebody"	
 	description="Package body definitions"
-	id="net.sourceforge.veditor.packageBody"	
+	id="net.sourceforge.veditor.templates.vhdl.packageBody"	
 	autoinsert="false" 
-	context="net.sourceforge.veditor.vhdlOutModule" 
+	context="net.sourceforge.veditor.templates.vhdl.context.global" 
 	deleted="false" 
 	enabled="true">package body ${name} is
 	${cursor}
@@ -68,9 +83,9 @@ end package ${name};
 <template
 	name="component"	
 	description="component definition"
-	id="net.sourceforge.veditor.component"	
+	id="net.sourceforge.veditor.templates.vhdl.component"	
 	autoinsert="false" 
-	context="net.sourceforge.veditor.vhdlOutModule" 
+	context="net.sourceforge.veditor.templates.vhdl.context.global" 
 	deleted="false" 
 	enabled="true">component ${name} is
 		${cursor}	
@@ -79,10 +94,10 @@ end package ${name};
 
 <template 
 	autoinsert="false" 
-	context="net.sourceforge.veditor.vhdlInModule" 
+	context="net.sourceforge.veditor.templates.vhdl.context.global" 
 	deleted="false" 
 	description="Define a process"
-	id="net.sourceforge.veditor.process" 
+	id="net.sourceforge.veditor.templates.vhdl.process" 
 	enabled="true" 
 	name="process">process ${name} is
 	begin
@@ -92,10 +107,10 @@ end package ${name};
 
 <template 
 	autoinsert="false" 
-	context="net.sourceforge.veditor.vhdlOutModule" 
+	context="net.sourceforge.veditor.templates.vhdl.context.global" 
 	deleted="false" 
 	description="Test Bench Template"
-	id="net.sourceforge.veditor.testBench" 
+	id="net.sourceforge.veditor.templates.vhdl.testBench" 
 	enabled="true" 
 	name="testbench">library ieee;
 use ieee.std_logic_1164.all;
@@ -108,5 +123,4 @@ architecture Test of test_bench is
 	${cursor}
 end architure Test;
 </template>
-
 </templates>

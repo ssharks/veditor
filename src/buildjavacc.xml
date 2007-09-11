@@ -16,10 +16,14 @@
 	<property name="dst" value="bin"/>
 
 	<property name="javacc_generated" value="_generated"/>
-	<property name="javacc_file_dir" value="net/sourceforge/veditor/parser"/>
-	<property name="javacc_src_verilog" value="${src}/${javacc_file_dir}/VerilogParserCore.jj"/>
-	<property name="javacc_src_vhdl" value="${src}/${javacc_file_dir}/VhdlParserCore.jj"/>
-	<property name="javacc_dst" value="${javacc_generated}/${javacc_file_dir}"/>
+	<property name="javacc_file_dir_verilog" value="net/sourceforge/veditor/parser/verilog"/>
+	<property name="javacc_file_dir_vhdl" value="net/sourceforge/veditor/parser/vhdl"/>
+	<property name="javacc_src_verilog" value="${src}/${javacc_file_dir_verilog}/VerilogParserCore.jj"/>
+	<property name="javacc_src_vhdl" value="${src}/${javacc_file_dir_vhdl}/vhdl.jj"/>
+	<property name="jtree_src_vhdl" value="${src}/${javacc_file_dir_vhdl}/vhdl.jjt"/>
+	<property name="javacc_dst_verilog" value="${javacc_generated}/${javacc_file_dir_verilog}"/>
+	<property name="javacc_dst_vhdl" value="${javacc_generated}/${javacc_file_dir_vhdl}"/>
+	<property name="jjtree_dst" value="${src}/${javacc_file_dir_vhdl}"/>
 
 	<property name="jar" value="veditor.jar"/>
 	<property name="project_version" value="${project}_${plugin_version}"/>
@@ -31,20 +35,33 @@
             <include name="**/*.jar"/>
         </fileset>
 	</path>
+	
+   <target name="jjtree">       
+            <jjtree
+                javacchome="${javacc_dir}"
+                target="${jtree_src_vhdl}"  
+            	static="false"
+                outputdirectory="${jjtree_dst}" />
+    </target>
 
-	<target name="javacc">
-		<mkdir dir="${javacc_dst}" />
+	<target name="verilogParser">
+		<mkdir dir="${javacc_dst_verilog}" />		
 		<javacc
 			javacchome="${javacc_dir}"
 	 		target="${javacc_src_verilog}"
-	 		outputdirectory="${javacc_dst}" />
-		<javacc
-			javacchome="${javacc_dir}"
-	 		target="${javacc_src_vhdl}"
-	 		outputdirectory="${javacc_dst}" />
+	 		outputdirectory="${javacc_dst_verilog}" />		
+	</target>
+	
+	<target name="vhdlParser" depends="jjtree">	        
+	        <mkdir dir="${javacc_dst_vhdl}" />	       
+	        <javacc
+	            javacchome="${javacc_dir}"
+	            target="${javacc_src_vhdl}"
+	            static="false"
+	            outputdirectory="${javacc_dst_vhdl}" />
 	</target>
 
-	<target name="compile" depends="javacc">
+	<target name="compile" depends="verilogParser,vhdlParser">
 		<mkdir dir="plugins"/>
 		<mkdir dir="${dst}" />
 		<javac
@@ -54,7 +71,8 @@
 			srcdir="${src};${javacc_generated}"
 			destdir="${dst}">
 			<classpath refid="compile.classpath"/>
-		</javac>		
+		</javac>
+		
 	</target>
 
 	<target name="jar" depends="compile">
@@ -81,12 +99,12 @@
 		<delete dir="plugins"/>
 	</target>
 
-	<target name="clean">
-		<delete>
-			<fileset dir="${javacc_generated}" includes="**/*.java" />
-		</delete>
+	<target name="clean">		
+		<delete dir="${javacc_dst_vhdl}"/>
+		<delete dir="${javacc_dst_verilog}"/>
+		<delete file="${javacc_src_vhdl}"/>
 		<delete dir="${dst}"/>
-		<delete file="${jar}"/>
+		<delete file="${jar}"/>		
 		<delete file="${zip}"/>
 	</target>
 	
