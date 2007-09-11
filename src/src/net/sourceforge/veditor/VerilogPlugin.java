@@ -16,11 +16,10 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import net.sourceforge.veditor.template.VerilogInModuleContextType;
-import net.sourceforge.veditor.template.VerilogInStatementContextType;
-import net.sourceforge.veditor.template.VerilogOutModuleContextType;
-import net.sourceforge.veditor.template.VhdlInModuleContextType;
-import net.sourceforge.veditor.template.VhdlOutModuleContextType;
+import net.sourceforge.veditor.templates.VerilogInModuleContextType;
+import net.sourceforge.veditor.templates.VerilogInStatementContextType;
+import net.sourceforge.veditor.templates.VerilogOutModuleContextType;
+import net.sourceforge.veditor.templates.VhdlGlobalContext;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
@@ -28,11 +27,15 @@ import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferenceConverter;
+import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.jface.text.templates.ContextTypeRegistry;
 import org.eclipse.jface.text.templates.persistence.TemplateStore;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.ui.console.ConsolePlugin;
 import org.eclipse.ui.console.IConsole;
@@ -51,6 +54,9 @@ public class VerilogPlugin extends AbstractUIPlugin
 	private static final String CONSOLE_NAME = "veditor";
 	private static VerilogPlugin plugin;
 	private static final String MARKER_TYPE = "org.eclipse.core.resources.problemmarker";
+	private static final String OUTLINE_DATABASE_ID = "OutlineDatabase";
+	private static final String COLLAPSIBLE_PROPERTY_ID = "collapsible";
+	private static final String HIERARCHY_ID = "Hierarchy";
 	private static final String CUSTTOM_TEMPLATES_PREFERENCE_NAME = "net.sourceforge.veditor.templatesStore";	
 	protected TemplateStore templateStore;
 	protected ContributionContextTypeRegistry contextTypeRegistry;
@@ -71,7 +77,20 @@ public class VerilogPlugin extends AbstractUIPlugin
 	{
 		return plugin;
 	}
-	
+	/**
+	 * 
+	 * @return Database Outline id
+	 */
+	public static QualifiedName getOutlineDatabaseId(){
+		return new QualifiedName(ID,OUTLINE_DATABASE_ID);
+	}
+	public static QualifiedName getCollapsibleId(){
+		return new QualifiedName(ID,COLLAPSIBLE_PROPERTY_ID);
+	}
+	public static QualifiedName getHierarchyId(){
+		return new QualifiedName(ID,HIERARCHY_ID);
+	}
+
 	/**
 	 * Returns PreferenceStore
 	 */
@@ -79,7 +98,34 @@ public class VerilogPlugin extends AbstractUIPlugin
 	{
 		return getPlugin().getPreferenceStore();
 	}
+	
+	/**
+	 * Gets the image descriptor for a given image name
+	 * @param imageName image file name
+	 * @return Image descriptor 
+	 */
+	public ImageDescriptor getImageDescriptor(String imageName){
+		return VerilogPlugin.imageDescriptorFromPlugin(	VerilogPlugin.ID, imageName);
+	}
+	/** 
+	 * Returns an image from the registery
+	 * @param imageName the name of the image file
+	 */
+	public Image getImage(String imageName) {
+		VerilogPlugin plugin = VerilogPlugin.getPlugin();
+		ImageRegistry registry = plugin.getImageRegistry();
+		Image results = null;
 
+		results = registry.get(imageName);
+		results = registry.get(imageName);
+		if (results == null) {
+			ImageDescriptor desc = getImageDescriptor(imageName);
+			registry.put(imageName, desc);
+			results = registry.get(imageName);
+		}		
+		return results;
+	}
+	
 	/**
 	 * Returns the workspace instance.
 	 */
@@ -170,10 +216,10 @@ public class VerilogPlugin extends AbstractUIPlugin
 	/**
 	 * set the string list separated by "\n"
 	 */
-	public static void setPreference(String key, List list)
+	public static void setPreference(String key, List<String> list)
 	{
 		StringBuffer value = new StringBuffer("1\n");
-		Iterator i = list.iterator();
+		Iterator<String> i = list.iterator();
 		while(i.hasNext())
 		{
 			value.append(i.next().toString());
@@ -297,13 +343,63 @@ public class VerilogPlugin extends AbstractUIPlugin
 		if (contextTypeRegistry == null) {
 			// create an configure the contexts available in the template editor
 			contextTypeRegistry= new ContributionContextTypeRegistry();
-			contextTypeRegistry.addContextType(VhdlInModuleContextType.CONTEXT_TYPE);			
-			contextTypeRegistry.addContextType(VhdlOutModuleContextType.CONTEXT_TYPE);
+			contextTypeRegistry.addContextType(VhdlGlobalContext.CONTEXT_TYPE);
 			contextTypeRegistry.addContextType(VerilogInStatementContextType.CONTEXT_TYPE);
 			contextTypeRegistry.addContextType(VerilogInModuleContextType.CONTEXT_TYPE);
 			contextTypeRegistry.addContextType(VerilogOutModuleContextType.CONTEXT_TYPE);
 		}
 		return contextTypeRegistry;
+	}
+	
+	/**
+	 * Aligns a string on the given character
+	 * @param s The string to align
+	 * @param c Character to align on
+	 * @param count nth occurrence of the character
+	 * @return The aligned string
+	 */
+	public static String alignOnChar(String s,char c,int count){
+		String lines[]=s.split("\n");
+		String results="";
+		int maxOffset=0,index,index_count;
+		
+		//find the offset the of character
+		for(int nLine=0; nLine < lines.length;nLine++){
+			index=0;
+			index_count=0;
+			//search for the Nth occurrence
+			while(index !=-1 && index_count < count){
+				index=lines[nLine].indexOf(c, index);
+				index_count++;
+			}
+			if(index > maxOffset){
+				maxOffset=index;
+			}
+		}
+		//now align
+		for(int nLine=0; nLine < lines.length;nLine++){				
+			index=0;
+			index_count=0;
+			//search for the Nth occurrence
+			while(index !=-1 && index_count < count){
+				index=lines[nLine].indexOf(c, index);
+				index_count++;
+			}
+			if(index != -1){
+				String padding="";
+				for(int j=index;j<maxOffset;j++){
+					padding+=" ";
+				}
+				lines[nLine]=lines[nLine].substring(0, index) + 
+						     padding + 
+						     lines[nLine].substring(index, lines[nLine].length());
+			}
+		}
+		//assemble the lines
+		for(int nLine=0; nLine < lines.length;nLine++){
+			results+=lines[nLine]+"\n";
+		}
+		return results;
 	}
 }
 

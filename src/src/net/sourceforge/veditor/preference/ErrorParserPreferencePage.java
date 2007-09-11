@@ -12,7 +12,6 @@ package net.sourceforge.veditor.preference;
 
 import net.sourceforge.veditor.VerilogPreferenceInitializer;
 import net.sourceforge.veditor.builder.ErrorParser;
-
 import org.eclipse.jface.dialogs.IInputValidator;
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.swt.SWT;
@@ -33,13 +32,16 @@ public class ErrorParserPreferencePage extends AbstractPreferencePage
 {
 	private static final int NUM_OF_DEFAULT_ERROR_PARSERS = VerilogPreferenceInitializer.NUM_OF_DEFAULT_ERROR_PARSERS;
 
-	private java.util.List parserList;
+	private java.util.List<ErrorParser> parserList;
 	private List compilerList;
 	Button newButton;
 	Button removeButton;
 	private Text errText;
+	private Button m_ErrorPatternButton;
 	private Text warnText;
+	private Button m_WarnPatternButton;
 	private Text infoText;
+	private Button m_InfoPatternButton;
 	
 	protected Control createContents(Composite parent)
 	{
@@ -126,13 +128,22 @@ public class ErrorParserPreferencePage extends AbstractPreferencePage
 	private void createTextField(Composite parent)
 	{
 		Composite field = new Composite(parent, SWT.NONE);
-		field.setLayout(new GridLayout(2, false));
+		field.setLayout(new GridLayout(3, false));
 		GridData gd = new GridData(GridData.FILL_HORIZONTAL);
 		field.setLayoutData(gd);
 		
 		errText = createText(field, "Error Pattern:");
+		m_ErrorPatternButton=new Button(field,SWT.PUSH);
+		m_ErrorPatternButton.setText("...");
+		m_ErrorPatternButton.addSelectionListener(new PatternBuilderListener(errText));
 		warnText = createText(field, "Warning Pattern:");
+		m_WarnPatternButton=new Button(field,SWT.PUSH);
+		m_WarnPatternButton.setText("...");
+		m_WarnPatternButton.addSelectionListener(new PatternBuilderListener(warnText));
 		infoText = createText(field, "Info Pattern:");
+		m_InfoPatternButton=new Button(field,SWT.PUSH);
+		m_InfoPatternButton.setText("...");
+		m_InfoPatternButton.addSelectionListener(new PatternBuilderListener(infoText));
 		
 		errText.addModifyListener(new TextModifyListener(errText,0));
 		warnText.addModifyListener(new TextModifyListener(warnText,1));
@@ -219,6 +230,9 @@ public class ErrorParserPreferencePage extends AbstractPreferencePage
 			errText.setEditable(editable);
 			warnText.setEditable(editable);
 			infoText.setEditable(editable);
+			m_ErrorPatternButton.setEnabled(editable);
+			m_WarnPatternButton.setEnabled(editable);
+			m_InfoPatternButton.setEnabled(editable);
 		}
 		else
 		{
@@ -228,6 +242,9 @@ public class ErrorParserPreferencePage extends AbstractPreferencePage
 			errText.setEditable(false);
 			warnText.setEditable(false);
 			infoText.setEditable(false);
+			m_ErrorPatternButton.setEnabled(false);
+			m_WarnPatternButton.setEnabled(false);
+			m_InfoPatternButton.setEnabled(false);
 		}
 	}
 
@@ -280,5 +297,32 @@ public class ErrorParserPreferencePage extends AbstractPreferencePage
     	ErrorParser.setDefaultParsers();
     	initializeSelection();
     }
+    
+    /**
+	 * Class called when the user presses pattern builder button
+	 *
+	 */
+	private class PatternBuilderListener extends SelectionAdapter {
+		Text m_TargetTextBox;
+
+		/**
+		 * Class constructor
+		 * 
+		 * @param text  The text box we need to fill the data with
+		 */
+		public PatternBuilderListener(Text text) {
+			super();
+			m_TargetTextBox = text;
+		}
+
+		public void widgetSelected(SelectionEvent e) {
+
+			PatternBuilderDialog dialog = new PatternBuilderDialog(getControl()
+					.getShell(),m_TargetTextBox.getText());
+			dialog.open();
+			m_TargetTextBox.setText(dialog.getPattern());
+			
+		}
+	}
 }
 

@@ -32,7 +32,7 @@ public class CodeStylePreferencePage extends AbstractSimplePreferencePage
 		addField(indentEditor);
 		
 		indentSizeEditor = new RadioGroupFieldEditor(
-				"Style.indentSize", "Inent size", 3,
+				"Style.indentSize", "Indent size", 3,
 				new String[][]{
 						{"2", "2"},
 						{"4", "4"},
@@ -41,8 +41,6 @@ public class CodeStylePreferencePage extends AbstractSimplePreferencePage
 				parent);
 		addField(indentSizeEditor);
 		
-		addBooleanField("Style.noSpaceInBracket", "No space in bracket");
-
 		String indent = getPreferenceStore().getString("Style.indent");
 		indentSizeEditor.setEnabled(indent.equals("Space"), parent);
 	}

@@ -10,6 +10,10 @@
  *******************************************************************************/
 package net.sourceforge.veditor.editor;
 
+import net.sourceforge.veditor.VerilogPlugin;
+
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
@@ -24,7 +28,7 @@ import org.eclipse.ui.part.PageBookView;
 public class ModuleHierarchyView extends PageBookView
 {
 	private static String defaultMessage = "Module Hierarchy is not available";
-
+	
 	public ModuleHierarchyView()
 	{
 		super();
@@ -34,6 +38,23 @@ public class ModuleHierarchyView extends PageBookView
 	{
 	}
 
+	/**
+	 * Gets this projects hierarchy page
+	 * @param project
+	 * @return
+	 */
+	public HdlHierarchyPage getHierarchyPage(IProject project){
+		HdlHierarchyPage page=null;
+		
+		try {
+			page=(HdlHierarchyPage)project.getSessionProperty(VerilogPlugin.getHierarchyId());
+		} catch (CoreException e) {
+			e.printStackTrace();
+		}
+		
+		return page;
+	}
+	
 	protected IPage createDefaultPage(PageBook book)
 	{
 		//  These are referred from ContentOutline
@@ -46,20 +67,46 @@ public class ModuleHierarchyView extends PageBookView
 
 	protected PageRec doCreatePage(IWorkbenchPart part)
 	{
-		Object obj = part.getAdapter(ModuleHierarchyPage.class);
-		if (obj instanceof ModuleHierarchyPage)
-		{
-			ModuleHierarchyPage page = (ModuleHierarchyPage)obj;
-			initPage(page);
-			page.createControl(getPageBook());
+		IProject project=null;
+		HdlHierarchyPage page=null;
+		
+		if (part instanceof HdlEditor) {
+			HdlEditor hdlEditor = (HdlEditor) part;
+			project=hdlEditor.getHdlDocument().getProject();
+			//does this project have a hierarchy page
+			if(getHierarchyPage(project)==null){
+				//no hierarchy page yet
+				Object obj = part.getAdapter(HdlHierarchyPage.class);
+				if (obj instanceof HdlHierarchyPage){
+					page=(HdlHierarchyPage)obj;
+					initPage(page);
+					page.createControl(getPageBook());
+					try {
+						project.setSessionProperty(VerilogPlugin.getHierarchyId(), page);
+					} catch (CoreException e) {						
+					}
+				}
+			}else{
+				page=getHierarchyPage(project);
+				//if the page is disposed, remove it and create it again
+				if(page.isDisposed()){
+					try {
+						project.setSessionProperty(VerilogPlugin.getHierarchyId(), null);
+					} catch (CoreException e) {
+					}
+					return doCreatePage(part);
+				}
+					
+				
+			}
 			return new PageRec(part, page);
-		}
-		return null;
+		}			
+		return null;		
 	}
 
 	protected void doDestroyPage(IWorkbenchPart part, PageRec pageRecord)
 	{
-		ModuleHierarchyPage page = (ModuleHierarchyPage)pageRecord.page;
+		HdlHierarchyPage page = (HdlHierarchyPage)pageRecord.page;
 		page.dispose();
 		pageRecord.dispose();
 	}

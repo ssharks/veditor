@@ -13,15 +13,21 @@ package net.sourceforge.veditor.editor;
 
 import java.util.ResourceBundle;
 
+import net.sourceforge.veditor.actions.CollapseAll;
 import net.sourceforge.veditor.actions.CompileAction;
+import net.sourceforge.veditor.actions.ExpandAll;
 import net.sourceforge.veditor.actions.FormatAction;
 import net.sourceforge.veditor.actions.GotoMatchingBracketAction;
 import net.sourceforge.veditor.actions.OpenDeclarationAction;
 import net.sourceforge.veditor.actions.CommentAction;
+import net.sourceforge.veditor.actions.ShowInHierarchy;
+import net.sourceforge.veditor.actions.ShowInOutline;
 import net.sourceforge.veditor.actions.UnCommentAction;
 
 import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IEditorPart;
@@ -36,10 +42,14 @@ public class HdlActionContributor extends TextEditorActionContributor
 	private RetargetTextEditorAction contentAssistProposal;
 	private IAction gotoMatchingBracket;
 	private IAction openDeclaration;
+	private IAction collapseAllAction;
+	private IAction expandAllAction;
 	private IAction format;
 	private IAction compile;
 	private IAction comment;
 	private IAction uncomment;
+	private IAction showInHierarchy;
+	private IAction showInOutline;
 
 	private static final String CONTENT_ASSIST_PROPOSAL = "ContentAssistProposal";
 
@@ -58,10 +68,15 @@ public class HdlActionContributor extends TextEditorActionContributor
 		
 		gotoMatchingBracket = new GotoMatchingBracketAction();
 		openDeclaration = new OpenDeclarationAction();
+		collapseAllAction = new CollapseAll();
+		expandAllAction   = new ExpandAll();
 		format = new FormatAction();
 		compile = new CompileAction();
 		comment = new CommentAction();
 		uncomment = new UnCommentAction();
+		showInHierarchy=new ShowInHierarchy();
+		showInOutline=new ShowInOutline();
+		
 	}
 
 	private RetargetTextEditorAction createAction(String name, String id)
@@ -100,12 +115,34 @@ public class HdlActionContributor extends TextEditorActionContributor
 				.findMenuUsingPath(IWorkbenchActionConstants.M_NAVIGATE);
 		if (navigateMenu != null)
 		{
+			MenuManager showIn=null;
 			IMenuManager gotoMenu = navigateMenu
 					.findMenuUsingPath(IWorkbenchActionConstants.GO_TO);
 			gotoMenu.add(gotoMatchingBracket);
 
 			navigateMenu.add(openDeclaration);
+			navigateMenu.add(collapseAllAction);
+			navigateMenu.add(expandAllAction);
+						
+			IContributionItem[] contributionItems=navigateMenu.getItems();
+			for(IContributionItem item: contributionItems){
+				if (item instanceof MenuManager) {
+					MenuManager menu = (MenuManager) item;
+					if(menu.getMenuText().startsWith("Sho&w In")){
+						showIn=menu;
+						break;
+					}
+				}
+			}
+			if(showIn!=null){
+				//FIXME Need to figure out how to properly add stuff to the "Show In"
+				showIn.removeAll();
+				showIn.add(showInHierarchy);
+				showIn.add(showInOutline);
+			}
+			
 		}
+		
 	}
 
 	private void setEditorAction(ITextEditor editor,

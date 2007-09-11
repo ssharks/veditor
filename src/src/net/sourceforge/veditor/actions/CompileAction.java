@@ -13,8 +13,6 @@ package net.sourceforge.veditor.actions;
 import net.sourceforge.veditor.VerilogPlugin;
 import net.sourceforge.veditor.builder.ErrorParser;
 import net.sourceforge.veditor.builder.ExternalLauncher;
-import org.eclipse.ui.internal.ide.actions.BuildUtilities;
-
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 
@@ -23,6 +21,19 @@ public class CompileAction extends AbstractAction
 	public CompileAction()
 	{
 		super("Compile");
+	}
+	
+	 public static boolean isNeedToSaveSet() {
+		return VerilogPlugin.getPreferenceBoolean("Compile.SaveBeforeCompile");
+	 }
+	/**
+	 * Checks the save before build flag and saves the current file 
+	 * if necessary.
+	 */
+	private void checkAndSaveEditors(){
+		if(isNeedToSaveSet()){
+			getEditor().doSave(null);
+		}
 	}
 	
 	public void run()
@@ -35,9 +46,7 @@ public class CompileAction extends AbstractAction
 				+ " " + file.getName();
 
 		
-		//
-		// Save all resources prior to doing build
-        BuildUtilities.saveEditors(null);
+		checkAndSaveEditors();
         
 		ExternalLauncher launchar = new ExternalLauncher(folder, command);
 		launchar.run();

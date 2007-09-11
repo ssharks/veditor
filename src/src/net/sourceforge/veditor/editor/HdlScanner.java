@@ -79,7 +79,7 @@ public class HdlScanner extends RuleBasedScanner
 		IToken other = new Token(HdlTextAttribute.DEFAULT
 				.getTextAttribute(manager));
 
-		List rules = new ArrayList();
+		List<IRule> rules = new ArrayList<IRule>();
 
 		WordRule wordRule = new WordRule(new IWordDetector()
 		{

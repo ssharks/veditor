@@ -13,7 +13,7 @@ package net.sourceforge.veditor.wizard;
 
 import java.lang.reflect.InvocationTargetException;
 
-import net.sourceforge.veditor.builder.HdlNature;
+import net.sourceforge.veditor.HdlNature;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
@@ -58,28 +58,37 @@ public class NewProjectWizard extends BasicNewResourceWizard
 		description = workspace.newProjectDescription(newProject.getName());
 		description.setLocation(newPath);
 
-		// add HdlNature
-		String[] natures = new String[1];
-		natures[0] = HdlNature.NATURE_ID;
-		description.setNatureIds(natures);
-
 		CreateProjectOperation op;
 		op = new CreateProjectOperation(newProject, description);
 
 		try
 		{
-			getContainer().run(true, true, op);
-			return true;
+			getContainer().run(true, true, op);			
 		}
 		catch (InterruptedException e)
 		{
 			e.printStackTrace();
+			return false;
 		}
 		catch (InvocationTargetException e)
 		{
 			e.printStackTrace();
+			return false;
 		}
-		return false;
+		
+		// add the nature if one does not exist yet
+		try {
+			String[] natures = description.getNatureIds();
+			String[] newNatures = new String[natures.length + 1];
+			System.arraycopy(natures, 0, newNatures, 0, natures.length);
+			newNatures[natures.length] = HdlNature.NATURE_ID;
+			description.setNatureIds(newNatures);
+			newProject.setDescription(description, null);
+		} catch (CoreException e) {
+			// Something went wrong
+			return false;
+		}
+		return true;
 	}
 
 	private class CreateProjectOperation extends WorkspaceModifyOperation

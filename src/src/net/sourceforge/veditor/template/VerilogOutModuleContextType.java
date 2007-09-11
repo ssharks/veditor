@@ -1,4 +1,4 @@
-package net.sourceforge.veditor.template;
+package net.sourceforge.veditor.templates;
 
 public class VerilogOutModuleContextType extends HdlContextType{
 	/** This context's id */

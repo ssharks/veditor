@@ -24,10 +24,9 @@ public class TopPreferencePage extends AbstractSimplePreferencePage
 
 	protected void createFieldEditors()
 	{
-		addBooleanField("Outline.Comment",
-				"Outline includes independent comments");
 		addBooleanField("ContentAssist.ModuleParameter",
 				"Generate module parameter with instantiation(Verilog-2001)");
+		addBooleanField("Compile.SaveBeforeCompile","Save File Before Compile");
 		addStringField("Compile.command", "Compile command");
 	}
 

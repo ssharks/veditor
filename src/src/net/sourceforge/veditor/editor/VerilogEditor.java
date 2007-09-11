@@ -10,6 +10,9 @@
  *******************************************************************************/
 package net.sourceforge.veditor.editor;
 
+import net.sourceforge.veditor.document.VerilogDocumentProvider;
+
+
 public class VerilogEditor extends HdlEditor
 {
 	public VerilogEditor()
@@ -18,5 +21,8 @@ public class VerilogEditor extends HdlEditor
 		setDocumentProvider(new VerilogDocumentProvider());
 		setSourceViewerConfiguration(HdlSourceViewerConfiguration
 				.createForVerilog(getColorManager()));
+		OutlineLabelProvider = new VerilogOutlineLabelProvider();
+		TreeContentProvider  = new VerilogHierarchyProvider();
 	}
+		
 }

@@ -10,13 +10,6 @@
  *******************************************************************************/
 package net.sourceforge.veditor.log;
 
-import java.util.Map;
-
-import net.sourceforge.veditor.VerilogPlugin;
-import net.sourceforge.veditor.builder.ErrorParser;
-import net.sourceforge.veditor.builder.HdlNature;
-
-import org.eclipse.core.resources.ICommand;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -71,22 +64,24 @@ public class LogDocumentProvider extends FileDocumentProvider
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	private void parse(IProject project, IContainer folder, String message)
 	{
-		HdlNature nature = new HdlNature(project);
-		ICommand command = nature.getSimulateCommand();
-		if (command == null)
-			return;
-		Map args = command.getArguments();
-		Object parserName = args.get("parser");
-		if (parserName == null)
-			return;
-
-		VerilogPlugin.clearProblemMarker(project);
-		ErrorParser parser;
-		parser = ErrorParser.getParser(parserName.toString());
-		if (parser != null)
-			parser.parse(folder, message);
+//      FIXME Do something sensible here
+//		HdlNature nature = new HdlNature(project);
+//		ICommand command = nature.getSimulateCommand();
+//		if (command == null)
+//			return;
+//		Map args = command.getArguments();
+//		Object parserName = args.get("parser");
+//		if (parserName == null)
+//			return;
+//
+//		VerilogPlugin.clearProblemMarker(project);
+//		ErrorParser parser;
+//		parser = ErrorParser.getParser(parserName.toString());
+//		if (parser != null)
+//			parser.parse(folder, message);
 	}
 }
 

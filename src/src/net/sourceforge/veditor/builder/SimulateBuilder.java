@@ -11,8 +11,11 @@
 
 package net.sourceforge.veditor.builder;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Map;
 
+import net.sourceforge.veditor.HdlNature;
 import net.sourceforge.veditor.VerilogPlugin;
 
 import org.eclipse.core.resources.IContainer;
@@ -25,59 +28,160 @@ public class SimulateBuilder extends IncrementalProjectBuilder
 {
 	public static final String BUILDER_ID = "net.sourceforge.veditor.simulateBuilder";
 
+	@SuppressWarnings("unchecked")
 	protected IProject[] build(int kind, Map args, IProgressMonitor monitor)
 	{
-		String enableValue = getArg(args, "enable");
-		if (!enableValue.equals("true"))
-			return null;
-
-		String dir = getArg(args, "work");
-		String cmd = getArg(args, "command");
-		String argstext = getArg(args, "arguments");
-		argstext = argstext.replaceAll("\\\\n", " ");
-		String cmdline = cmd + " "  + argstext;
-		
+		Map<String,BuildConfig> buildConfigs=BuildConfig.parseCommandArguments(args);
 		IProject project = getProject();
 		IContainer folder;
-		if (dir.equals("") || dir.equals("./") || dir.equals(".\\"))
-			folder = project;
-		else
-			folder = project.getFolder(dir);
-		ExternalLauncher launcher = new ExternalLauncher(folder, cmdline);
-		
-		VerilogPlugin.println("----------------------------------------");
-		VerilogPlugin.println("veditor build " + kind + " in " + dir + " : " + cmdline);
-		VerilogPlugin.println("----------------------------------------");
-		launcher.start();
-		while(launcher.isAlive())
-		{
-			launcher.waitFor(500);
-			if (monitor.isCanceled())
-			{
-				launcher.interrupt();
-			}
-		}
+		boolean bInterrupted=false;
 		
 		VerilogPlugin.clearProblemMarker(project);
-		
-		String parserName = getArg(args, "parser");
-		ErrorParser parser = ErrorParser.getParser(parserName);
-		if (parser != null)
-			parser.parse(folder, launcher.getMessage());
-	
+		ArrayList<String> keyList=new ArrayList<String>();
+		keyList.addAll(buildConfigs.keySet());
+		Collections.sort(keyList);
+		//set the bounds for the progress monitor
+		monitor.beginTask("Building HDL Files", keyList.size());
+		for(String name : keyList.toArray(new String[0])){
+			BuildConfig buildConfig=buildConfigs.get(name);
+			
+			//is this configuration enabled?
+			if(buildConfig.isEnabled() == false){
+				continue;
+			}
+			monitor.subTask("Builing Configuration: "+buildConfig.getName());
+
+			//get the real path
+			if (buildConfig.getWorkFolder().equals("") || 
+					buildConfig.getWorkFolder().equals("./") || 
+					buildConfig.getWorkFolder().equals(".\\")){
+				folder = project;
+			}
+			else{
+				folder = project.getFolder(buildConfig.getWorkFolder());
+			}
+			//print a banner			
+			VerilogPlugin.println("----------------------------------------");
+			VerilogPlugin.println("veditor using \"" + buildConfig.getName() + 
+					"\" in \"" 
+					+ folder.getLocation().toOSString() 
+					+ "\" : " 
+					+  buildConfig.getCommand());
+			VerilogPlugin.println("----------------------------------------");
+			//kick off the launcher
+			ExternalLauncher launcher = new ExternalLauncher(folder, buildConfig.m_Command);
+			launcher.start();
+			//monitor launcher
+			while(launcher.isAlive())
+			{
+				launcher.waitFor(500);
+				if (monitor.isCanceled())
+				{
+					launcher.interrupt();
+					bInterrupted=true;
+					break;
+				}
+			}
+			//parse the errors
+			ErrorParser parser = ErrorParser.getParser(buildConfig.getParser());
+			if (parser != null){
+				parser.parse(folder, launcher.getMessage());
+			}
+			else{
+				VerilogPlugin.println(
+						"** Warning: veditor did not find parser:" + buildConfig.getParser());
+			}
+			//if the user killed the launcher
+			if(bInterrupted){
+				break;
+			}
+			monitor.worked(1);
+		}
+		monitor.done();
+		//for now we don't do delta builds
+		forgetLastBuiltState();
 		return null;
 	}
-
-	private String getArg(Map args, String name)
+	
+	/**
+	 * Performs the clean oprations
+	 */
+ 	protected void clean(IProgressMonitor monitor) throws CoreException
 	{
-		Object obj = args.get(name);
-		if (obj == null)
-			return "";
-		else
-			return obj.toString();
-	}
+		Map<String,BuildConfig> buildConfigs=null;
+		IProject project = getProject();
+		IContainer folder;
+		boolean bInterrupted=false;
+		
+		HdlNature nature;
+		try {
+			//here, we hope there is a project nature
+			nature = (HdlNature)project.getNature(HdlNature.NATURE_ID);			
+		} catch (CoreException e) {
+			e.printStackTrace();
+			return;
+		}
+		 
+		//if there is no nature, bail 
+		if(nature == null){
+			return;
+		}
+		
+		buildConfigs=nature.getCommands();
+		
+		VerilogPlugin.clearProblemMarker(project);
+		ArrayList<String> keyList=new ArrayList<String>();
+		keyList.addAll(buildConfigs.keySet());
+		Collections.sort(keyList);
+		//set the bounds for the progress monitor
+		monitor.beginTask("Cleaning HDL Files", keyList.size());
+		for(String name : keyList.toArray(new String[0])){
+			BuildConfig buildConfig=buildConfigs.get(name);
+			
+			//is this configuration enabled?
+			if(buildConfig.isEnabled() == false){
+				continue;
+			}
+			monitor.subTask("Cleaning Configuration: "+buildConfig.getName());
 
-	protected void clean(IProgressMonitor monitor) throws CoreException
-	{
+			//get the real path
+			if (buildConfig.getWorkFolder().equals("") || 
+					buildConfig.getWorkFolder().equals("./") || 
+					buildConfig.getWorkFolder().equals(".\\")){
+				folder = project;
+			}
+			else{
+				folder = project.getFolder(buildConfig.getWorkFolder());
+			}
+			//print a banner			
+			VerilogPlugin.println("----------------------------------------");
+			VerilogPlugin.println("veditor clean operation \"" + buildConfig.getName() + 
+					"\" in \"" 
+					+ folder.getLocation().toOSString() 
+					+ "\" : " 
+					+  buildConfig.getCleanCommand());
+			VerilogPlugin.println("----------------------------------------");
+			//kick off the launcher
+			ExternalLauncher launcher = new ExternalLauncher(folder, buildConfig.getCleanCommand());
+			launcher.start();
+			//monitor launcher
+			while(launcher.isAlive())
+			{
+				launcher.waitFor(500);
+				if (monitor.isCanceled())
+				{
+					launcher.interrupt();
+					bInterrupted=true;
+					break;
+				}
+			}			
+			//if the user killed the launcher
+			if(bInterrupted){
+				break;
+			}
+			monitor.worked(1);
+		}
+		monitor.done();
+
 	}
 }

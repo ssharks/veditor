@@ -11,26 +11,87 @@
 package net.sourceforge.veditor.editor;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
-import net.sourceforge.veditor.VerilogPlugin;
+import net.sourceforge.veditor.document.HdlDocument;
+import net.sourceforge.veditor.editor.completionProposals.IComparableCompletionProposal;
+import net.sourceforge.veditor.editor.completionProposals.VerilogCompletionProposal;
+import net.sourceforge.veditor.editor.completionProposals.VerilogInstanceCompletionProposal;
+import net.sourceforge.veditor.parser.HdlParserException;
 import net.sourceforge.veditor.parser.IParser;
-import net.sourceforge.veditor.parser.Module;
-import net.sourceforge.veditor.parser.ModuleList;
-import net.sourceforge.veditor.parser.ModuleVariable;
-import net.sourceforge.veditor.template.VerilogInModuleContextType;
-import net.sourceforge.veditor.template.VerilogInStatementContextType;
-import net.sourceforge.veditor.template.VerilogOutModuleContextType;
+import net.sourceforge.veditor.parser.OutlineDatabase;
+import net.sourceforge.veditor.parser.OutlineElement;
+import net.sourceforge.veditor.parser.verilog.VerilogOutlineElementFactory.VerilogFunctionElement;
+import net.sourceforge.veditor.parser.verilog.VerilogOutlineElementFactory.VerilogModuleElement;
+import net.sourceforge.veditor.parser.verilog.VerilogOutlineElementFactory.VerilogParameterElement;
+import net.sourceforge.veditor.parser.verilog.VerilogOutlineElementFactory.VerilogPortElement;
+import net.sourceforge.veditor.parser.verilog.VerilogOutlineElementFactory.VerilogSignalElement;
+import net.sourceforge.veditor.parser.verilog.VerilogOutlineElementFactory.VerilogTaskElement;
+import net.sourceforge.veditor.templates.VerilogInModuleContextType;
+import net.sourceforge.veditor.templates.VerilogInStatementContextType;
+import net.sourceforge.veditor.templates.VerilogOutModuleContextType;
 
+import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.ITextViewer;
+import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.templates.Template;
+import org.eclipse.swt.widgets.Display;
 
 public class VerilogCompletionProcessor extends HdlCompletionProcessor
 {
-	public List getInModuleProposals(HdlDocument doc, int offset,
+	public ICompletionProposal[] computeCompletionProposals(
+			ITextViewer viewer,
+			int documentOffset)
+		{
+			HdlDocument doc = (HdlDocument)viewer.getDocument();
+			String match = getMatchingWord(doc.get(), documentOffset);
+			List<IComparableCompletionProposal> matchList = null;
+			OutlineElement currentElement=null;
+
+			int context = IParser.OUT_OF_MODULE;
+			try
+			{	
+				context = doc.getContext(documentOffset);
+				currentElement=doc.getElementAt(documentOffset,false);
+			}
+			catch (BadLocationException e)
+			{
+			}
+			catch (HdlParserException e){
+				
+			}
+
+			switch(context)
+			{
+				case IParser.IN_MODULE:
+					matchList = getInModuleProposals(doc, documentOffset, match);
+					break;
+				case IParser.IN_STATEMENT:
+					matchList = getInStatmentProposals(doc, documentOffset, match, currentElement);
+					break;
+				case IParser.OUT_OF_MODULE:
+					matchList = getOutOfModuleProposals(doc, documentOffset, match);				
+					break;
+				default:
+					Display.getCurrent().beep();
+					return null;
+			}
+			
+			matchList.addAll(getTemplates(viewer, documentOffset, context));
+			Collections.sort(matchList);
+			ICompletionProposal[] result = new ICompletionProposal[matchList.size()];
+			for (int i = 0; i < matchList.size(); i++)
+			{
+				result[i] = (ICompletionProposal)matchList.get(i);
+			}
+			return result;
+		}
+	public List<IComparableCompletionProposal> getInModuleProposals(HdlDocument doc, int offset,
 			String replace)
 	{
 		int length = replace.length();
-		List matchList = new ArrayList();
+		List<IComparableCompletionProposal> matchList = new ArrayList<IComparableCompletionProposal>();
 
 		//  reserved word
 		String[] rwords = {"assign ", "reg ", "wire ", "integer ", "parameter "};
@@ -40,35 +101,32 @@ public class VerilogCompletionProcessor extends HdlCompletionProcessor
 				matchList.add(getSimpleProposal(rwords[i], offset, length));
 		}
 
-		//  module instantiation
-		ModuleList mlist = ModuleList.find(doc.getProject());
-		String[] mnames = mlist.getModuleNames();
-		for (int i = 0; i < mnames.length; i++)
-		{
-			if (isMatch(replace, mnames[i]))
-			{
-				matchList.add(new VerilogInstanceCompletionProposal(doc,
-						mnames[i], offset, length));
+		OutlineDatabase database = doc.getOutlineDatabase();
+		OutlineElement[] topLevelElements=database.findTopLevelElements(replace);
+		for(OutlineElement element: topLevelElements){
+			if (element instanceof VerilogModuleElement) {				
+				matchList.add(new VerilogInstanceCompletionProposal(doc,element, offset, length));
 			}
 		}
+				
 		return matchList;
 	}
 
-	public List getInStatmentProposals(
+	public List<IComparableCompletionProposal> getInStatmentProposals(
 		HdlDocument doc,
 		int offset,
 		String replace,
-		String mname)
+		OutlineElement element)
 	{
-		List matchList = new ArrayList();
+		List<IComparableCompletionProposal>  matchList= new ArrayList<IComparableCompletionProposal>();
 
 		//  variable
-		return addVariableProposals(doc, offset, replace, mname, matchList);
+		return addVariableProposals(doc, offset, replace, element, matchList);
 	}
 
-	public List getOutOfModuleProposals(HdlDocument doc, int offset, String replace)
+	public List<IComparableCompletionProposal> getOutOfModuleProposals(HdlDocument doc, int offset, String replace)
 	{
-		List matchList = new ArrayList();
+		List<IComparableCompletionProposal>  matchList= new ArrayList<IComparableCompletionProposal>();
 		
 		return matchList;
 	}	
@@ -110,61 +168,66 @@ public class VerilogCompletionProcessor extends HdlCompletionProcessor
 		}
 		return results;
 	}
-
-	private class VerilogInstanceCompletionProposal extends
-			InstanceCompletionProposal 
-	{
-		public VerilogInstanceCompletionProposal(
+	
+	protected List<IComparableCompletionProposal> addVariableProposals(
 			HdlDocument doc,
-			String name,
-			int offset,
-			int length)
+			int offset, String replace, 
+			OutlineElement element, 
+			List<IComparableCompletionProposal> matchList)
+	{		
+		//scan backwards and add all the available elements
+		while (element != null)
 		{
-			super(doc, name, offset, length);
-		}
-
-		public String getReplaceString(Module module)
-		{
-			String name = module.toString();
-			String indent = "\n" + getIndentString();
-
-			boolean isParams = VerilogPlugin
-					.getPreferenceBoolean("ContentAssist.ModuleParameter");
-			Object[] params = module.getParameters();
-			isParams = isParams && (params.length > 0);
-
-			StringBuffer replace = new StringBuffer(name + " ");
-			
-			if (isParams)
-			{
-				replace.append("#(");
-				for (int i = 0; i < params.length; i++)
-				{
-					replace.append(indent + "\t");
-					ModuleVariable param = (ModuleVariable)params[i];
-					replace.append("." + param + "(" + param.getValue() + ")");
-					if (i < params.length - 1)
-						replace.append(",");
+			// FIX!!! should we do something more advanced when there
+			// are no modules?
+			if (element instanceof VerilogModuleElement) {
+				VerilogModuleElement module = (VerilogModuleElement) element;
+				for(OutlineElement child: module.getChildren()){					
+					if (child instanceof VerilogPortElement && child.getName().startsWith(replace)) {
+						//add ports
+						VerilogPortElement port = (VerilogPortElement) child;
+						matchList.add(new VerilogCompletionProposal(port, offset, replace.length()));
+						
+					}else if (child instanceof VerilogSignalElement && child.getName().startsWith(replace)) {
+						//add signals
+						VerilogSignalElement signal = (VerilogSignalElement) child;
+						matchList.add(new VerilogCompletionProposal(signal, offset, replace.length()));	
+					}else if (element instanceof VerilogParameterElement) {
+						//add parameter
+						VerilogParameterElement parameter = (VerilogParameterElement) element;
+						matchList.add(new VerilogCompletionProposal(parameter, offset, replace.length()));
+					}					
 				}
-				replace.append(indent + ")" + indent);
-			}
+				
+			}else if (element instanceof VerilogTaskElement) {
+				VerilogTaskElement task = (VerilogTaskElement) element;
+				for(OutlineElement child: task.getChildren()){
+					//add signals
+					if (child instanceof VerilogSignalElement && child.getName().startsWith(replace)) {
+						VerilogSignalElement signal = (VerilogSignalElement) child;
+						matchList.add(new VerilogCompletionProposal(signal, offset, replace.length()));	
+					}					
+				}
+				
+				
+			}else if (element instanceof VerilogFunctionElement) {
+				VerilogFunctionElement func = (VerilogFunctionElement) element;
+				for(OutlineElement child: func.getChildren()){
+					//add signals
+					if (child instanceof VerilogSignalElement && child.getName().startsWith(replace)) {
+						VerilogSignalElement signal = (VerilogSignalElement) child;
+						matchList.add(new VerilogCompletionProposal(signal, offset, replace.length()));		
+					}					
+				}
+				
+			}	
 			
-			replace.append(name + "(");
-			Object[] ports = module.getPorts();
-			for (int i = 0; i < ports.length; i++)
-			{
-				replace.append(indent + "\t");
-
-				String port = ports[i].toString();
-				replace.append("." + port + "(" + port + ")");
-
-				if (i < ports.length - 1)
-					replace.append(",");
-			}
-			replace.append(indent + ");");
-			return replace.toString();
+			element=element.getParent();
 		}
+		
+		return matchList;
 	}
+
 }
 
 

@@ -14,6 +14,9 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 
+import net.sourceforge.veditor.parser.verilog.VerilogParser;
+import net.sourceforge.veditor.parser.vhdl.VhdlParser;
+
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 
@@ -22,7 +25,7 @@ import org.eclipse.core.resources.IProject;
  */
 abstract public class ParserFactory
 {
-	// don't instatiate
+	// don't instantiate
 	private ParserFactory()
 	{
 	}

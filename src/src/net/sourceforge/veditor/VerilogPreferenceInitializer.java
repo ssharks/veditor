@@ -10,8 +10,6 @@
  *******************************************************************************/
 package net.sourceforge.veditor;
 
-import net.sourceforge.veditor.preference.VhdlCodeStylePreferencePage;
-
 import org.eclipse.core.runtime.Preferences;
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 
@@ -38,7 +36,7 @@ public class VerilogPreferenceInitializer extends AbstractPreferenceInitializer
 		"1"
 		+ "\n" + "ModelSim"
 		+ "\n" + "[#|\\*].*Error: ([^\\(]*)\\(([0-9]*)\\): (.*)"		
-		+ "\n" + "[#|\\*].*Warning:[^a-zA-Z/\\\\]*([^\\(]*)\\(([0-9]*)\\): (.*)"	
+		+ "\n" + "[#|\\*].*Warning: \\[.*\\] ([^\\(]*)\\(([0-9]*)\\): (.*)"		
 		+ "\n" + ""
 		+ "\n" + "Cver"
 		+ "\n" + "\\*\\*(.*)\\(([0-9]+)\\) ERROR\\*\\* (.*)"
@@ -67,8 +65,8 @@ public class VerilogPreferenceInitializer extends AbstractPreferenceInitializer
 		setDefaultAttr(preferences, "Default", "00,00,00");
 		setDefaultAttr(preferences, "KeyWord", "128,00,128", true);
 
-		preferences.setDefault("Outline.Comment", true);
 		preferences.setDefault("ContentAssist.ModuleParameter", false);
+		preferences.setDefault("Compile.SaveBeforeCompile",true);
 		preferences.setDefault("Compile.command", "iverilog -tnull -y . -Wall");
 		
 		preferences.setDefault("ErrorParser", DEFAULT_ERROR_PARSER_REGEX);
@@ -76,7 +74,7 @@ public class VerilogPreferenceInitializer extends AbstractPreferenceInitializer
 		preferences.setDefault("Style.indent","Tab");
 		preferences.setDefault("Style.indentSize", "4");
 		preferences.setDefault("Style.noSpaceInBracket", true);
-		preferences.setDefault(VhdlCodeStylePreferencePage.PAD_OPERATORS, true);
+		preferences.setDefault("Style.Vhdl.PadOperators",true);
 		setDefaultStyleSpace(preferences);
 	}
 	

@@ -1,4 +1,4 @@
-package net.sourceforge.veditor.template;
+package net.sourceforge.veditor.templates;
 
 import org.eclipse.jface.text.templates.GlobalTemplateVariables;
 import org.eclipse.jface.text.templates.TemplateContextType;

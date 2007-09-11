@@ -21,11 +21,11 @@ import org.eclipse.swt.widgets.Display;
 
 public class ColorManager
 {
-	private Map colorMap = new HashMap(10);
+	private Map<RGB,Color> colorMap = new HashMap<RGB,Color>(10);
 
 	public void dispose()
 	{
-		Iterator e = colorMap.values().iterator();
+		Iterator<Color> e = colorMap.values().iterator();
 		while (e.hasNext())
 		{
 			((Color)e.next()).dispose();

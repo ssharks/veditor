@@ -12,12 +12,11 @@
 package net.sourceforge.veditor.editor;
 
 import java.util.Iterator;
+import java.util.Vector;
 
-import net.sourceforge.veditor.parser.IParser;
-import net.sourceforge.veditor.parser.Module;
-import net.sourceforge.veditor.parser.ModuleList;
-import net.sourceforge.veditor.parser.ModuleVariable;
-import net.sourceforge.veditor.parser.ParserManager;
+import net.sourceforge.veditor.document.HdlDocument;
+import net.sourceforge.veditor.document.VhdlDocument;
+import net.sourceforge.veditor.parser.OutlineElement;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.jface.text.BadLocationException;
@@ -171,6 +170,7 @@ abstract public class HdlSourceViewerConfiguration extends
 	private static class AnnotationHover implements IAnnotationHover
 	{
 
+		@SuppressWarnings("unchecked")
 		public String getHoverInfo(ISourceViewer sourceViewer, int lineNumber)
 		{
 			IAnnotationModel model = sourceViewer.getAnnotationModel();
@@ -180,7 +180,8 @@ abstract public class HdlSourceViewerConfiguration extends
 			// lineNumber starts from 0, not 1
 			lineNumber++;
 
-			Iterator i = model.getAnnotationIterator();
+	
+			Iterator i = model.getAnnotationIterator();;
 			String messages = null;
 
 			while(i.hasNext())
@@ -255,32 +256,27 @@ abstract public class HdlSourceViewerConfiguration extends
 		
 		private String getVariableHover(String text, HdlDocument doc, int offset)
 		{
-			String moduleName = null;
-			try
-			{
-				ParserManager manager = doc.createParserManager(doc.get(0,
-						offset));
-				int context = manager.parseContext();
-				if (context == IParser.OUT_OF_MODULE)
-					return null;
-				moduleName = manager.getCurrentModuleName();
+			String results="";
+			Vector<OutlineElement> definitions=doc.getDefinitionList(text, offset);				
+			for(OutlineElement element:definitions){
+				String commentString;
+				results+=doc.getOutlineDatabase().getOutlineContainer(element.getFile()).getCommentsNear(element);
+				if(doc instanceof VhdlDocument){
+					commentString="--";
+				}
+				else{
+					commentString="//";
+				}
+				results=results.trim();
+				if(results.length() > 0){
+					results=results.replaceAll("^",commentString+" ");
+					results=results.replaceAll("\n","\n"+commentString+" ");
+					results+="\n";
+				}
+				results+=element.getLongName()+"\n";
 			}
-			catch (BadLocationException e)
-			{
-			}
-			if (moduleName == null)
-				return null;
 			
-			ModuleList mlist = ModuleList.find(doc.getProject());
-			if (mlist == null)
-				return null;
-
-			Module module = mlist.findModule(moduleName);
-			ModuleVariable var = module.findVariable(text);
-			if (var != null)
-				return var.getDetail();
-
-			return null;
+			return results;
 		}
 	}
 }

@@ -11,8 +11,14 @@
 
 package net.sourceforge.veditor.wizard;
 
+import net.sourceforge.veditor.VerilogPlugin;
+import net.sourceforge.veditor.templates.VhdlGlobalContext;
+
+import org.eclipse.jface.text.templates.Template;
+
 public class NewVhdlWizard extends NewHdlWizard
 {
+	private static String NEW_FILE_TEMPLATE_NAME="NewFile";
 	public void addPages()
 	{
 		super.addPages(".vhd");
@@ -27,6 +33,15 @@ public class NewVhdlWizard extends NewHdlWizard
 			"\n"+
 			"library ieee;\n"+
 			"use ieee.std_logic_1164.all;"+"\n";
+		
+		//attempt to get new file template
+		Template[] templates = VerilogPlugin.getPlugin().getTemplateStore().getTemplates(VhdlGlobalContext.CONTEXT_TYPE);
+		for(Template template: templates){
+			if(NEW_FILE_TEMPLATE_NAME.equals(template.getName())){
+				results=template.getPattern().replaceAll("\\$\\{modulename\\}", moduleName);
+				break;
+			}
+		}
 		
 		return results.toString();
 	}

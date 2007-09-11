@@ -11,19 +11,29 @@
 
 package net.sourceforge.veditor.editor;
 
-import net.sourceforge.veditor.parser.Module;
+import java.util.Vector;
+
+import net.sourceforge.veditor.parser.OutlineElement;
 
 /**
  * parse source code for ContentOutline
  */
-public class HdlContentOutlineProvider extends TreeProviderBase
+public class HdlContentOutlineProvider extends HdlTreeProviderBase
 {
 	public Object[] getChildren(Object parentElement)
 	{
-		if (parentElement instanceof Module)
+		if (parentElement instanceof OutlineElement)
 		{
-			Module mod = (Module)parentElement;
-			return mod.getElements();
+			OutlineElement e = (OutlineElement)parentElement;
+			Vector<Object> results=new Vector<Object>();
+			OutlineElement[] children=e.getChildren();
+			for(int i=0;i<children.length;i++){
+				if (children[i].isVisible()){
+					results.add(children[i]);
+				}
+			}
+			
+			return results.toArray();
 		}
 		return null;
 	}

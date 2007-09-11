@@ -27,16 +27,13 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.swt.widgets.MessageBox;
-import org.eclipse.ui.texteditor.MarkerAnnotation;
-import org.eclipse.ui.texteditor.SimpleMarkerAnnotation;
 
 public class ErrorParser
 {
 	private static final String PREFERENCE_NAME = "ErrorParser";
 	public static ErrorParser[] getParsers()
 	{
-		List strings = VerilogPlugin.getPreferenceStrings(PREFERENCE_NAME);
+		List<String> strings = VerilogPlugin.getPreferenceStrings(PREFERENCE_NAME);
 		
 		ErrorParser[] parsers = new ErrorParser[strings.size() / 4];
 		for (int i = 0; i < strings.size(); i += 4)
@@ -227,9 +224,13 @@ public class ErrorParser
 	
 	private void getSegment(Matcher m, String[] segs)
 	{
-		segs[0] = m.group(1);
-		segs[1] = m.group(2);
-		segs[2] = m.group(3);
+		int groupCount=m.groupCount();
+		if(groupCount>2){
+			segs[2] = m.group(groupCount);
+			segs[1] = m.group(--groupCount);
+			segs[0] = m.group(--groupCount);
+		}
+		
 	}
 	
 	private String getLine()

@@ -38,11 +38,11 @@ public abstract class AbstractAction extends Action
 
 	protected HdlEditor getEditor()
 	{
-		return editor;
+		return HdlEditor.current();
 	}
 	protected ISourceViewer getViewer()
 	{
-		return editor.getViewer();
+		return getEditor().getViewer();
 	}
 	protected void beep()
 	{

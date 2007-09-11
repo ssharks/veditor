@@ -25,6 +25,7 @@ import org.eclipse.jface.text.rules.SingleLineRule;
 import org.eclipse.jface.text.rules.Token;
 import org.eclipse.jface.text.rules.WordPatternRule;
 import org.eclipse.jface.text.rules.WordRule;
+import org.eclipse.jface.text.rules.PatternRule;
 
 /**
  * parse comment
@@ -79,7 +80,7 @@ abstract public class HdlPartitionScanner extends RuleBasedPartitionScanner
 			IToken singleLineComment = new Token(SINGLE_LINE_COMMENT);
 			IToken doxygenComment = new Token(DOXYGEN_COMMENT);
 
-			List rules = new ArrayList();
+			List<Object> rules = new ArrayList<Object>();
 
 			// doxygen comment
 			rules.add(new EndOfLineRule("///", doxygenComment));
@@ -156,7 +157,7 @@ abstract public class HdlPartitionScanner extends RuleBasedPartitionScanner
 			IToken string = new Token(STRING);
 			IToken singleLineComment = new Token(SINGLE_LINE_COMMENT);
 
-			List rules = new ArrayList();
+			List<PatternRule> rules = new ArrayList<PatternRule>();
 
 			// single line comments.
 			rules.add(new EndOfLineRule("--", singleLineComment));

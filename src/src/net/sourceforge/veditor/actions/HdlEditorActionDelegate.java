@@ -65,6 +65,8 @@ public class HdlEditorActionDelegate implements IEditorActionDelegate
     	//FIXME: there should be a way to do this from inside the editor
     	//but until then
     	HdlEditor hdlEditor=(HdlEditor)targetEditor;
-    	hdlEditor.setCurrent();
+    	if(hdlEditor!=null){
+    		hdlEditor.setCurrent();
+    	}
     }
 }
