@@ -72,34 +72,35 @@ public class ModuleHierarchyView extends PageBookView
 		
 		if (part instanceof HdlEditor) {
 			HdlEditor hdlEditor = (HdlEditor) part;
-			project=hdlEditor.getHdlDocument().getProject();
-			//does this project have a hierarchy page
-			if(getHierarchyPage(project)==null){
-				//no hierarchy page yet
-				Object obj = part.getAdapter(HdlHierarchyPage.class);
-				if (obj instanceof HdlHierarchyPage){
-					page=(HdlHierarchyPage)obj;
-					initPage(page);
-					page.createControl(getPageBook());
-					try {
-						project.setSessionProperty(VerilogPlugin.getHierarchyId(), page);
-					} catch (CoreException e) {						
+			
+			if(hdlEditor.getHdlDocument()!=null){				
+				project=hdlEditor.getHdlDocument().getProject();
+				//does this project have a hierarchy page
+				if(getHierarchyPage(project)==null){
+					//no hierarchy page yet
+					Object obj = part.getAdapter(HdlHierarchyPage.class);
+					if (obj instanceof HdlHierarchyPage){
+						page=(HdlHierarchyPage)obj;
+						initPage(page);
+						page.createControl(getPageBook());
+						try {
+							project.setSessionProperty(VerilogPlugin.getHierarchyId(), page);
+						} catch (CoreException e) {						
+						}
 					}
+				}else{
+					page=getHierarchyPage(project);
+					//if the page is disposed, remove it and create it again
+					if(page.isDisposed()){
+						try {
+							project.setSessionProperty(VerilogPlugin.getHierarchyId(), null);
+						} catch (CoreException e) {
+						}
+						return doCreatePage(part);
+					}					
 				}
-			}else{
-				page=getHierarchyPage(project);
-				//if the page is disposed, remove it and create it again
-				if(page.isDisposed()){
-					try {
-						project.setSessionProperty(VerilogPlugin.getHierarchyId(), null);
-					} catch (CoreException e) {
-					}
-					return doCreatePage(part);
-				}
-					
-				
+				return new PageRec(part, page);
 			}
-			return new PageRec(part, page);
 		}			
 		return null;		
 	}

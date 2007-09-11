@@ -304,12 +304,16 @@ abstract public class HdlEditor extends TextEditor
 	
 	private HdlHierarchyPage getHierarchyPage(){
 		HdlHierarchyPage page=null;
-		IProject project=getHdlDocument().getProject();
-
-		try {
-			page=(HdlHierarchyPage)project.getSessionProperty(VerilogPlugin.getHierarchyId());
-		} catch (CoreException e) {
-			e.printStackTrace();
+		
+		HdlDocument doc=getHdlDocument();
+		
+		if(doc != null){
+			IProject project=doc.getProject();
+			try {			
+				page=(HdlHierarchyPage)project.getSessionProperty(VerilogPlugin.getHierarchyId());
+			} catch (CoreException e) {
+				e.printStackTrace();
+			}
 		}
 		
 		return page;
@@ -326,7 +330,10 @@ abstract public class HdlEditor extends TextEditor
 	{
 		HdlDocument doc = getHdlDocument();	
 		OutlineContainer outlineContainer;
-
+		
+		if(doc == null){
+			return;
+		}
 		// check for non-workspace file
 		IFile file = doc.getFile();
 		if (file == null)
@@ -623,6 +630,9 @@ abstract public class HdlEditor extends TextEditor
 		String stateString;
 		HdlDocument doc = getHdlDocument();
 		
+		if(doc == null){
+			return;
+		}
 		//check for non-workspace file
 		IFile file = doc.getFile();
 		if (file == null)
