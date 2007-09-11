@@ -10,10 +10,7 @@
  *******************************************************************************/
 package net.sourceforge.veditor.editor;
 
-import java.util.ArrayList;
 import java.util.Vector;
-
-import javax.swing.text.DefaultEditorKit.BeepAction;
 
 import net.sourceforge.veditor.VerilogPlugin;
 import net.sourceforge.veditor.document.HdlDocument;
@@ -49,8 +46,6 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.ui.part.Page;
-
-import com.sun.corba.se.spi.legacy.connection.GetEndPointInfoAgainException;
 
 public class HdlHierarchyPage extends Page implements ISelectionChangedListener,
 		IDoubleClickListener
@@ -193,8 +188,8 @@ public class HdlHierarchyPage extends Page implements ISelectionChangedListener,
 	
 	
 	/**
-	 * Searches throught the tree item recursively and looks the specified element
-	 * @paaram element
+	 * Searches through the tree item recursively and looks the specified element
+	 * @param element
 	 * @param item
 	 * @return
 	 */
