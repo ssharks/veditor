@@ -51,9 +51,10 @@ public class VhdlFormatAction extends AbstractAction {
 		//get the user preferences
 		getPreferences();
 		
+		selectedText=addSpacePadding(selectedText);
 		selectedText=convertTabs(selectedText);		
 		selectedText=fixIndentation(selectedText);				
-		selectedText=addSpacePadding(selectedText);
+		
 		
 		//replace the text
 		widget.replaceTextRange(begin, end - begin, selectedText);
@@ -397,6 +398,19 @@ public class VhdlFormatAction extends AbstractAction {
 	}
 	
 	/**
+	 * A derived class to override the tab size
+	 *
+	 */
+	private class CharStream extends SimpleCharStream{
+
+		public CharStream(java.io.Reader dstream) {
+			super(dstream);			
+		}		
+		public void setTabSize(int i){
+			super.setTabSize(i);
+		}		
+	}
+	/**
 	 * Tokenizes the given text block using VHDL rules
 	 * 
 	 * @param text
@@ -404,7 +418,8 @@ public class VhdlFormatAction extends AbstractAction {
 	 */
 	private ArrayList<Token> TokenizeText(String text){
 		StringReader stringReader=new StringReader(text);
-		SimpleCharStream stream=new SimpleCharStream(stringReader);
+		CharStream stream=new CharStream(stringReader);
+		stream.setTabSize(1); //set the tab size to 1 in order to match string index
 		VhdlParserCoreTokenManager tokenManager=new VhdlParserCoreTokenManager(stream);
 		Token token=null;
 		ArrayList <Token> results=new ArrayList<Token>();
