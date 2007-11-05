@@ -79,15 +79,15 @@ public class BuildConfig extends Object{
 	 */
 	public void addValuesToMap(HashMap<String,String> map){
 		
-		//put code here to format the name like 0000000NAME
-		
-		map.put(String.format(ENABLE_STR,m_BuildOrder+m_Name), m_Enabled.toString());
-		map.put(String.format(COMMAND_STR,m_BuildOrder+m_Name), m_Command);
-		map.put(String.format(CLEAN_CMD_STR,m_BuildOrder+m_Name), m_CleanCommand);
-		map.put(String.format(PARSER_STR,m_BuildOrder+m_Name), m_Parser);
-		map.put(String.format(WORK_FOLDER_STR,m_BuildOrder+m_Name), m_WorkFolder);
-		map.put(String.format(BUILD_ORDER_STR,m_BuildOrder+m_Name), m_BuildOrder.toString());
-		map.put(String.format(NAME_STR,m_BuildOrder+m_Name), m_Name);
+		String padded_BuildOrder=String.format("%08d", m_BuildOrder);
+			
+		map.put(String.format(ENABLE_STR,padded_BuildOrder+m_Name), m_Enabled.toString());
+		map.put(String.format(COMMAND_STR,padded_BuildOrder+m_Name), m_Command);
+		map.put(String.format(CLEAN_CMD_STR,padded_BuildOrder+m_Name), m_CleanCommand);
+		map.put(String.format(PARSER_STR,padded_BuildOrder+m_Name), m_Parser);
+		map.put(String.format(WORK_FOLDER_STR,padded_BuildOrder+m_Name), m_WorkFolder);
+		map.put(String.format(BUILD_ORDER_STR,padded_BuildOrder+m_Name), m_BuildOrder.toString());
+		map.put(String.format(NAME_STR,padded_BuildOrder+m_Name), m_Name);
 
 	}		
 	/**
