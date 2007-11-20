@@ -13,6 +13,7 @@ package net.sourceforge.veditor.document;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.net.URI;
 
 import net.sourceforge.veditor.editor.HdlPartitionScanner;
 
@@ -27,6 +28,7 @@ import org.eclipse.jface.text.rules.FastPartitioner;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IPathEditorInput;
 import org.eclipse.ui.editors.text.FileDocumentProvider;
+import org.eclipse.ui.ide.FileStoreEditorInput;
 
 public abstract class HdlDocumentProvider extends FileDocumentProvider
 {
@@ -67,6 +69,27 @@ public abstract class HdlDocumentProvider extends FileDocumentProvider
 				e.printStackTrace();
 				document = null;
 			}
+		}
+		else if (element instanceof FileStoreEditorInput){
+			// a file that is not part of the current workspace
+			FileStoreEditorInput fileStoreEditorInput=(FileStoreEditorInput) element;
+			document = createHdlDocument(null, null);
+			FileInputStream contentStream = null;
+			URI uri=fileStoreEditorInput.getURI();
+			if(uri !=null && uri.getScheme().equals("file")){
+				String filename=uri.getPath();
+				try
+				{
+					contentStream = new FileInputStream(filename);
+					setDocumentContent(document, contentStream, getEncoding(element));
+				}
+				catch (FileNotFoundException e)
+				{
+					e.printStackTrace();
+					document = null;
+				}
+			}
+			
 		}
 		if (document != null)
 		{

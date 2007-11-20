@@ -46,10 +46,12 @@ public class ModuleHierarchyView extends PageBookView
 	public HdlHierarchyPage getHierarchyPage(IProject project){
 		HdlHierarchyPage page=null;
 		
-		try {
-			page=(HdlHierarchyPage)project.getSessionProperty(VerilogPlugin.getHierarchyId());
-		} catch (CoreException e) {
-			e.printStackTrace();
+		if(project != null){
+			try {
+				page=(HdlHierarchyPage)project.getSessionProperty(VerilogPlugin.getHierarchyId());
+			} catch (CoreException e) {
+				e.printStackTrace();
+			}
 		}
 		
 		return page;
@@ -75,6 +77,10 @@ public class ModuleHierarchyView extends PageBookView
 			
 			if(hdlEditor.getHdlDocument()!=null){				
 				project=hdlEditor.getHdlDocument().getProject();
+				//if there is no project, just get out
+				if(project == null){
+					return null;
+				}
 				//does this project have a hierarchy page
 				if(getHierarchyPage(project)==null){
 					//no hierarchy page yet

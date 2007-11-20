@@ -57,7 +57,9 @@ public abstract class HdlTreeProviderBase implements ITreeContentProvider
 		
 		try {
 			outlineContainer=doc.getOutlineContainer();
-			return outlineContainer.getTopLevelElements();
+			if(outlineContainer != null){
+				return outlineContainer.getTopLevelElements();
+			}
 		} catch (HdlParserException e) {
 	
 		}

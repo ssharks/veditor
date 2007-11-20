@@ -309,10 +309,12 @@ abstract public class HdlEditor extends TextEditor
 		
 		if(doc != null){
 			IProject project=doc.getProject();
-			try {			
-				page=(HdlHierarchyPage)project.getSessionProperty(VerilogPlugin.getHierarchyId());
-			} catch (CoreException e) {
-				e.printStackTrace();
+			if(project!=null){
+				try {			
+					page=(HdlHierarchyPage)project.getSessionProperty(VerilogPlugin.getHierarchyId());
+				} catch (CoreException e) {
+					e.printStackTrace();
+				}
 			}
 		}
 		

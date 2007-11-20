@@ -62,15 +62,17 @@ abstract public class HdlDocument extends Document
 	public OutlineDatabase getOutlineDatabase(){	
 			OutlineDatabase database = null;
 			IProject project = getProject();
-			try {
-				database = (OutlineDatabase) project
-						.getSessionProperty(VerilogPlugin.getOutlineDatabaseId());
-				if(database == null){
-					database=CreateOutlineDatabase(project);
+			if(project != null){
+				try {
+					database = (OutlineDatabase) project
+							.getSessionProperty(VerilogPlugin.getOutlineDatabaseId());
+					if(database == null){
+						database=CreateOutlineDatabase(project);
+					}
+				} catch (CoreException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
 				}
-			} catch (CoreException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
 			}
 			return database;
 		}
