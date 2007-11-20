@@ -49,7 +49,7 @@ public class SimulateBuilder extends IncrementalProjectBuilder
 			if(buildConfig.isEnabled() == false){
 				continue;
 			}
-			monitor.subTask("Builing Configuration: "+buildConfig.getName());
+			monitor.subTask("Building Configuration: "+buildConfig.getName());
 
 			//get the real path
 			if (buildConfig.getWorkFolder().equals("") || 
