@@ -26,6 +26,10 @@ public class TopPreferencePage extends AbstractSimplePreferencePage
 	{
 		addBooleanField("ContentAssist.ModuleParameter",
 				"Generate module parameter with instantiation(Verilog-2001)");
+		addBooleanField("ScanProject.Enable", "Enable Scan Project");
+		addBooleanField("Outline.Sort", "Sort in Outline/Hierarchy");
+		addBooleanField("Outline.FilterSignals", "Filter Signals in Outline");
+		addBooleanField("Outline.FilterPorts", "Filter Ports in Outline");
 		addBooleanField("Compile.SaveBeforeCompile","Save File Before Compile");
 		addStringField("Compile.command", "Compile command");
 	}

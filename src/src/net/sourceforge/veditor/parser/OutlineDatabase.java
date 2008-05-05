@@ -12,11 +12,13 @@ package net.sourceforge.veditor.parser;
 
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Vector;
 
 import net.sourceforge.veditor.VerilogPlugin;
+import net.sourceforge.veditor.parser.verilog.VerilogOutlineElementFactory.VerilogInstanceElement;
+
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -78,9 +80,10 @@ public class OutlineDatabase {
 	/**
 	 * Finds top level elements starting with the given name
 	 * @param name Element name
-	 * @return List of elements matching the given name. NULL if not found
+	 * @param exactly if true, find only exactly equal
+	 * @return List of elements matching the given name. list.length = 0 if not found
 	 */
-	public OutlineElement[] findTopLevelElements(String name) {
+	public OutlineElement[] findTopLevelElements(String name, boolean exactly) {
 		ArrayList<OutlineElement> list = new ArrayList<OutlineElement>();
 		Iterator<OutlineContainer> iter = m_HierarchyDatabase.values()
 				.iterator();
@@ -92,19 +95,30 @@ public class OutlineDatabase {
 			for (int i = 0; i < obj.length; i++) {
 				if (obj[i] instanceof OutlineElement) {
 					OutlineElement element = (OutlineElement) obj[i];
-					if (element.getName().startsWith(name)) {
-						list.add(element);
+					if (exactly) {
+						if (element.getName().equals(name)) {
+							list.add(element);
+						}
+					} else {
+						if (element.getName().startsWith(name)) {
+							list.add(element);
+						}
 					}
 				}
 			}
 		}
 		return list.toArray(new OutlineElement[0]);
 	}
-	
+
+	public OutlineElement[] findTopLevelElements(String name){
+		return findTopLevelElements(name, false);
+	}
+
 	/**
 	 * Class used to inform the listeners of change
+	 * 
 	 * @author gho18481
-	 *
+	 * 
 	 */
 	public abstract static class OutlineDatabaseEvent{
 		public abstract void handel();
@@ -156,14 +170,14 @@ public class OutlineDatabase {
 	 * @author gho18481
 	 *
 	 */
-	class scanProjectJob extends Job {
+	private class ScanProjectJob extends Job {
 		private Vector<IFile> m_Files;
 		
 		/**
 		 * Constructor
 		 * @param files to scan
 		 */
-		public scanProjectJob(Vector<IFile> files) {
+		public ScanProjectJob(Vector<IFile> files) {
 			super("Scanning HDL Files");
 			m_Files=files;
 		}
@@ -189,6 +203,35 @@ public class OutlineDatabase {
 			return Status.OK_STATUS;
 		}
 	}
+
+	/**
+	 * Class used to launch the project scanning task
+	 */
+	private class ScanTreeJob extends Job {
+		private IFile file;
+		
+		/**
+		 * Constructor
+		 * @param files to scan
+		 */
+		public ScanTreeJob(IFile file) {
+			super("Scanning HDL Tree");
+			this.file = file;
+		}
+
+		public IStatus run(IProgressMonitor monitor) {
+			monitor.beginTask("Scanning HDL Tree", 1);
+			try {
+				scanChildrenFiles(file);
+				monitor.worked(1);
+				fireChangeEvent();
+			} finally {
+				monitor.done();
+			}
+			m_ScanState=ScanState.DONE;
+			return Status.OK_STATUS;
+		}
+	}
 	
 	/**
 	 * @return The current scan state
@@ -199,15 +242,18 @@ public class OutlineDatabase {
 	/**
 	 * Public access to scan function
 	 */
-	public void scanProject(){
-		Vector<IFile> files=getProjectFiles(m_Project);
-		
-		if(m_ScanState != ScanState.IN_PROGRESS){
-			scanProjectJob job = new scanProjectJob(files);
-			m_ScanState=ScanState.IN_PROGRESS;
-			//not a critical job
-			job.setPriority(Job.DECORATE);
-		    job.schedule();	    
+	public void scanProject() {
+		if (VerilogPlugin.getPreferenceBoolean("ScanProject.Enable")) {
+
+			Vector<IFile> files = getProjectFiles(m_Project);
+			
+			if (m_ScanState != ScanState.IN_PROGRESS) {
+				ScanProjectJob job = new ScanProjectJob(files);
+				m_ScanState = ScanState.IN_PROGRESS;
+				// not a critical job
+				job.setPriority(Job.DECORATE);
+				job.schedule();
+			}
 		}
 	}
 	/**
@@ -236,9 +282,99 @@ public class OutlineDatabase {
 		}
 		return results;
 	}
+	
+	/**
+	 * Public access to scan function
+	 */
+	public void scanTree(IFile file){
+		if (VerilogPlugin.getPreferenceBoolean("ScanProject.Enable") == false) {
+			if (m_ScanState != ScanState.IN_PROGRESS) {
+				ScanTreeJob job = new ScanTreeJob(file);
+				m_ScanState = ScanState.IN_PROGRESS;
+				// not a critical job
+				job.setPriority(Job.DECORATE);
+				job.schedule();
+			}
+		}
+	}
+
+	/**
+	 * Scan children recursively
+	 */
+	private void scanChildrenFiles(IFile file){
+		OutlineContainer container = getOutlineContainer(file);
+		OutlineElement[] elements = container.getTopLevelElements();
+		for(int i = 0; i < elements.length; i++){
+			OutlineElement[] children = elements[i].getChildren();
+			for(int j = 0; j < children.length; j++)
+			{
+				if (children[j] instanceof VerilogInstanceElement)
+				{
+					VerilogInstanceElement instance = (VerilogInstanceElement)children[j];
+					String[] types = instance.getType().split("#");
+					OutlineElement[] element = findTopLevelElements(types[1], true);
+					if (element.length == 0)
+					{
+						IFile found = findFile(m_Project, types[1] + ".v");
+						if (found != null)
+						{
+							scanFile(found);
+							scanChildrenFiles(found);
+						}
+					}
+				}
+				// TODO: VHDL files must be scanned
+			}
+		}
+	}
+	
+	/**
+	 * search definition from instance
+	 */
+	public OutlineElement findDefinition(OutlineElement instance) {
+		if (instance instanceof VerilogInstanceElement) {
+			String[] types = instance.getType().split("#");
+			OutlineElement[] element = findTopLevelElements(types[1], true);
+			if (element.length == 0)
+				return null;
+			else
+				return element[0];
+		}
+		// TODO: VHDL module must be found
+		return null;
+	}
+	
+	/**
+	 * Searches file for name in the project
+	 * 
+	 * @return
+	 */
+	private IFile findFile(IContainer root, String fileName) {
+		try {
+			IResource[] members;
+			members = root.members();
+			for (int i = 0; i < members.length; i++) {
+				if (members[i] instanceof IContainer) {
+					IFile file = findFile((IContainer) members[i], fileName);
+					if (file != null)
+						return file;
+				}
+				if (members[i] instanceof IFile) {
+					IFile file = (IFile) members[i];
+					if (fileName.equals(file.getName()))
+						return file;
+				}
+			}
+		} catch (CoreException e) {
+		}
+		return null;
+	}
+	
 	/**
 	 * Scans a single file and adds its contents to the database
-	 * @param file file to be scanned
+	 * 
+	 * @param file
+	 *            file to be scanned
 	 */
 	private void scanFile(IFile file) {
 		
@@ -274,7 +410,8 @@ public class OutlineDatabase {
 				if (res instanceof IFile) {
 					IFile file=(IFile) res;
 					if(file.getName().endsWith(".v") || file.getName().endsWith(".vhd")){
-						scanProject();
+						// just scan added file
+						scanFile(file);
 					}
 				}
 				break;

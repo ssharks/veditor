@@ -62,40 +62,50 @@ public class HdlContentOutlinePage extends ContentOutlinePage
 {
 	private HdlEditor editor;
 	private static final String FILTER_SIGNAL_ACTION_IMAGE="$nl$/icons/filter_signal.gif";
+	private static final String FILTER_PORT_ACTION_IMAGE="$nl$/icons/filter_port.gif";
+	private static final String ENABLE_SORT_ACTION_IMAGE="$nl$/icons/sort.gif";
+	
 	private boolean m_bFilterSignals;
+	private boolean m_bPortSignals;
+	private boolean enableSort;
 
-	public HdlContentOutlinePage(HdlEditor editor)
-	{
+	public HdlContentOutlinePage(HdlEditor editor) {
 		super();
 		this.editor = editor;
-		m_bFilterSignals=false;
+		m_bFilterSignals = VerilogPlugin.getPreferenceBoolean("Outline.FilterSignals");
+		m_bPortSignals = VerilogPlugin.getPreferenceBoolean("Outline.FilterPorts");
+		enableSort = VerilogPlugin.getPreferenceBoolean("Outline.Sort");
 	}
 
-	public void createControl(Composite parent)
-	{
+	public void createControl(Composite parent) {
 		super.createControl(parent);
 
 		TreeViewer viewer = getTreeViewer();
 		viewer.setContentProvider(new HdlContentOutlineProvider());
 		viewer.setLabelProvider(editor.getOutlineLabelProvider());
 		viewer.addSelectionChangedListener(this);
-		viewer.addFilter(new signalFilter());
-		viewer.setSorter(new sorter());
+		viewer.addFilter(new SignalFilter());
+		viewer.addFilter(new PortFilter());
+		if (enableSort) {
+			viewer.setSorter(new Sorter());
+		}
 		createToolbar();
 		createContextMenu(viewer.getTree());
 
 		IDocument doc = editor.getDocument();
-		if (doc != null){
-			viewer.setInput(doc);			
-		}		
-		
+		if (doc != null) {
+			viewer.setInput(doc);
+		}
+
 	}
 
 	
 	private void createToolbar(){
 		IToolBarManager mgr = getSite().getActionBars().getToolBarManager();
-        mgr.add(new signalFilterAction());
-        mgr.add(new collapseAllAction());
+		mgr.add(new EnableSortAction());
+        mgr.add(new SignalFilterAction());
+        mgr.add(new PortFilterAction());
+        mgr.add(new CollapseAllAction());
 	}
 	
 	/**
@@ -109,7 +119,7 @@ public class HdlContentOutlinePage extends ContentOutlinePage
 		menuManager.addMenuListener(new IMenuListener() {
 			public void menuAboutToShow(IMenuManager menu)
 			{			
-				menu.add(new collapseAllAction());
+				menu.add(new CollapseAllAction());
 			}
 		});
 		Menu menu = menuManager.createContextMenu(control);		
@@ -195,6 +205,11 @@ public class HdlContentOutlinePage extends ContentOutlinePage
 
 		if (viewer != null)
 		{
+			if (enableSort)
+				viewer.setSorter(new Sorter());
+			else
+				viewer.setSorter(null);
+
 			Control control = viewer.getControl();
 			if (control != null && !control.isDisposed())
 			{				
@@ -212,41 +227,58 @@ public class HdlContentOutlinePage extends ContentOutlinePage
 		}
 	}
 	
-	class signalFilter extends ViewerFilter{
+	private class SignalFilter extends ViewerFilter {
 
 		public boolean select(Viewer viewer, Object parentElement,
 				Object element) {
 
-			if(m_bFilterSignals){
-				if (element instanceof VhdlSignalElement){
+			if (m_bFilterSignals) {
+				if (element instanceof VhdlSignalElement) {
 					return false;
 				}
-				if (element instanceof VerilogSignalElement){
+				if (element instanceof VerilogSignalElement) {
 					return false;
 				}
 			}
 			return true;
 		}
-		
+
+	}
+
+	private class PortFilter extends ViewerFilter {
+
+		public boolean select(Viewer viewer, Object parentElement,
+				Object element) {
+
+			if (m_bPortSignals) {
+				if (element instanceof VhdlPortElement) {
+					return false;
+				}
+				if (element instanceof VerilogPortElement) {
+					return false;
+				}
+			}
+			return true;
+		}
+
 	}
 	
 	/**
 	 * Class used to sort the outline elements
 	 *
 	 */
-	class sorter extends ViewerSorter{
+	private class Sorter extends ViewerSorter{
 		/**
 		 * Called to determine whether an object is sortable or not
 		 */
-		public boolean isSorterProperty(Object element,
-                String property){
-			return super.isSorterProperty(element,property);
+		public boolean isSorterProperty(Object element, String property) {
+			return super.isSorterProperty(element, property);
 		}
 		public int compare(Viewer viewer, Object e1, Object e2) {
 			return super.compare(viewer,e1,e2);
 		}
 		public int category(Object element) {
-			//vhdl catagories			
+			//vhdl categories			
 			if (element instanceof PackageDeclElement) return 10;
 			if (element instanceof PackageBodyElement) return 15;
 			if (element instanceof EntityDeclElement) return 20;
@@ -280,36 +312,88 @@ public class HdlContentOutlinePage extends ContentOutlinePage
 		}
 	}
 	
-	private class signalFilterAction extends Action
-	{
-		public signalFilterAction()
-		{
+	private class SignalFilterAction extends Action {
+		public SignalFilterAction() {
 			super();
 			setText("Filter Signal");
+			setChecked(m_bFilterSignals);
 		}
-		public void run()
-		{
+
+		public void run() {
 			m_bFilterSignals = !m_bFilterSignals;
 			update();
 		}
-		public ImageDescriptor getImageDescriptor(){
-			return VerilogPlugin.getPlugin().getImageDescriptor(FILTER_SIGNAL_ACTION_IMAGE);
+
+		public ImageDescriptor getImageDescriptor() {
+			return VerilogPlugin.getPlugin().getImageDescriptor(
+					FILTER_SIGNAL_ACTION_IMAGE);
 		}
-		public int getStyle(){
+
+		public int getStyle() {
 			return AS_CHECK_BOX;
 		}
-		public boolean GetChecked(){
-			return m_bFilterSignals;
-		}
-		public String getToolTipText(){
+
+		public String getToolTipText() {
 			return "Filter signals";
 		}
 	}
+
+	private class PortFilterAction extends Action {
+		public PortFilterAction() {
+			super();
+			setText("Filter Port");
+			setChecked(m_bPortSignals);
+		}
+
+		public void run() {
+			m_bPortSignals = !m_bPortSignals;
+			update();
+		}
+
+		public ImageDescriptor getImageDescriptor() {
+			return VerilogPlugin.getPlugin().getImageDescriptor(
+					FILTER_PORT_ACTION_IMAGE);
+		}
+
+		public int getStyle() {
+			return AS_CHECK_BOX;
+		}
+
+		public String getToolTipText() {
+			return "Filter ports";
+		}
+	}
+
+	private class EnableSortAction extends Action {
+		public EnableSortAction() {
+			super();
+			setText("Sort");
+			setChecked(enableSort);
+		}
+
+		public void run() {
+			enableSort = !enableSort;
+			update();
+		}
+
+		public ImageDescriptor getImageDescriptor() {
+			return VerilogPlugin.getPlugin().getImageDescriptor(
+					ENABLE_SORT_ACTION_IMAGE);
+		}
+
+		public int getStyle() {
+			return AS_CHECK_BOX;
+		}
+
+		public String getToolTipText() {
+			return "Sort";
+		}
+	}
 	
-	private class collapseAllAction extends Action	
+	private class CollapseAllAction extends Action	
 	{
 		private static final String COLLAPSE_ALL_ACTION_IMAGE="$nl$/icons/collapse_all.gif";
-		public collapseAllAction()
+		public CollapseAllAction()
 		{
 			super();
 			setText("Collapse All");

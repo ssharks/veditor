@@ -52,7 +52,7 @@ public class VerilogCompletionProcessor extends HdlCompletionProcessor
 			int context = IParser.OUT_OF_MODULE;
 			try
 			{	
-				context = doc.getContext(documentOffset);
+				context = doc.getContext(documentOffset - match.length());
 				currentElement=doc.getElementAt(documentOffset,false);
 			}
 			catch (BadLocationException e)

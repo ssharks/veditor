@@ -115,11 +115,13 @@ abstract public class HdlDocument extends Document
 			IParser parser = createParser(get());
 			VerilogPlugin.clearProblemMarker(getFile());
 			try{
-				parser.parse();				
+				parser.parse();
 			}
-			catch (HdlParserException e){							
+			catch (HdlParserException e){
 				throw e;
 			}
+			OutlineDatabase database = OutlineDatabase.getProjectsDatabase(getProject());
+			database.scanTree(getFile());
 			return true;
 		}		
 		return false;

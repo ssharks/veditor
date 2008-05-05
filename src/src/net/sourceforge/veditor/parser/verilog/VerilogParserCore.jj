@@ -73,8 +73,14 @@ SKIP :
 SPECIAL_TOKEN :
 {
 	<SINGLE_LINE_COMMENT: "//" (~["\n"])* >
-|	<DELSE:     "\n`else" > : IN_ELSE_BLOCK
-|   <DIRECTIVE: "\n" (" ")* "`" ["a"-"z"] (~["\n"])* >  // directive must be lower case
+|	<DEFINE:	"`define" (~["\n"])* >
+|	<UNDEF:		"`undef" (~["\n"])* >
+|	<DIFDEF:	"`ifdef" (~["\n"])* >
+|	<DIF:		"`if" (~["\n"])* >
+|	<DELSE:		"`else" (~["\n"])* >	: IN_ELSE_BLOCK
+|	<DENDIF:	"`endif" (~["\n"])* >
+|	<TIMESCALE:	"`timescale" (~["\n"])* >
+|	<INCLUDE:	"`include" (~["\n"])* >
 }
 
 TOKEN :
@@ -93,8 +99,10 @@ TOKEN :
 |	<FOR:		"for">
 |	<FOREVER:	"forever">
 |	<REPEAT:	"repeat">
+|	<WAIT:		"wait">
 |	<CASE:		"case">
 |	<CASEX:		"casex">
+|	<DEFAULT_LABEL:	"default">
 |	<ENDCASE:	"endcase">
 |	<FUNCTION:	"function">
 |	<ENDFUNCTION: "endfunction">
@@ -156,7 +164,9 @@ void modules() :
 		{			
 			beginOutlineElement(name.beginLine,name.beginColumn, name.image,"module#");
 		}
-		[ "(" skipParen() ")" ]
+		[
+			"(" [ argument() ( "," argument() )* ] ")"
+		]
 		<EOS>
 		moduleBody()
 		end = <ENDMODULE>
@@ -166,20 +176,58 @@ void modules() :
 	)*
 }
 
+
+void argument() :
+{
+	Token direction, name;
+	String modifier="";
+	String range;
+}
+{
+		// C++ style argument
+		( direction=<INPUT>  | direction=<OUTPUT>  | direction=<INOUT> )
+		[ modifier = variableModifier() ]
+		range = bitRange()
+		name = identifier()
+		{
+			String type = "port#" + direction.image + "#" + "" + "#" + range;
+			beginOutlineElement(
+				name.beginLine, name.beginColumn, name.image, type);
+			endOutlineElement(name.endLine, name.endColumn, name.image, type);
+		}
+	|
+		// C style argument, portDecl will add it to OutlineContainer
+		identifier()
+}
+
+
+String bitRange() :
+{
+	String range = "";
+	Token msb, lsb;
+}
+{
+	[
+		"[" msb = skipTo(COLON) lsb = skipTo(RBRACKET)
+		{
+			range = "[" + msb.image + ":" + lsb.image + "]";
+		}
+	]
+	{
+		return range;
+	}
+}
+
 void portDecl():
 {
-	Token direction,name,msb,lsb;
+	Token direction,name;
 	String modifier="";
-	String range="";
+	String range;
 }
 {
 	( direction=<INPUT>  | direction=<OUTPUT>  | direction=<INOUT> )
 	[ modifier=variableModifier() ]
-	[ "[" msb = skipTo(COLON) lsb = skipTo(RBRACKET) 
-	  {
-	  	range="["+msb.image+":"+lsb.image+"]";
-	  }
-	]
+	range = bitRange()
 	name = skipTo(EOS)
 	{
 		beginStatement();
@@ -273,17 +321,13 @@ void blockDecl():
 }
 void variableDecl():
 {
-	Token msb,lsb,variable;
+	Token variable;
 	String mod="";
-	String range="";
+	String range;
 }
 {
 	( mod = variableModifier() )
-	[ "[" msb = skipTo(COLON) lsb = skipTo(RBRACKET) 
-	  {
-	  	range="["+msb.image+":"+lsb.image+"]";
-	  }
-	]
+	range = bitRange()
 	variable = identifier() ( "[" skipTo(RBRACKET) )*
 	{
 		beginOutlineElement(variable.beginLine,variable.beginColumn,variable.image,"variable#"+mod+"#"+range);
@@ -389,6 +433,7 @@ void statement() :
 	|	forStatement()
 	|	foreverStatement()
 	|	repeatStatement()
+	|	waitStatement()
 	)
 }
 
@@ -469,6 +514,7 @@ void generateStatement() :
 		   variableDecl()		
 		|  generateForStatement()
 	    |  generateIfStatement()
+		|  <STMT_HEAD> skipTo( EOS )
 	    |  moduleInst()
 	    |  blockDecl() 
 	    |  functionDecl()
@@ -495,6 +541,7 @@ void caseStatement() :
 			identifier() ( "," identifier() )* ":" statement()
 		|	("{") identifier() ( "," identifier() )* ("}")
 			( (",")  ("{") identifier() ( "," identifier() )* ("}") )*  ":" statement()
+		|	"default" [ LOOKAHEAD(2) ":" ] statement()
 	)*
 	<ENDCASE>
 }
@@ -527,6 +574,13 @@ void repeatStatement() :
 	<REPEAT> "(" skipParen() ")" statement()
 }
 
+void waitStatement() :
+{
+}
+{
+	<WAIT> "(" skipParen() ")" statement()
+}
+
 void generateForStatement() :
 {
 }
@@ -543,15 +597,18 @@ void generateIfStatement() :
 }
 {
 	<IF> "(" skipParen() ")"
-	<BEGIN> 
+	<BEGIN>
 	[ ":" identifier() ]
 	generateStatement()
 	<END>
-	[ LOOKAHEAD(1) <ELSE> 
-	  <BEGIN>
-	  [ ":" identifier() ]
-	  generateStatement() 
-	  <END>
+	[ LOOKAHEAD(1) <ELSE>
+		(
+			generateIfStatement()
+		|	<BEGIN>
+			[ ":" identifier() ]
+			generateStatement()
+			<END>
+		)
 	]
 }
 

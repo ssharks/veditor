@@ -59,7 +59,7 @@ public class VerilogDocument extends HdlDocument
 			}
 			//Global definitions
 			OutlineDatabase database=getOutlineDatabase();
-			for(OutlineElement element: database.findTopLevelElements(name)){
+			for(OutlineElement element: database.findTopLevelElements(name, true)){
 				if (element instanceof VerilogModuleElement &&						
 						//do not add the same thing twice
 						results.contains(element)==false){
@@ -82,8 +82,14 @@ public class VerilogDocument extends HdlDocument
 	 * @param documentOffset
 	 * @return
 	 */
-	public int getContext(int documentOffset) throws BadLocationException{
-		//FIXME need to get the context from the using getCurrentElementAt
-		return IParser.OUT_OF_MODULE;
+	public int getContext(int documentOffset) throws BadLocationException {
+		String text = get(0, documentOffset);
+		IParser parser = ParserFactory.createVerilogParser(text, null, getFile());
+		try {
+			parser.parse();
+		} catch (HdlParserException e) {
+		}
+
+		return parser.getContext();
 	}
 }

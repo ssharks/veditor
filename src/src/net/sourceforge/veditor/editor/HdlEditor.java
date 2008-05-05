@@ -354,6 +354,7 @@ abstract public class HdlEditor extends TextEditor
 	}
 	
 	public void setFocus(){
+		super.setFocus();
 		setCurrent();
 		if(m_bInitialShowing){
 			checkSyntax();

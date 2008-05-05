@@ -14,6 +14,7 @@ package net.sourceforge.veditor.parser.verilog;
 import java.io.IOException;
 import java.io.Reader;
 
+import net.sourceforge.veditor.VerilogPlugin;
 import net.sourceforge.veditor.parser.HdlParserException;
 import net.sourceforge.veditor.parser.IParser;
 import net.sourceforge.veditor.parser.OutlineContainer;
@@ -32,102 +33,143 @@ public class VerilogParser extends VerilogParserCore implements IParser
 {
 	private IFile m_File;
 	private Reader m_Reader;
-	private static OutlineElementFactory m_OutlineElementFactory=new VerilogOutlineElementFactory();
+	private static OutlineElementFactory m_OutlineElementFactory = new VerilogOutlineElementFactory();
 	private OutlineContainer m_OutlineContainer;
-	int m_Context;
-	
+	private int m_Context;
 
-	public VerilogParser(Reader reader, IProject project, IFile file)
-	{
+	public VerilogParser(Reader reader, IProject project, IFile file) {
 		super(reader);
+		m_Context = IParser.OUT_OF_MODULE;
 		m_Reader = reader;
 		m_File = file;
-		OutlineDatabase database = OutlineDatabase.getProjectsDatabase(project);		
-		if(database != null){
-			m_OutlineContainer = database.getOutlineContainer(file);
+		m_OutlineContainer = null;
+		
+		// if project == null, the context scanning is running
+		// no update outline and error markers 
+
+		if (project != null) {
+			// in outline scanning
+			OutlineDatabase database;
+			database = OutlineDatabase.getProjectsDatabase(project);
+			if (database != null) {
+				m_OutlineContainer = database.getOutlineContainer(file);
+			}
 		}
 	}
-
 	
-	// called by VerilogParserCore	
-	protected void beginOutlineElement(int begin,int col,String name,String type){
-		m_OutlineContainer.beginElement(name, type, begin, col, m_File,m_OutlineElementFactory);
+	// called by VerilogParserCore
+	protected void beginOutlineElement(int begin, int col, String name, String type) {
+		if (type.equals("module#")) {
+			m_Context = IParser.IN_MODULE;
+		}
+		if (m_OutlineContainer != null) {
+			m_OutlineContainer.beginElement(name, type, begin, col, m_File,
+					m_OutlineElementFactory);
+		}
 	}
-	protected void addCollapsible(int startLine,int endLine){
-		Collapsible c= m_OutlineContainer.new Collapsible(startLine,endLine);
-		m_OutlineContainer.addCollapsibleRegion(c);
+	protected void addCollapsible(int startLine, int endLine) {
+		if (m_OutlineContainer != null) {
+			Collapsible c = m_OutlineContainer.new Collapsible(startLine,
+					endLine);
+			m_OutlineContainer.addCollapsibleRegion(c);
+		}
 	}
-	protected void endOutlineElement(int end,int col,String name,String type){
-		m_OutlineContainer.endElement(name,type,end,col, m_File);
+	protected void endOutlineElement(int end, int col, String name, String type) {
+		if (type.equals("module#")) {
+			m_Context = IParser.OUT_OF_MODULE;
+		}
+		if (m_OutlineContainer != null) {
+			m_OutlineContainer.endElement(name, type, end, col, m_File);
+		}
 	}	
-	protected void beginStatement()
-	{
+	protected void beginStatement() {
 		m_Context = IParser.IN_STATEMENT;
 	}
-	protected void endStatement()
-	{
+
+	protected void endStatement() {
 		m_Context = IParser.IN_MODULE;
+	}
+
+	public int getContext() {
+		return m_Context;
 	}
 
 	public void parse() throws HdlParserException
 	{
+		try {
+			m_Reader.reset();
+		} catch (IOException e) {			
+		}
+		
 		try
 		{
-			m_Reader.reset();
 			//start by looking for modules
 			modules();
 		}
-		catch (IOException e)
-		{
-		}
 		catch(ParseException e){
+
+			if (m_OutlineContainer != null) {
+				// add error marker in outline scanning 
+				VerilogPlugin.setErrorMarker(m_File, e.currentToken.beginLine,
+						e.getMessage());
+			}
+
 			//convert the exception to a generic one
 			throw new HdlParserException(e);
 		}
-		
+
+		if (m_OutlineContainer != null) {
+			parseLineComment();
+		}
 	}
 	
 	/**
-	 * parse line comment for content outline
+	 * parse line comment for collapse
 	 */
-	public void parseLineComment()
-	{
-		try
-		{
+	private void parseLineComment() {
+		try {
 			m_Reader.reset();
 
+			boolean continued = false;
+			int startLine = -1;
 			int line = 1;
-			int column = 0;
+			boolean validLine = false;
 			int c = m_Reader.read();
-			while (c != -1)
-			{
-				column++;
-				switch (c)
-				{
-					case '\n' :
-						line++;
-						column = 0;
-						c = m_Reader.read();
-						break;
-					case '/' :
-						c = m_Reader.read();
-						if (c == '/' && column == 1)
-						{
-							String comment = getLineComment(m_Reader);
-							if (comment != null)
-								addComment(line, comment);
-							line++;
-							column = 0;
+			while (c != -1) {
+				switch (c) {
+				case '\n':
+					if (continued == true) {
+						continued = false;
+						if (line - startLine >= 2)
+							addCollapsible(startLine, line - 1);
+					}
+					line++;
+					validLine = false;
+					c = m_Reader.read();
+					break;
+				case '/':
+					c = m_Reader.read();
+					if (!validLine && c == '/') {
+						if (continued == false) {
+							startLine = line;
+							continued = true;
 						}
-						break;
-					default :
-						c = m_Reader.read();
-						break;
+
+						String comment = getLineComment(m_Reader);
+						if (comment != null)
+							addComment(line, comment);
+						line++;
+					}
+					break;
+				default:
+					if (!Character.isWhitespace((char)c)){
+						validLine = true;
+					}
+					c = m_Reader.read();
+					break;
 				}
 			}
-		}
-		catch (IOException e)
-		{
+		} catch (IOException e) {
 		}
 	}
 

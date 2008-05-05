@@ -17,5 +17,6 @@ public interface IParser
 	public static final int IN_STATEMENT = 2;
 
 	public void parse() throws HdlParserException;
+	public int getContext();
 }
 

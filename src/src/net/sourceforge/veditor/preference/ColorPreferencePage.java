@@ -88,7 +88,8 @@ public class ColorPreferencePage extends AbstractPreferencePage
 			new TextAttribute("MultiLineComment", "Multi line comment"),
 			new TextAttribute("DoxygenComment", "Doxygen comment"),
 			new TextAttribute("KeyWord", "Reserved word"),
-			new TextAttribute("String", "String") };
+			new TextAttribute("String", "String"),
+			new TextAttribute("Directive", "Directive")};
 
     protected Control createContents(Composite parent)
 	{

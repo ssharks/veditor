@@ -17,6 +17,7 @@ import net.sourceforge.veditor.document.HdlDocument;
 import net.sourceforge.veditor.parser.OutlineDatabase;
 import net.sourceforge.veditor.parser.OutlineElement;
 import net.sourceforge.veditor.parser.OutlineDatabase.OutlineDatabaseEvent;
+import net.sourceforge.veditor.parser.verilog.VerilogOutlineElementFactory.VerilogInstanceElement;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
@@ -60,25 +61,30 @@ public class HdlHierarchyPage extends Page implements ISelectionChangedListener,
     private Action     m_GotoDefinition;
     private Action     m_CollapseAllAction;
     private Action     m_RescanAllAction;
+    private Action     m_EnableSortAction;
+    private boolean enableSort;
+
     private final static String REFRESH_ACTION_IMAGE="$nl$/icons/refresh.gif";
     private final static String GOTO_DEF_ACTION_IMAGE="$nl$/icons/goto_def.gif";
+	private static final String ENABLE_SORT_ACTION_IMAGE="$nl$/icons/sort.gif";
     
-	public HdlHierarchyPage(HdlEditor editor)
-	{
+	public HdlHierarchyPage(HdlEditor editor) {
 		super();
 		this.m_Editor = editor;
-		m_Clipboard = new Clipboard(Display.getCurrent());	
-		m_Selection=null;
-		m_TreeViewer=null;
-		m_CollapseAllAction=null;
-		m_RescanAllAction=null;		
+		m_Clipboard = new Clipboard(Display.getCurrent());
+		m_Selection = null;
+		m_TreeViewer = null;
+		m_CollapseAllAction = null;
+		m_RescanAllAction = null;
+		m_EnableSortAction = null;
+		enableSort = VerilogPlugin.getPreferenceBoolean("Outline.Sort");
 	}
 	
-	public void dispose(){
+	public void dispose() {
 		super.dispose();
-		m_Selection=null;
-		m_TreeViewer=null;		
-	}	
+		m_Selection = null;
+		m_TreeViewer = null;
+	}
 	
 	public boolean isDisposed(){
 		return m_TreeViewer==null;
@@ -106,7 +112,8 @@ public class HdlHierarchyPage extends Page implements ISelectionChangedListener,
 		m_TreeViewer.setLabelProvider(m_Editor.getOutlineLabelProvider());
 		m_TreeViewer.addSelectionChangedListener(this);
 		m_TreeViewer.addDoubleClickListener(this);
-		m_TreeViewer.setSorter(new ViewerSorter());
+		if (enableSort)
+			m_TreeViewer.setSorter(new ViewerSorter());
 		IDocument doc = m_Editor.getDocument();
 		if (doc != null)
 		{
@@ -122,14 +129,16 @@ public class HdlHierarchyPage extends Page implements ISelectionChangedListener,
 	/**
 	 * creates the actions
 	 */
-	private void createActions(){
-		m_CopyTextAction=new CopyTextAction();		
-		m_CopyHierarchyAction=new CopyHierarchyAction();
-		m_RefreshAction=new RefreshAction();		
-		m_GotoDefinition=new GotoDefinitionAction();
-		m_CollapseAllAction=new collapseAllAction();
-		m_RescanAllAction=new rescanAllAction();
+	private void createActions() {
+		m_CopyTextAction = new CopyTextAction();
+		m_CopyHierarchyAction = new CopyHierarchyAction();
+		m_RefreshAction = new RefreshAction();
+		m_GotoDefinition = new GotoDefinitionAction();
+		m_CollapseAllAction = new CollapseAllAction();
+		m_RescanAllAction = new RescanAllAction();
+		m_EnableSortAction = new EnableSortAction();
 	}
+
 	/** 
 	 *  creates a menu for this view
 	 */
@@ -141,6 +150,7 @@ public class HdlHierarchyPage extends Page implements ISelectionChangedListener,
 	 */
 	private void createToolbar(){
 		IToolBarManager mgr = getSite().getActionBars().getToolBarManager();
+		mgr.add(m_EnableSortAction);
         mgr.add(m_RefreshAction);
         mgr.add(m_CollapseAllAction);
         mgr.add(m_RescanAllAction);
@@ -183,7 +193,7 @@ public class HdlHierarchyPage extends Page implements ISelectionChangedListener,
 
 	public void setInput(Object input)
 	{
-		update();
+//		update();
 	}
 	
 	
@@ -280,25 +290,25 @@ public class HdlHierarchyPage extends Page implements ISelectionChangedListener,
 		
 	}
 	
-	public void update()
-	{
-		if (m_TreeViewer != null)
-		{
+	public void update() {
+		if (m_TreeViewer != null) {
+			if (enableSort)
+				m_TreeViewer.setSorter(new ViewerSorter());
+			else
+				m_TreeViewer.setSorter(null);
 			Control control = m_TreeViewer.getControl();
-			IDocument doc    = m_Editor.getDocument();
-			if (control != null && !control.isDisposed() && doc!=null)
-			{				
-				Object expanded[]=m_TreeViewer.getExpandedElements();
-				control.setRedraw(false);				
-				m_TreeViewer.setInput(doc);					
-				if(expanded.length >0){
+			IDocument doc = m_Editor.getDocument();
+			if (control != null && !control.isDisposed() && doc != null) {
+				Object expanded[] = m_TreeViewer.getExpandedElements();
+				control.setRedraw(false);
+				m_TreeViewer.setInput(doc);
+				if (expanded.length > 0) {
 					m_TreeViewer.setExpandedElements(expanded);
-				}
-				else{
+				} else {
 					m_TreeViewer.collapseAll();
 				}
 				control.setRedraw(true);
-			}			
+			}
 		}
 	}
 
@@ -360,7 +370,33 @@ public class HdlHierarchyPage extends Page implements ISelectionChangedListener,
 			}
 		}
 	}
-	
+
+	private class EnableSortAction extends Action {
+		public EnableSortAction() {
+			super();
+			setText("Sort");
+			setChecked(enableSort);
+		}
+
+		public void run() {
+			enableSort = !enableSort;
+			update();
+		}
+
+		public ImageDescriptor getImageDescriptor() {
+			return VerilogPlugin.getPlugin().getImageDescriptor(
+					ENABLE_SORT_ACTION_IMAGE);
+		}
+
+		public int getStyle() {
+			return AS_CHECK_BOX;
+		}
+
+		public String getToolTipText() {
+			return "Sort";
+		}
+	}
+
 	/**
 	 * Class used to perform the refresh action
 	 */
@@ -397,8 +433,17 @@ public class HdlHierarchyPage extends Page implements ISelectionChangedListener,
 				IStructuredSelection elements = (IStructuredSelection) m_Selection;
 				if (elements.size() == 1) {
 					Object element = elements.getFirstElement();
-					
-					if (element instanceof OutlineElement) {
+
+					if (element instanceof VerilogInstanceElement) {
+						VerilogInstanceElement instance = (VerilogInstanceElement) element;
+						OutlineDatabase database = getOutlineDatabase();
+						if (database != null) {
+							OutlineElement module = database.findDefinition(instance);
+							if (module != null)
+								m_Editor.showElement(module);
+						}
+
+					} else if (element instanceof OutlineElement) {
 						OutlineElement outlineElement = (OutlineElement) element;
 						m_Editor.showElement(outlineElement);
 					}
@@ -412,10 +457,10 @@ public class HdlHierarchyPage extends Page implements ISelectionChangedListener,
 			return VerilogPlugin.getPlugin().getImageDescriptor(GOTO_DEF_ACTION_IMAGE);
 		}
 	}
-	private class collapseAllAction extends Action	
+	private class CollapseAllAction extends Action	
 	{
 		private static final String COLLAPSE_ALL_ACTION_IMAGE="$nl$/icons/collapse_all.gif";
-		public collapseAllAction()
+		public CollapseAllAction()
 		{
 			super();
 			setText("Collapse All");
@@ -434,25 +479,19 @@ public class HdlHierarchyPage extends Page implements ISelectionChangedListener,
 			return "Collapse all";
 		}
 	}
-	private class rescanAllAction extends Action	
+	private class RescanAllAction extends Action	
 	{
 		private static final String COLLAPSE_ALL_ACTION_IMAGE="$nl$/icons/rescan.gif";
-		public rescanAllAction()
+		public RescanAllAction()
 		{
 			super();
 			setText("Rescan All");
 		}
 		public void run()
 		{
-			IProject project = m_Editor.getHdlDocument().getProject();
-			OutlineDatabase database=null;
-			try {
-				database = (OutlineDatabase)project.getSessionProperty(VerilogPlugin.getOutlineDatabaseId());
-				if(database != null) 
-					database.scanProject();
-			} catch (CoreException e) {			
-				e.printStackTrace();
-			}			
+			OutlineDatabase database = getOutlineDatabase();
+			if(database != null) 
+				database.scanProject();
 		}
 		public ImageDescriptor getImageDescriptor(){
 			return VerilogPlugin.getPlugin().getImageDescriptor(COLLAPSE_ALL_ACTION_IMAGE);
@@ -464,6 +503,22 @@ public class HdlHierarchyPage extends Page implements ISelectionChangedListener,
 			return "Rescan all HDL files";
 		}
 	}
+	
+	/**
+	 * utility function for getting OutlineDatabase
+	 */
+	private OutlineDatabase getOutlineDatabase() {
+		IProject project = m_Editor.getHdlDocument().getProject();
+		OutlineDatabase database = null;
+		try {
+			database = (OutlineDatabase) project
+					.getSessionProperty(VerilogPlugin.getOutlineDatabaseId());
+		} catch (CoreException e) {
+			return null;
+		}
+		return database;
+	}
+	
 	/**
 	 * Class used to copy the hierarchy
 	 */

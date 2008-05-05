@@ -64,8 +64,14 @@ public class VerilogPreferenceInitializer extends AbstractPreferenceInitializer
 		setDefaultAttr(preferences, "String", "00,00,128");
 		setDefaultAttr(preferences, "Default", "00,00,00");
 		setDefaultAttr(preferences, "KeyWord", "128,00,128", true);
+		setDefaultAttr(preferences, "Directive", "128,00,128", true);
 
 		preferences.setDefault("ContentAssist.ModuleParameter", false);
+		preferences.setDefault("ScanProject.Enable", true);
+		preferences.setDefault("Outline.Sort", false);
+		preferences.setDefault("Outline.FilterSignals", false);
+		preferences.setDefault("Outline.FilterPorts", false);
+		
 		preferences.setDefault("Compile.SaveBeforeCompile",true);
 		preferences.setDefault("Compile.command", "iverilog -tnull -y . -Wall");
 		

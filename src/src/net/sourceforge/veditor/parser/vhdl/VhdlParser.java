@@ -691,6 +691,11 @@ public class VhdlParser extends VhdlParserCore implements IParser
 		}
 		return 1;
 	}
+
+	public int getContext()
+	{
+		return 0;
+	}
 }
 
 

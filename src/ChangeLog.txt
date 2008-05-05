@@ -1,4 +1,13 @@
-﻿2007-06-10 tadashi-k
+﻿2008-05-05 tadashi-k
+	* Added Sort and Filter options in Outline and Hierarchy views
+	* Modify behavior of Go To Definition
+	* Added context dependent content assist
+	* Added Verilog directive scanner
+	* Fixed bugs about Verilog Content Assist
+	* Added option of scanning all files in the project
+	* Modify parsing Verilog comment
+	* Fixed bugs about parsing Verilog code
+2007-06-10 tadashi-k
 	* Fixed bugs about parsing compiler directives and case statement in Verilog
 	* Fixed bugs about parsing if statement in generate block
 	* Added Code Style preference page for Verilog code formatter

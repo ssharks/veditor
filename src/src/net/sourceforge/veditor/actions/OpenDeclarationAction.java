@@ -159,7 +159,18 @@ public class OpenDeclarationAction extends AbstractAction
 			editor.showElement(definitionList.get(0));
 		}
 		else if(definitionList.size() > 1){
-			showPopUp(definitionList, editor,selectionPos);
+			for(int i = 0; i < definitionList.size(); i++)
+			{
+				OutlineElement element = definitionList.get(i);
+				if (element.getType().equals("module#"))
+				{
+					editor.showElement(element);
+					return;
+				}
+			}
+			
+			// if module is not found, show popup
+			showPopUp(definitionList, editor, selectionPos);
 		}
 		
 	}

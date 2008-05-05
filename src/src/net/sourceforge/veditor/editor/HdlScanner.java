@@ -53,8 +53,10 @@ public class HdlScanner extends RuleBasedScanner
 			"tri1", "triand", "trior", "trireg", "unsigned", "vectoryd",
 			"wait", "wand", "weak0", "weak1", "while", "wire", "wor", "xnor",
 			"xor",
-			"generate", "endgenerate", "genvar", "localparam"
-			};
+			"generate", "endgenerate", "genvar", "localparam"};
+
+	private static final String[] verilogDirectives = { "`ifdef", "`else",
+			"`endif", "`if", "`define", "`undef", "`timescale", "`include" };
 
 	private static final String[] vhdlWords = { "abs", "access", "after",
 			"alias", "all", "and", "architecture", "array", "assert",
@@ -76,25 +78,19 @@ public class HdlScanner extends RuleBasedScanner
 	{
 		IToken keyword = new Token(HdlTextAttribute.KEY_WORD
 				.getTextAttribute(manager));
+		IToken directive = new Token(HdlTextAttribute.DIRECTIVE
+				.getTextAttribute(manager));
 		IToken other = new Token(HdlTextAttribute.DEFAULT
 				.getTextAttribute(manager));
 
 		List<IRule> rules = new ArrayList<IRule>();
 
-		WordRule wordRule = new WordRule(new IWordDetector()
-		{
-			public boolean isWordPart(char character)
-			{
-				return Character.isJavaIdentifierPart(character);
-			}
-			public boolean isWordStart(char character)
-			{
-				return Character.isJavaIdentifierStart(character);
-			}
-		}, other);
+		WordRule wordRule = new WordRule(new WordDetector(isVerilog), other);
 
 		if (isVerilog)
 		{
+			for (int i = 0; i < verilogDirectives.length; i++)
+				wordRule.addWord(verilogDirectives[i], directive);
 			for (int i = 0; i < verilogWords.length; i++)
 				wordRule.addWord(verilogWords[i], keyword);
 		}
@@ -112,6 +108,26 @@ public class HdlScanner extends RuleBasedScanner
 		IRule[] result = new IRule[rules.size()];
 		rules.toArray(result);
 		setRules(result);
+	}
+	
+	private static class WordDetector implements IWordDetector {
+
+		private boolean isVerilog;
+
+		public WordDetector(boolean isVerilog) {
+			this.isVerilog = isVerilog;
+		}
+
+		public boolean isWordPart(char character) {
+			return Character.isJavaIdentifierPart(character);
+		}
+
+		public boolean isWordStart(char character) {
+			if (isVerilog && character == '`')
+				return true;
+			return Character.isJavaIdentifierStart(character);
+		}
+
 	}
 }
 
