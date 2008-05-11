@@ -1,4 +1,7 @@
-﻿2008-05-05 tadashi-k
+﻿2008-05-11 tadashi-k
+	* Fixed bug that external files cannot be edited
+	* Fixed bug that files cannot be opened from Repository Exploring Perspective
+2008-05-05 tadashi-k
 	* Added Sort and Filter options in Outline and Hierarchy views
 	* Modify behavior of Go To Definition
 	* Added context dependent content assist

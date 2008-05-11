@@ -27,8 +27,7 @@
 
 	<property name="jar" value="veditor.jar"/>
 	<property name="project_version" value="${project}_${plugin_version}"/>
-	<property name="plugin_dir" value="plugins/${project_version}"/>
-	<property name="zip" value="${project_version}.zip"/>
+	<property name="zip" value="${project_version}.jar"/>
 
 	<path id="compile.classpath">
 		<fileset dir="${eclipse_plugin_dir}">
@@ -72,7 +71,9 @@
 			destdir="${dst}">
 			<classpath refid="compile.classpath"/>
 		</javac>
-		
+		<copy todir="${dst}" >
+			<fileset dir="${src}" includes="**/*.properties"/>
+		</copy>
 	</target>
 
 	<target name="jar" depends="compile">
@@ -84,17 +85,16 @@
 	
 	<target name="export" depends="jar">
 		<mkdir dir="plugins"/>
-		<mkdir dir="${plugin_dir}"/>
-		<copydir src="icons" dest="${plugin_dir}/icons"/>
-		<copydir src="templates" dest="${plugin_dir}/templates"/>
-		<copydir src="META-INF" dest="${plugin_dir}/META-INF"/>
-		<copy file="plugin.xml" todir="${plugin_dir}"/>
-		<copy file="about.html" todir="${plugin_dir}"/>
-		<copy file="${jar}" todir="${plugin_dir}"/>
+		<copydir src="icons" dest="plugins/icons"/>
+		<copydir src="templates" dest="plugins/templates"/>
+		<copydir src="META-INF" dest="plugins/META-INF"/>
+		<copy file="plugin.xml" todir="plugins"/>
+		<copy file="about.html" todir="plugins"/>
+		<copy file="${jar}" todir="plugins"/>
 		<zip
 			zipfile="${zip}"
-			basedir="."
-			includes="plugins/**">
+			basedir="plugins"
+			includes="**">
 		</zip>
 		<delete dir="plugins"/>
 	</target>
