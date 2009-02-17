@@ -18,6 +18,7 @@ import java.util.Vector;
 
 import net.sourceforge.veditor.VerilogPlugin;
 import net.sourceforge.veditor.parser.verilog.VerilogOutlineElementFactory.VerilogInstanceElement;
+import net.sourceforge.veditor.semanticwarnings.SemanticWarnings;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
@@ -199,6 +200,7 @@ public class OutlineDatabase {
 			} finally {
 				monitor.done();
 			}
+			SemanticWarnings.clearWarningsGenerated();
 			m_ScanState=ScanState.DONE;
 			return Status.OK_STATUS;
 		}
@@ -246,6 +248,7 @@ public class OutlineDatabase {
 		if (VerilogPlugin.getPreferenceBoolean("ScanProject.Enable")) {
 
 			Vector<IFile> files = getProjectFiles(m_Project);
+			VerilogPlugin.deleteMarkers(m_Project);
 			
 			if (m_ScanState != ScanState.IN_PROGRESS) {
 				ScanProjectJob job = new ScanProjectJob(files);
