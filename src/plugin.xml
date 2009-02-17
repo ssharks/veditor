@@ -243,7 +243,7 @@
             commandId="net.sourceforge.veditor.actions.Format">
       </key>
       <key
-            sequence="M1+0"
+            sequence="F7"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             contextId="net.sourceforge.veditor.scope"
             commandId="net.sourceforge.veditor.actions.Compile">
