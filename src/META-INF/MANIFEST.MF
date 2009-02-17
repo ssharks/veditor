@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Verilog/VHDL Plugin 
 Bundle-SymbolicName: net.sourceforge.veditor; singleton:=true
-Bundle-Version: 0.6.1
+Bundle-Version: 0.6.2
 Bundle-ClassPath: veditor.jar
 Bundle-Activator: net.sourceforge.veditor.VerilogPlugin
 Bundle-Vendor: tadashi
