@@ -56,7 +56,7 @@ public class CommentAction extends AbstractAction
 		}
 		
 		//some fancy foot work to replace the beginning of each line with the comment character
-		region = Pattern.compile("^",Pattern.MULTILINE).matcher(region).replaceAll(commentString+" ");
+		region = Pattern.compile("^",Pattern.MULTILINE).matcher(region).replaceAll(commentString);
 		
 		//replace the selection
 		widget.replaceTextRange(begin, end - begin, region.toString());
