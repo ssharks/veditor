@@ -95,39 +95,40 @@ public class VhdlInstanceCompletionProposal extends
 			//do the generics
 			if (obj[i] instanceof GenericElement) {
 				GenericElement generic = (GenericElement) obj[i];
-				generics += " \n       " + generic.getName() + " => "+generic.getName()+",";
+				generics += "\n " + generic.getName() + " => "+generic.getName()+",";
 			}
 			//do the ports
 			if (obj[i] instanceof VhdlPortElement) {
 				VhdlPortElement port = (VhdlPortElement) obj[i];
-				ports += "\n        " + port.getName() + " => "	
-					+ port.getName()+", --"+port.GetDirectionString();
+				ports += "\n " + port.getName() + " => "	
+					+ port.getName()+",";
 			}							
 		}
 		//assemble the replace string
 		replaceString += m_Element.getName();
 		//do we have any generics
 		if(generics.length() > 0){
-			replaceString+="\n    generic map(";					
+			replaceString+="\ngeneric map(";					
 			//trim the last comma
 			int lastComma=generics.lastIndexOf(',');
 			replaceString+=generics.substring(0, lastComma)+generics.substring(lastComma+1);					
-			replaceString+="\n    )";
+			replaceString+="\n)";
 		}
 		if(ports.length() > 0){
-			replaceString+="\n    port map(";					
+			replaceString+="\nport map(";					
 			//trim the last comma
 			int lastComma=ports.lastIndexOf(',');
 			replaceString+=ports.substring(0, lastComma)+ports.substring(lastComma+1);
-			replaceString+="\n    )";
+			replaceString+="\n)";
 		}
 		replaceString+=";";				
 		//align the string
 		replaceString = VerilogPlugin.alignOnChar(replaceString, '=', 1);				
-		replaceString = VerilogPlugin.alignOnChar(replaceString, ',', 1);
-		replaceString = VerilogPlugin.alignOnChar(replaceString, '-', 1);
-		// add the indent string				
-		return  replaceString.replace("\n", "\n" + getIndentString());		
+		// add the indent string
+		replaceString = replaceString.replace("\n ", "\n\t");
+		String indentationstring = VerilogPlugin.getIndentationString();	
+		replaceString = replaceString.replace("\t", indentationstring);
+		return  replaceString.replace("\n", "\n" + getIndentString());
 	}
 		
 	/**
