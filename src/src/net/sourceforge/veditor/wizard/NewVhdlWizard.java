@@ -11,6 +11,8 @@
 
 package net.sourceforge.veditor.wizard;
 
+import java.util.Calendar;
+
 import net.sourceforge.veditor.VerilogPlugin;
 import net.sourceforge.veditor.templates.VhdlGlobalContext;
 
@@ -38,11 +40,21 @@ public class NewVhdlWizard extends NewHdlWizard
 		Template[] templates = VerilogPlugin.getPlugin().getTemplateStore().getTemplates(VhdlGlobalContext.CONTEXT_TYPE);
 		for(Template template: templates){
 			if(NEW_FILE_TEMPLATE_NAME.equals(template.getName())){
-				results=template.getPattern().replaceAll("\\$\\{modulename\\}", moduleName);
+				results=template.getPattern();
 				break;
 			}
 		}
 		
+		results=results.replaceAll("\\$\\{modulename\\}", moduleName);
+		results=results.replaceAll("\\$\\{user\\}", System.getProperty("user.name"));
+		results=results.replaceAll("\\$\\{year\\}", Integer.toString(Calendar.getInstance().get(Calendar.YEAR)));
+		String month = Integer.toString(Calendar.getInstance().get(Calendar.MONTH)+1);
+		if(month.length()<2) month = "0"+month;
+		String day = Integer.toString(Calendar.getInstance().get(Calendar.DAY_OF_MONTH));
+		if(day.length()<2) day = "0"+day;
+		results=results.replaceAll("\\$\\{month\\}", month);
+		results=results.replaceAll("\\$\\{day\\}", day);
+
 		return results.toString();
 	}
 
