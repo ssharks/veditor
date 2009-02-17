@@ -167,6 +167,9 @@ abstract public class HdlCompletionProcessor implements IContentAssistProcessor
 		
 		//walk backwards to find the beginning of the word we are replacing
 		int beginning= offset;
+
+		String indentationstring = VerilogPlugin.getIndentationString();
+		
 		if (viewer.getDocument() instanceof HdlDocument) {
 			HdlDocument doc = (HdlDocument) viewer.getDocument();
 				
@@ -202,6 +205,10 @@ abstract public class HdlCompletionProcessor implements IContentAssistProcessor
 			//find a matching template
 			for (int i= 0; i < templates.length; i++) {
 				Template template= templates[i];
+				String pattern = template.getPattern();
+				pattern = pattern.replace("\t", indentationstring);
+				template.setPattern(pattern);
+				
 				try {
 					contextType.validate(template.getPattern());
 				} catch (TemplateException e) {
