@@ -401,5 +401,26 @@ public class VerilogPlugin extends AbstractUIPlugin
 		}
 		return results;
 	}
+
+	public static void deleteMarkers(IResource project) {
+		try {
+			project.deleteMarkers(VerilogPlugin.MARKER_TYPE, true, IResource.DEPTH_INFINITE);
+		} catch (CoreException e) {
+		}
+	}
+
+	public static String getIndentationString() {
+		String indentationstring = "";
+		if (VerilogPlugin.getPreferenceString("Style.indent").equals("Tab"))
+			indentationstring = "\t";
+		else
+		{
+			int size = Integer.parseInt(VerilogPlugin.getPreferenceString("Style.indentSize"));
+			for(int i=0;i<size;i++){
+				indentationstring+=" ";
+			}		
+		}
+		return indentationstring;
+	}
 }
 
