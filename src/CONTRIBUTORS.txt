@@ -2,3 +2,4 @@
 Øyvind Harboe - various odd bugfixes to VHDL and update site.
 Ken Horn - bugfixes
 Ali Ghorashi - Bug Fixes, Block Comment/Uncomment, templates, and other features
+Stijn Last - VHDL Feature improvements
