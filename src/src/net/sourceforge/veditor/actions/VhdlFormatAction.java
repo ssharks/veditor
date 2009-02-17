@@ -142,9 +142,19 @@ public class VhdlFormatAction extends AbstractAction {
 	private HashMap<Integer,Integer> computeIndentation(ArrayList<Token> tokens){
 		HashMap<Integer,Integer> results=new HashMap<Integer,Integer>();
 		//compute indentation
+		
+		// when has another meaning when it is used inside or outside a case
+		// we keep a counter whether we are in a case structure or not
+		// (cases can be nested)
+		int incase = 0;
 		for(int i=0;i < tokens.size();i++){
 			Token token=tokens.get(i);
 			switch(token.kind){
+			case VhdlParserCoreTokenManager.CASE:
+				adjustLineIndentValue(results,token.beginLine+1, +2);
+				incase++;
+				i = skipTo("is", tokens,i+1);
+				break;
 			case VhdlParserCoreTokenManager.TYPE:
 				int EOS=skipTo(";", tokens, i+1);
 				int record=skipTo("record", tokens, i+1);
@@ -158,12 +168,16 @@ public class VhdlFormatAction extends AbstractAction {
 				}
 				break;
 			case VhdlParserCoreTokenManager.ATTRIBUTE:
+			case VhdlParserCoreTokenManager.ALIAS:
 			case VhdlParserCoreTokenManager.FILE:
+			case VhdlParserCoreTokenManager.SUBTYPE:
 				//These tokens break the "indent after 'is'" rule. If
 				//One is encountered, just skip to EOS
 				i=skipTo(";", tokens, i+1);
 				break;
-			
+			case VhdlParserCoreTokenManager.BLOCK:
+			case VhdlParserCoreTokenManager.PROCESS:
+			case VhdlParserCoreTokenManager.GENERATE:
 			case VhdlParserCoreTokenManager.IS:
 			case VhdlParserCoreTokenManager.LOOP:
 			case VhdlParserCoreTokenManager.THEN:
@@ -178,6 +192,9 @@ public class VhdlFormatAction extends AbstractAction {
 				results.put(token.beginLine+1, +1);
 				break;
 			case VhdlParserCoreTokenManager.END:
+				if(i<tokens.size()-1 && tokens.get(i+1).kind==VhdlParserCoreTokenManager.CASE) {
+					if(incase>0) incase--;
+				}
 				adjustLineIndentValue(results,token.beginLine, -1);
 				//skip to eos
 				i=skipTo(";", tokens, i+1);				
@@ -192,8 +209,11 @@ public class VhdlFormatAction extends AbstractAction {
 					results.put(tokens.get(i).beginLine+1, -1);
 				}
 				break;
+			case VhdlParserCoreTokenManager.PROCEDURE:
+			case VhdlParserCoreTokenManager.FUNCTION:
 			case VhdlParserCoreTokenManager.PORT:
 			case VhdlParserCoreTokenManager.GENERIC:
+				adjustLineIndentValue(results,tokens.get(i).beginLine, 0);
 				int openParan=skipTo("(", tokens, i+1);
 				int closeParan=skipToCloseParan(tokens, openParan+1);
 				//did we find what we were looking for?
@@ -215,24 +235,13 @@ public class VhdlFormatAction extends AbstractAction {
 				i=closeParan;
 				break;
 			case VhdlParserCoreTokenManager.WHEN:
-				int rightArrow=skipTo("=>", tokens, i+1);				
-				// find the arrow
-				if (rightArrow == tokens.size()){
-					break;
+				if(incase>0) {
+					adjustLineIndentValue(results,token.beginLine, -1);
+					adjustLineIndentValue(results,token.beginLine+1, +1);
+				} else {
+					// ... <= ... when ... else ...;
+					i=skipTo(";", tokens, i+1);
 				}
-				//indent after the arrow
-				results.put(tokens.get(rightArrow).beginLine+1, +1);
-				int nextWhen=skipTo("when", tokens, rightArrow+1);
-				if (nextWhen == tokens.size()){
-					//if no other whens are found try to find the next end
-					nextWhen = skipTo("end", tokens, rightArrow+1);
-				}
-				//if no end and no when are found, then we are lost
-				if (nextWhen == tokens.size()){
-					i=nextWhen;
-					break;
-				}
-				adjustLineIndentValue(results,tokens.get(nextWhen).beginLine, -1);
 				break;
 			default:				
 				break;
@@ -278,7 +287,21 @@ public class VhdlFormatAction extends AbstractAction {
 					}									
 				}
 			}
-			lines[lineNum]=currentIndent+lines[lineNum].trim();
+			
+			String prevline = lineNum>0?lines[lineNum-1]:"";
+			// trim comment at the end of the line:
+			int indexcomment=prevline.indexOf("--");
+			if(indexcomment>=0) prevline = prevline.substring(0,indexcomment).trim();
+			
+			// sometimes statements are written over multiple lines
+			// in that case, only adjust the furst line.			
+			boolean linecontinuation =
+				!lineIndentation.containsKey(lineNum+1) &&//lineIndentation starts counting at 0!
+				!prevline.endsWith(",") &&
+				!prevline.endsWith(";") &&
+				prevline.trim().length()!=0;
+			if(!lines[lineNum].trim().startsWith("--") && !linecontinuation)
+				lines[lineNum]=currentIndent+lines[lineNum].trim();
 		}
 		//reassemble the lines
 		StringBuffer buffer=new StringBuffer();
