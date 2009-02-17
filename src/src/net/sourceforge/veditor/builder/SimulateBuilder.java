@@ -60,7 +60,11 @@ public class SimulateBuilder extends IncrementalProjectBuilder
 			else{
 				folder = project.getFolder(buildConfig.getWorkFolder());
 			}
-			//print a banner			
+			
+			VerilogPlugin.deleteMarkers(project);
+			
+			//print a banner
+			VerilogPlugin.clear();		
 			VerilogPlugin.println("----------------------------------------");
 			VerilogPlugin.println("veditor using \"" + buildConfig.getName() + 
 					"\" in \"" 
