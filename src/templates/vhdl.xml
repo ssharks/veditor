@@ -5,20 +5,6 @@
 	autoinsert="false" 
 	context="net.sourceforge.veditor.templates.vhdl.context.global" 
 	deleted="false" 
-	description="This is a special template that is used to create new files. Do not change its name or its context" 
-	enabled="true" 
-	id="net.sourceforge.veditor.templates.vhdl.newFile"
-	name="NewFile">--
--- ${modulename}
---
-library ieee;
-use ieee.std_logic_1164.all;
-</template>
-
-<template 
-	autoinsert="false" 
-	context="net.sourceforge.veditor.templates.vhdl.context.global" 
-	deleted="false" 
 	description="Defines an architecture block" 
 	enabled="true" 
 	id="net.sourceforge.veditor.templates.vhdl.architecture"
@@ -39,7 +25,8 @@ end architecture  ${name};
 -- Author: ${user}&#13;
 --&#13;
 entity ${name} is
-	port( ${cursor}
+	port(
+		${cursor}
 	);
 end entity ${name};
 </template>
@@ -52,7 +39,7 @@ end entity ${name};
 	id="net.sourceforge.veditor.templates.vhdl.port" 
 	enabled="true" 
 	name="port">port (
-	
+	${cursor}
 );
 </template>
 
@@ -77,7 +64,7 @@ end package ${name};
 	deleted="false" 
 	enabled="true">package body ${name} is
 	${cursor}
-	end package body ${name};
+end package body ${name};
 </template>
 
 <template
@@ -88,21 +75,8 @@ end package ${name};
 	context="net.sourceforge.veditor.templates.vhdl.context.global" 
 	deleted="false" 
 	enabled="true">component ${name} is
-		${cursor}	
-	end component ${name};
-</template>
-
-<template 
-	autoinsert="false" 
-	context="net.sourceforge.veditor.templates.vhdl.context.global" 
-	deleted="false" 
-	description="Define a process"
-	id="net.sourceforge.veditor.templates.vhdl.process" 
-	enabled="true" 
-	name="process">process ${name} is
-	begin
-		${cursor}
-	end process ${name};
+	${cursor}	
+end component ${name};
 </template>
 
 <template 
@@ -123,310 +97,4 @@ architecture Test of test_bench is
 	${cursor}
 end architure Test;
 </template>
-
-<template 
-	autoinsert="false" 
-	context="net.sourceforge.veditor.templates.vhdl.context.global" 
-	deleted="false" 
-	description="Define a process with sensitivity list"
-	id="net.sourceforge.veditor.templates.vhdl.processws" 
-	enabled="true" 
-	name="process">${name}: process(${sens})
-begin
-	${cursor}
-end process;
-</template>
-
-<template 
-	autoinsert="false" 
-	context="net.sourceforge.veditor.templates.vhdl.context.global" 
-	deleted="false" 
-	description="Define a process without sensitivity list"
-	id="net.sourceforge.veditor.templates.vhdl.processwos" 
-	enabled="true" 
-	name="process">${name}: process
-begin
-	${cursor}
-end process;
-</template>
-
-<template 
-	autoinsert="false" 
-	context="net.sourceforge.veditor.templates.vhdl.context.global" 
-	deleted="false" 
-	description="Define a clocked process with async. reset"
-	id="net.sourceforge.veditor.templates.vhdl.processcar" 
-	enabled="true" 
-	name="process">${name}: process(${clk},${rst})
-begin
-	if ${rst}='${rst_level}' then
-		${cursor}
-	elsif ${clk}'event and ${clk}='${level}' then
-		
-	end if;
-end process;
-</template>
-
-<template 
-	autoinsert="false" 
-	context="net.sourceforge.veditor.templates.vhdl.context.global" 
-	deleted="false" 
-	description="Define a clocked process with sync. reset"
-	id="net.sourceforge.veditor.templates.vhdl.processcsr" 
-	enabled="true" 
-	name="process">${name}: process(${clk},${rst})
-begin
-	if ${clk}'event and ${clk}='${level}' then
-		if ${rst}='${rst_level}' then
-		
-		else
-		
-		end if;
-	end if;
-end process;
-</template>
-
-<template 
-	autoinsert="false" 
-	context="net.sourceforge.veditor.templates.vhdl.context.global" 
-	deleted="false" 
-	description="Define a configuration"
-	id="net.sourceforge.veditor.templates.vhdl.configuration" 
-	enabled="true" 
-	name="configuration">configuration ${name} of ${entity_name} is
-	for STRUCT
-		for ${component_name} : ${components_entity} 
-			use entity ${library}.${components_entity}(${architecture});
-		end for;
-	end for;
-end ${name};
-</template>
-
-<template 
-	autoinsert="false" 
-	context="net.sourceforge.veditor.templates.vhdl.context.global" 
-	deleted="false" 
-	description="Use a if-elsif-else-statement"
-	id="net.sourceforge.veditor.templates.vhdl.ifelsifelse" 
-	enabled="true" 
-	name="if">if ${condition1} then
-	
-	elsif ${condition2} then
-	
-	else
-	
-	end if;
-</template>
-
-<template 
-	autoinsert="false" 
-	context="net.sourceforge.veditor.templates.vhdl.context.global" 
-	deleted="false" 
-	description="Use a case-statement"
-	id="net.sourceforge.veditor.templates.vhdl.case" 
-	enabled="true" 
-	name="case">case ${expression} is
-	when ${value} =&gt; ${cursor}
-	when others =&gt; 
-end case;
-</template>
-
-<template 
-	autoinsert="false" 
-	context="net.sourceforge.veditor.templates.vhdl.context.global" 
-	deleted="false" 
-	description="Use a for loop"
-	id="net.sourceforge.veditor.templates.vhdl.for" 
-	enabled="true" 
-	name="for">${name}: for ${var} in ${start} to ${end} loop
-	
-end loop;
-</template>
-
-<template 
-	autoinsert="false" 
-	context="net.sourceforge.veditor.templates.vhdl.context.global" 
-	deleted="false" 
-	description="Wait for a constant time"
-	id="net.sourceforge.veditor.templates.vhdl.waitfor" 
-	enabled="true" 
-	name="wait">wait for ${time};
-</template>
-
-<template 
-	autoinsert="false" 
-	context="net.sourceforge.veditor.templates.vhdl.context.global" 
-	deleted="false" 
-	description="Wait on a signals event"
-	id="net.sourceforge.veditor.templates.vhdl.waiton" 
-	enabled="true" 
-	name="wait">wait on ${signal};
-</template>
-
-<template 
-	autoinsert="false" 
-	context="net.sourceforge.veditor.templates.vhdl.context.global" 
-	deleted="false" 
-	description="Wait until condition is true"
-	id="net.sourceforge.veditor.templates.vhdl.waituntil" 
-	enabled="true" 
-	name="wait">wait until ${condition};
-</template>
-
-<template 
-	autoinsert="false" 
-	context="net.sourceforge.veditor.templates.vhdl.context.global" 
-	deleted="false" 
-	description="Declare a variable"
-	id="net.sourceforge.veditor.templates.vhdl.vardec" 
-	enabled="true" 
-	name="variable">variable ${name} : ${type};
-</template>
-
-<template 
-	autoinsert="false" 
-	context="net.sourceforge.veditor.templates.vhdl.context.global" 
-	deleted="false" 
-	description="Use a with-select-statement"
-	id="net.sourceforge.veditor.templates.vhdl.withselect" 
-	enabled="true" 
-	name="with">with ${signal} select
-	${Target_Signal} &lt;= ${value1} when ${signal_value},
-	${value2} when others;
-</template>
-
-<template 
-	autoinsert="false" 
-	context="net.sourceforge.veditor.templates.vhdl.context.global" 
-	deleted="false" 
-	description="Define a function"
-	id="net.sourceforge.veditor.templates.vhdl.function" 
-	enabled="true" 
-	name="function">function ${func_name}(${parameter}:${par_type}) return ${ret_type} is
-	variable ${ret_name} : ${ret_type};
-	begin
-	
-	return ${ret_name};
-end ${func_name};
-</template>
-
-<template 
-	autoinsert="false" 
-	context="net.sourceforge.veditor.templates.vhdl.context.global" 
-	deleted="false" 
-	description="Define a procedure"
-	id="net.sourceforge.veditor.templates.vhdl.procedure" 
-	enabled="true" 
-	name="procedure">procedure ${name}(${parameter1}:${mode1} ${type1};${parameter2}:${mode2} ${type2}) is
-	begin
-	
-	end ${name};
-</template>
-
-<template 
-	autoinsert="false" 
-	context="net.sourceforge.veditor.templates.vhdl.context.global" 
-	deleted="false" 
-	description="Define a enumeration-type"
-	id="net.sourceforge.veditor.templates.vhdl.typeenum" 
-	enabled="true" 
-	name="type">type ${t_name} is (${value1},${value2});
-</template>
-
-<template 
-	autoinsert="false" 
-	context="net.sourceforge.veditor.templates.vhdl.context.global" 
-	deleted="false" 
-	description="Define a array-type"
-	id="net.sourceforge.veditor.templates.vhdl.typearray" 
-	enabled="true" 
-	name="type">type ${t_name} is array(${start} downto ${end}) of ${element_type};
-</template>
-
-<template 
-	autoinsert="false" 
-	context="net.sourceforge.veditor.templates.vhdl.context.global" 
-	deleted="false" 
-	description="Define a two dim. array-type"
-	id="net.sourceforge.veditor.templates.vhdl.typearray2d" 
-	enabled="true" 
-	name="type">type ${t_name} is array(${start1} downto ${end1},${start2} downto ${end2}) of ${element_type};
-</template>
-
-<template 
-	autoinsert="false" 
-	context="net.sourceforge.veditor.templates.vhdl.context.global" 
-	deleted="false" 
-	description="Define a record-type"
-	id="net.sourceforge.veditor.templates.vhdl.record" 
-	enabled="true" 
-	name="type">type ${t_name} is record
-	${element_name1} : ${element_type1};
-	${element_name2}:${element_type2};
-end record;
-</template>
-
-<template 
-	autoinsert="false" 
-	context="net.sourceforge.veditor.templates.vhdl.context.global" 
-	deleted="false" 
-	description="Define a sub-type"
-	id="net.sourceforge.veditor.templates.vhdl.subtype" 
-	enabled="true" 
-	name="subtype">subtype ${t_name} is ${type};
-</template>
-
-<template 
-	autoinsert="false" 
-	context="net.sourceforge.veditor.templates.vhdl.context.global" 
-	deleted="false" 
-	description="Define a alias"
-	id="net.sourceforge.veditor.templates.vhdl.alias" 
-	enabled="true" 
-	name="alias">alias ${name}:${type} is ${destination};
-</template>
-
-<template 
-	autoinsert="false" 
-	context="net.sourceforge.veditor.templates.vhdl.context.global" 
-	deleted="false" 
-	description="Use a for-generate-statement"
-	id="net.sourceforge.veditor.templates.vhdl.forgen" 
-	enabled="true" 
-	name="for">${label}: for ${var} in ${start} to ${end} generate
-	
-end generate;
-</template>
-
-<template 
-	autoinsert="false" 
-	context="net.sourceforge.veditor.templates.vhdl.context.global" 
-	deleted="false" 
-	description="Use a transport delay"
-	id="net.sourceforge.veditor.templates.vhdl.transport" 
-	enabled="true" 
-	name="transport">transport ${value} after ${time};
-</template>
-
-<template 
-	autoinsert="false" 
-	context="net.sourceforge.veditor.templates.vhdl.context.global" 
-	deleted="false" 
-	description="Use a inertial delay"
-	id="net.sourceforge.veditor.templates.vhdl.inertial" 
-	enabled="true" 
-	name="reject">reject ${time1} inertial ${value} after ${time};
-</template>
-
-
-<!--
-		new Template("package","",ID,"package ${name} is\n\t\nend ${name};\n\npackage body ${name} is\n\nend ${name};",true)
-		new Template("entity","",ID,"entity ${name} is\ngeneric();\nport();\nend ${name}",true),
-		new Template("architecture","",ID,"architecture ${RTL} of ${entity_name} is\n\nbegin\n\nend ${RTL}",true),
-		new Template("entity architecture pair","",ID,"entity ${entity_name} is\ngeneric();\nport();\nend ${entity_name}\n\narchitecture ${RTL} of ${entity_name} is\n\nbegin\n\nend ${RTL}",true),
-		new Template("component declaration","",ID,"component ${entity_name}\ngeneric();\nport();\nend component;",true),
-		new Template("component instantiation","",ID,"${name}: ${entity_name}\ngeneric map()\nport map();",true),
-		new Template("wait forever","",ID,"wait;",true),
--->
-
 </templates>
