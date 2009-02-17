@@ -19,7 +19,18 @@ public class ASTsubtype_indication extends SimpleNode {
   }
   
   public String getIdentifier(){
-	  ASTname astName=(ASTname)getChild(0);
-	  return ((ASTidentifier)(astName.getChild(0))).name;
+	  //ASTname astName=(ASTname)getChild(0);
+	  //return ((ASTidentifier)(astName.getChild(0))).name;
+	  
+	  String completetype = "";
+	  Token curtoken = getFirstToken();
+	  if(curtoken!=null) {
+		  completetype = curtoken.toString();
+		  while(curtoken!=getLastToken() && curtoken.next!=null) {
+			  curtoken = curtoken.next;
+			  completetype = completetype + " " +curtoken.toString();
+		  }
+	  }
+	  return completetype;
   }
 }
