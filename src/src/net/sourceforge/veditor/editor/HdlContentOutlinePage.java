@@ -13,6 +13,8 @@ package net.sourceforge.veditor.editor;
 
 
 import net.sourceforge.veditor.VerilogPlugin;
+import net.sourceforge.veditor.editor.VhdlHierarchyProvider;
+import net.sourceforge.veditor.document.VhdlDocument;
 import net.sourceforge.veditor.parser.OutlineElement;
 import net.sourceforge.veditor.parser.verilog.VerilogOutlineElementFactory.VerilogFunctionElement;
 import net.sourceforge.veditor.parser.verilog.VerilogOutlineElementFactory.VerilogInstanceElement;
@@ -45,8 +47,11 @@ import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.viewers.DoubleClickEvent;
+import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
@@ -58,7 +63,7 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.ui.views.contentoutline.ContentOutlinePage;
 
-public class HdlContentOutlinePage extends ContentOutlinePage
+public class HdlContentOutlinePage extends ContentOutlinePage implements IDoubleClickListener
 {
 	private HdlEditor editor;
 	private static final String FILTER_SIGNAL_ACTION_IMAGE="$nl$/icons/filter_signal.gif";
@@ -84,6 +89,7 @@ public class HdlContentOutlinePage extends ContentOutlinePage
 		viewer.setContentProvider(new HdlContentOutlineProvider());
 		viewer.setLabelProvider(editor.getOutlineLabelProvider());
 		viewer.addSelectionChangedListener(this);
+		viewer.addDoubleClickListener(this);
 		viewer.addFilter(new SignalFilter());
 		viewer.addFilter(new PortFilter());
 		if (enableSort) {
@@ -138,6 +144,46 @@ public class HdlContentOutlinePage extends ContentOutlinePage
 				(OutlineElement) ((IStructuredSelection)selection).getFirstElement();			
 					
 			editor.showElement(outlineElement);						
+		}
+	}
+
+	public void doubleClick(DoubleClickEvent event)
+	{
+		//VerilogPlugin.println("doubleclicked in ContentPage\n");
+		ISelection selection = event.getSelection();
+		//VerilogPlugin.println("selection "+selection.toString());
+		
+		if (selection instanceof IStructuredSelection)
+		{
+			IStructuredSelection elements = (IStructuredSelection)selection;
+			if (elements.size() == 1)
+			{
+				Object element = elements.getFirstElement();
+				//VerilogPlugin.println("element "+element.toString());
+				if (element instanceof OutlineElement) {
+					OutlineElement outlineElement = (OutlineElement) element;
+					
+					//VerilogPlugin.println("outlineElement "+outlineElement.toString());
+					
+					//ITreeContentProvider prov = editor.getHirarchyProvider();
+					ITreeContentProvider prov = HdlEditor.current().getHirarchyProvider();
+					
+					if(prov instanceof VhdlHierarchyProvider) {
+						String componenttype = outlineElement.getType();
+						((VhdlHierarchyProvider)(prov)).scanOutline(new VhdlDocument(editor.getHdlDocument().getProject(),outlineElement.getFile()));
+						//VerilogPlugin.println("VhdlHierarchyProvider!!! "+ componenttype);
+						if(componenttype.startsWith("componentInst#")) {
+							componenttype = componenttype.substring(14);
+							//VerilogPlugin.println("comptype: "+ componenttype);
+							ArchitectureElement el = ((VhdlHierarchyProvider)(prov)).getArchElement(componenttype);
+							if(el!=null) {
+								//VerilogPlugin.println("showelement "+el);
+								editor.showElement(el);
+							}
+						}
+					}
+				}
+			}
 		}
 	}
 	
