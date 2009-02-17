@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import net.sourceforge.veditor.VerilogPlugin;
 import net.sourceforge.veditor.document.HdlDocument;
 import net.sourceforge.veditor.document.VhdlDocument;
 import net.sourceforge.veditor.editor.completionProposals.HdlTemplateProposal;
@@ -31,6 +32,8 @@ import net.sourceforge.veditor.parser.vhdl.VhdlOutlineElementFactory.PackageDecl
 import net.sourceforge.veditor.parser.vhdl.VhdlOutlineElementFactory.VhdlOutlineElement;
 import net.sourceforge.veditor.parser.vhdl.VhdlOutlineElementFactory.VhdlSignalElement;
 import net.sourceforge.veditor.parser.vhdl.VhdlOutlineElementFactory.VhdlSubprogram;
+import net.sourceforge.veditor.parser.vhdl.VhdlOutlineElementFactory.GenericElement;
+import net.sourceforge.veditor.parser.vhdl.VhdlOutlineElementFactory.VhdlPortElement;
 import net.sourceforge.veditor.templates.VhdlGlobalContext;
 
 import org.eclipse.core.resources.IFile;
@@ -115,10 +118,119 @@ public class VhdlCompletionProcessor extends HdlCompletionProcessor {
 					}
 				}
 			}
+			
+			for (int i = 0; i < elements.length; i++) {
+				if(elements[i] instanceof VhdlOutlineElement) {
+					String name = elements[i].getName();
+					if(name.startsWith("tb_")) continue;
+					if(isMatch(replace, "tb_"+name)) {
+						matchList.add(createTestBench(doc,(VhdlOutlineElement)elements[i],offset,length));
+					}
+				}
+			}
 		}
 
 		return matchList;
 	}
+	
+	private IComparableCompletionProposal createTestBench(HdlDocument doc, VhdlOutlineElement mod, int offset, int length) {
+		String modname = mod.toString();
+		
+		String first = ""
+		+ "library ieee;\n"
+		+ "use ieee.std_logic_1164.all;\n"
+		+ "use ieee.std_logic_arith.all;\n"
+		+ "library std;\n"
+		+ "use std.textio.all;\n"	
+		+ "library work;\n"
+		+ "use work."+modname+"PCK.all;\n\n"
+		+ "entity tb_"+modname+" is\n"
+		+ "end tb_"+modname+";\n\n"
+		+ "architecture behav of tb_"+modname+" is\n";
+
+		//Object[] ports = mod.getPorts();
+		
+		OutlineElement[] ports = mod.getChildren();
+		String second = "";
+		
+		for (int i = 0; i < ports.length; i++)
+		{
+			if (!(ports[i] instanceof GenericElement)) continue;
+			String port = ports[i].getName();
+			String type = ports[i].getType(); // = port#in#std_logic			
+			String[] typesplit = type.split("#");
+			if(typesplit.length!=2) continue;
+			if(typesplit[0].compareToIgnoreCase("generic")!=0) continue;
+			second = second + ( "\tconstant " + port + " : " + typesplit[1] + " := ;\n" );
+		}		
+		
+		for (int i = 0; i < ports.length; i++)
+		{
+			if (!(ports[i] instanceof VhdlPortElement)) continue;
+			String port = ports[i].getName();
+			String type = ports[i].getType(); // = port#in#std_logic			
+			String[] typesplit = type.split("#");
+			if(typesplit.length!=3) continue;
+			if(typesplit[0].compareToIgnoreCase("port")!=0) continue;
+			second = second + ( "\tsignal " + port + " : " + typesplit[2] + ";\n" );
+		}
+
+		String third = ""
+		+ "begin\n"
+		+ "\n\n\n"
+		+ "\tprocess\n"
+		+ "\tbegin\n"
+		+ "\t\tif (clk='0') then\n"
+		+ "\t\t\tclk <= '1';\n"
+		+ "\t\telse\n"
+		+ "\t\t\tclk <= '0';\n"
+		+ "\t\tend if;\n"
+		+ "\t\twait for 5 ns; --100Mhz\n"
+		+ "\tend process;\n"		
+		+ "\n\n\n"
+		
+		+ "\tprocess\n"
+		+ "\tbegin\n"
+		+ "\t\t--create a synchronous reset:\n"
+		+ "\t\treset <='1';\n"
+		+ "\t\twait for 1 us;\n"
+		+ "\t\twait until rising_edge(clk);\n"
+		+ "\t\treset <='0';\n"
+		+ "\n\n\n"
+		+ "\t\twait for 20 us;\n"
+		+ "\t\tassert false report \"Simulation done\" severity failure;\n"
+		+ "\t\twait;\n"
+		+ "\tend process;\n"			
+		+ "\n\n\n"
+	
+		+ "\tprocess\n"
+		+ "\t\tvariable myline : line;\n"
+		+ "\tbegin\n"
+		+ "\t\twait for 10 us;\n"
+		+ "\t\twrite(myline, now, right , 0, us);\n"
+		+ "\t\twriteline(std.textio.output, myline);\n"
+		+ "\t\tassert now < 100 us report \"Error: Time overflow\" severity failure;\n"
+		+ "\tend process;\n"
+	
+		+ "\n\n\n"
+		+ "\ti_dut: ";
+		
+		VhdlInstanceCompletionProposal prop = new VhdlInstanceCompletionProposal(doc, mod, offset, length);
+		String forth = prop.getReplaceString();
+		forth = forth.replace("\n", "\n\t");
+		String fifth = "\n\n\nend behav;\n";
+		
+		String indentationstring = VerilogPlugin.getIndentationString();	
+		first = first.replace("\t", indentationstring);
+		second = second.replace("\t", indentationstring);
+		third = third.replace("\t", indentationstring);
+		forth = forth.replace("\t", indentationstring);
+		fifth = fifth.replace("\t", indentationstring);
+		
+		return getCompletionProposal(first + second + third + forth + fifth, offset, length, first
+				.length() + second.length() + third.length() , "tb_"+modname);
+	}
+
 	
 	private void addEnityIntface(HdlDocument doc,String entityName, int offset, int length,
 			String replace,IFile file, List<IComparableCompletionProposal> matchList){
