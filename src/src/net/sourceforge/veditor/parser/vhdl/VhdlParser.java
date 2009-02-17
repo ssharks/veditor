@@ -11,7 +11,9 @@
 
 package net.sourceforge.veditor.parser.vhdl;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.Reader;
 
 import net.sourceforge.veditor.VerilogPlugin;
@@ -22,9 +24,11 @@ import net.sourceforge.veditor.parser.OutlineDatabase;
 import net.sourceforge.veditor.parser.OutlineElementFactory;
 import net.sourceforge.veditor.parser.OutlineContainer.Collapsible;
 import net.sourceforge.veditor.parser.vhdl.VhdlParserCore;
+import net.sourceforge.veditor.semanticwarnings.SemanticWarnings;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.CoreException;
 
 /**
  * implementation class of VhdlParserCore<p/>
@@ -90,8 +94,44 @@ public class VhdlParser extends VhdlParserCore implements IParser
 			//clear the tree
 			m_OutlineContainer.clear();
 			//start by looking for a design file entity;
-			ASTdesign_file designFile=design_file();
-			updateOutline(designFile);			
+
+			boolean ignorefile = false;
+			int filesize=0;
+			{
+				InputStreamReader reader;
+				try {
+					reader = new InputStreamReader(m_File.getContents());
+					BufferedReader breader = new BufferedReader(reader);
+					
+					try {
+						while(true) {
+							String line = breader.readLine();
+							if(line==null) {
+								break;
+							}
+							filesize+=line.length();
+							if(line.contains("-- turn off superfluous VHDL processor warnings")) {
+								ignorefile=true;
+							}
+						}
+					} catch(IOException e) {
+						ignorefile=true;	
+					}
+				} catch (CoreException e1) {
+					ignorefile=true;
+				}
+			}
+			
+			if(!ignorefile && filesize < 500000) {
+				ASTdesign_file designFile=design_file();
+				updateOutline(designFile);
+				SemanticWarnings warn = new SemanticWarnings(m_File);
+				warn.check(designFile);
+			} else {
+				ASTdesign_file designFile=new ASTdesign_file(JJTDESIGN_FILE);
+				updateOutline(designFile);
+			}
+			
 		}
 		catch (ParseException e){
 			//convert the exception to a generic one			
@@ -320,6 +360,10 @@ public class VhdlParser extends VhdlParserCore implements IParser
 			childNum += examineDecl(node);
 		} else if (node instanceof ASTconstant_declaration) {
 			childNum += examineDecl(node);
+		} else if (node instanceof ASTblock_statement) {
+			bIsCollapsible = true;
+		} else if (node instanceof ASTprocess_statement) {
+			bIsCollapsible = true;
 		}
 
 		// add the begin clause
