@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates>
+
+
+<template
+	autoinsert="true"
+	context="net.sourceforge.veditor.templates.vhdl.context.global"
+	deleted="false"
+	description=""
+	enabled="true"
+	name="constant"
+>constant</template>	
+
+<template
+	autoinsert="true"
+	context="net.sourceforge.veditor.templates.vhdl.context.global"
+	deleted="false"
+	description=""
+	enabled="true"
+	name="signal"
+>signal</template>
+
+<template
+	autoinsert="true"
+	context="net.sourceforge.veditor.templates.vhdl.context.global"
+	deleted="false"
+	description=""
+	enabled="true"
+	name="std_logic"
+>std_logic</template>
+
+<template
+	autoinsert="true"
+	context="net.sourceforge.veditor.templates.vhdl.context.global"
+	deleted="false"
+	description=""
+	enabled="true"
+	name="std_logic_vector"
+>std_logic_vector(${cursor} downto 0);</template>
+
+<template
+	autoinsert="true"
+	context="net.sourceforge.veditor.templates.vhdl.context.global"
+	deleted="false"
+	description=""
+	enabled="true"
+	name="conv_std_logic_vector"
+>conv_std_logic_vector($cursor},${size});</template>
+
+
+<template
+	autoinsert="true"
+	context="net.sourceforge.veditor.templates.vhdl.context.global"
+	deleted="false"
+	description="(others=>'0')"
+	enabled="true"
+	name="others"
+>(others=>'0')</template>
+
+
+<template
+	autoinsert="false"
+	context="net.sourceforge.veditor.templates.vhdl.context.global"
+	deleted="false"
+	description="Create asynchronous process"
+	enabled="true"
+	id="net.sourceforge.veditor.templates.vhdl.process"
+	name="process"
+>process()
+begin
+	${cursor}
+end process;
+</template>
+
+
+<template
+	autoinsert="false"
+	context="net.sourceforge.veditor.templates.vhdl.context.global"
+	deleted="false"
+	description="Create synchronous process"
+	enabled="true"
+	name="process(clk)"
+>process(clk)
+begin
+	if rising_edge(clk) then
+		${cursor}
+	end if;
+end process;
+</template>
+
+<template
+	autoinsert="false"
+	context="net.sourceforge.veditor.templates.vhdl.context.global"
+	deleted="false"
+	description="Create synchronous process with asynchronous reset"
+	enabled="true"
+	name="process(clk,rst)"
+>process(${rst},${clk})
+begin
+	if ${rst}='1' then
+		${cursor}
+	elsif rising_edge(${clk}) then
+		
+	end if;
+end process;
+</template>
+
+
+<template
+	autoinsert="false"
+	context="net.sourceforge.veditor.templates.vhdl.context.global"
+	deleted="false"
+	description=""
+	enabled="true"
+	name="if"
+>if ${cursor} then
+	
+end if;
+</template>
+
+<template
+	autoinsert="false"
+	context="net.sourceforge.veditor.templates.vhdl.context.global"
+	deleted="false"
+	description=""
+	enabled="true"
+	name="if-else"
+>if ${cursor} then
+	
+else
+	
+end if;
+</template>
+
+
+<template
+	autoinsert="false"
+	context="net.sourceforge.veditor.templates.vhdl.context.global"
+	deleted="false"
+	description=""
+	enabled="true"
+	name="for"
+>for ${var}  in ${ll} to ${ul} loop
+	${cursor}
+end loop;
+</template>
+
+<template
+	autoinsert="false"
+	context="net.sourceforge.veditor.templates.vhdl.context.global"
+	deleted="false"
+	description=""
+	enabled="true"
+	name="assert"
+>assert ${cursor} report "Error: " severity failure;</template>
+
+
+<template
+	autoinsert="false"
+	context="net.sourceforge.veditor.templates.vhdl.context.global"
+	deleted="false"
+	description=""
+	enabled="true"
+	name="case"
+>case ${cursor} is
+	when "0" =>
+		
+	when "1" =>
+		
+	when others =>
+		
+end case;
+</template>	
+
+
+<template
+	autoinsert="false"
+	context="net.sourceforge.veditor.templates.vhdl.context.global"
+	deleted="false"
+	description=""
+	enabled="true"
+	name="statemachine"
+>b_statemachine: block
+	type t_State is (sIDLE, sRUNNING);
+	signal mystate: t_State:=sIDLE;
+begin
+	process(Clk)
+	begin
+		if rising_edge(Clk) then
+			case mystate is
+				when sIDLE =&gt;
+					${cursor}
+				when sRUNNING =&gt;
+					
+				when others =&gt;
+					mystate &lt;= sIDLE;
+			end case;
+		end if;
+	end process;
+end block;
+</template>
+
+
+<template
+	autoinsert="false"
+	context="net.sourceforge.veditor.templates.vhdl.context.global"
+	deleted="false"
+	description=""
+	enabled="true"
+	name="statemachine with reset"
+>b_statemachine: block
+	type t_State is (sIDLE, sRUNNING);
+	signal mystate: t_State:=sIDLE;
+begin
+	process(Clk)
+	begin
+		if rising_edge(Clk) then
+			if rst='1' then
+				mystate &lt;= sIDLE;
+			else
+				case mystate is
+					when sIDLE =&gt;
+						${cursor}
+					when sRUNNING =&gt;
+						
+					when others =&gt;
+						mystate &lt;= sIDLE;
+				end case;
+			end if;
+		end if;
+	end process;
+end block;
+</template>	
+
+
+
+</templates>
