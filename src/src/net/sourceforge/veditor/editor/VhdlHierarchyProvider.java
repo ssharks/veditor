@@ -94,6 +94,15 @@ public class VhdlHierarchyProvider extends HdlTreeProviderBase implements
 		return null;
 	}
 	
+	public ArchitectureElement getArchElement(String entityname) {
+		//VerilogPlugin.println("Searching for element: "+entityname);
+		String entitynameUp = entityname.toUpperCase();
+		Vector<ArchitectureElement> elements = m_EntityArchList.get(entitynameUp);
+		if(elements==null) return null;
+		if(elements.size()==0) return null;
+		return elements.get(0);
+	}
+	
 	/**
 	 * Called to get the parent for an object
 	 */
@@ -201,7 +210,7 @@ public class VhdlHierarchyProvider extends HdlTreeProviderBase implements
 	 * @param doc Document used to start deriving the hierarchy
 	 * @return true if the scan is successful, false otherwise
 	 */
-	private boolean scanOutline(HdlDocument doc){
+	public boolean scanOutline(HdlDocument doc){
 		OutlineDatabase database;				
 		Vector<ArchitectureElement> archList;
 		OutlineElement[] topLevelElements;
