@@ -56,7 +56,7 @@ public class UnCommentAction extends AbstractAction
 		}
 		
 		//remove the comment field from the beginning of the line
-		region = Pattern.compile("^"+commentString+" ",Pattern.MULTILINE).matcher(region).replaceAll("");
+		region = Pattern.compile("^"+commentString,Pattern.MULTILINE).matcher(region).replaceAll("");
 		
 		//replace the selection
 		widget.replaceTextRange(begin, end - begin, region.toString());
