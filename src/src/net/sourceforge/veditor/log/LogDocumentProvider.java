@@ -64,7 +64,6 @@ public class LogDocumentProvider extends FileDocumentProvider
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	private void parse(IProject project, IContainer folder, String message)
 	{
 //      FIXME Do something sensible here
