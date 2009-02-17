@@ -15,6 +15,9 @@ import net.sourceforge.veditor.builder.ErrorParser;
 import net.sourceforge.veditor.builder.ExternalLauncher;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.IPath;
 
 public class CompileAction extends AbstractAction
 {
@@ -40,15 +43,64 @@ public class CompileAction extends AbstractAction
 	{
 		IFile file = getEditor().getHdlDocument().getFile();
 		IContainer parent = file.getParent();
-		IContainer folder = parent;
+		while (parent instanceof IFolder)
+		{
+			parent = parent.getParent();
+		}
+		if (parent instanceof IProject)
+		{
+			//project = (IProject)parent;
+		}
+		else
+		{
+			// maybe never execute
+			return;
+		}
+		
+		VerilogPlugin.clear();
+		
+		VerilogPlugin.deleteMarkers(file);
+		IPath path = parent.getLocation();
+		
+		boolean simulationdirfound = false;
+		boolean simdirfound = false;
+		
+		
+		// Each file is compiled in the Modeulsim directory
+		// This is equal to $(project_loc)/simulation for Barco-SMD
+		//                  $(project_loc)/sim for Barco-MID
+		
+		if(parent.findMember("simulation")!=null) {
+			if(parent.findMember("simulation") instanceof IContainer) {
+				simulationdirfound=true;
+			}
+		}
+		if(parent.findMember("sim")!=null) {
+			if(parent.findMember("sim") instanceof IContainer) {
+				simdirfound=true;
+			}
+		}	
+		
+		if(!simulationdirfound && !simdirfound) {
+			VerilogPlugin.println("Warning simulation or sim directory not found");
+			return;
+		}
+		
+		String simulationdir = simulationdirfound?"simulation":"sim";
+		
+		VerilogPlugin.println("Compiling file for modelsim");
+		VerilogPlugin.println("\tfilename: " + file.getLocation().toString());
+		VerilogPlugin.println("\tto: " + path.toString()+"/"+simulationdir+"/work");
+		VerilogPlugin.println("");
+		
+		IContainer workdir = (IContainer)parent.findMember(simulationdir);
 		
 		String command = VerilogPlugin.getPreferenceString("Compile.command")
-				+ " " + file.getName();
+				+ " " + file.getLocation().toString();
 
-		
 		checkAndSaveEditors();
         
-		ExternalLauncher launchar = new ExternalLauncher(folder, command);
+		ExternalLauncher launchar = new ExternalLauncher(workdir, command);
 		launchar.run();
 		
 		String msg = launchar.getMessage();
@@ -56,7 +108,7 @@ public class CompileAction extends AbstractAction
 		ErrorParser[] parsers = ErrorParser.getParsers();
 		for(int i = 0 ; i < parsers.length ; i++)
 		{
-			parsers[i].parse(folder, msg);
+			parsers[i].parse(parent, msg);
 		}
 
 		getEditor().update();
