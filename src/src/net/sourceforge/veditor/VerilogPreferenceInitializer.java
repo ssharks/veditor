@@ -63,8 +63,9 @@ public class VerilogPreferenceInitializer extends AbstractPreferenceInitializer
 		setDefaultAttr(preferences, "MultiLineComment", "00,128,128");
 		setDefaultAttr(preferences, "String", "00,00,128");
 		setDefaultAttr(preferences, "Default", "00,00,00");
-		setDefaultAttr(preferences, "KeyWord", "128,00,128", true);
-		setDefaultAttr(preferences, "Directive", "128,00,128", true);
+		setDefaultAttr(preferences, "KeyWord", "127,00,85", true);
+		setDefaultAttr(preferences, "Directive", "127,00,85", true);
+		setDefaultAttr(preferences, "Types", "64,64,255");
 
 		preferences.setDefault("ContentAssist.ModuleParameter", false);
 		preferences.setDefault("ScanProject.Enable", true);

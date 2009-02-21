@@ -73,6 +73,14 @@ public class HdlScanner extends RuleBasedScanner
 			"sll", "sra", "srl", "subtype", "then", "to", "transport", "type",
 			"unaffected", "units", "until", "use", "variable", "wait", "when",
 			"while", "with", "xnor", "xor" };
+	
+	private static final String[] vhdlTypes = { "bit", "bit_vector", "character", 
+			"boolean", "integer", "real", "time", "string",	"severity_level", 
+			"positive", "natural", "signed", "unsigned", "line", "text",
+			"std_logic", "std_logic_vector", "std_ulogic", "std_ulogic_vector", 
+			"qsim_state", "qsim_state_vector", "qsim_12state",
+			"qsim_12state_vector", "qsim_strength", "mux_bit", "mux_vector", 
+			"reg_bit", "reg_vector", "wor_bit",	"wor_vector"};
 
 	private HdlScanner(ColorManager manager, boolean isVerilog)
 	{
@@ -82,6 +90,7 @@ public class HdlScanner extends RuleBasedScanner
 				.getTextAttribute(manager));
 		IToken other = new Token(HdlTextAttribute.DEFAULT
 				.getTextAttribute(manager));
+		IToken types = new Token(HdlTextAttribute.TYPES.getTextAttribute(manager));
 
 		List<IRule> rules = new ArrayList<IRule>();
 
@@ -101,6 +110,12 @@ public class HdlScanner extends RuleBasedScanner
 			// it is possible to use upper case in VHDL
 			for (int i = 0; i < vhdlWords.length; i++)
 				wordRule.addWord(vhdlWords[i].toUpperCase(), keyword);
+			
+			for (int i = 0; i < vhdlTypes.length; i++)
+				wordRule.addWord(vhdlTypes[i], types);
+			// it is possible to use upper case in VHDL
+			for (int i = 0; i < vhdlTypes.length; i++)
+				wordRule.addWord(vhdlTypes[i].toUpperCase(), types);
 		}
 
 		rules.add(wordRule);

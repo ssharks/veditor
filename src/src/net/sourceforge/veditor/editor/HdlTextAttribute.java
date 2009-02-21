@@ -27,6 +27,7 @@ public final class HdlTextAttribute
 	public static HdlTextAttribute KEY_WORD = new HdlTextAttribute();
 	public static HdlTextAttribute DOXYGEN_COMMENT = new HdlTextAttribute();
 	public static HdlTextAttribute DIRECTIVE = new HdlTextAttribute();
+	public static HdlTextAttribute TYPES = new HdlTextAttribute();
 
 	private RGB color;
 	private int style;
@@ -51,6 +52,7 @@ public final class HdlTextAttribute
 		readColor(DEFAULT, "Default");
 		readColor(DIRECTIVE, "Directive");
 		readColor(KEY_WORD, "KeyWord");
+		readColor(TYPES, "Types");
 	}
 
 	private static void readColor(HdlTextAttribute target, String key)
