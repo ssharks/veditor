@@ -415,6 +415,11 @@
     </extension>
     <extension point="org.eclipse.core.runtime.contentTypes"> 
       <file-association 
+       content-type="net.sourceforge.veditor.vhdlSource"
+       file-extensions="vhdl"/>
+    </extension>    
+    <extension point="org.eclipse.core.runtime.contentTypes"> 
+      <file-association 
        content-type="net.sourceforge.veditor.simulationLog"
        file-extensions="log"/>
     </extension>
