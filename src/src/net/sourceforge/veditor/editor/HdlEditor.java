@@ -29,6 +29,7 @@ import net.sourceforge.veditor.actions.HdlShowInNavigatorAction;
 import net.sourceforge.veditor.actions.OpenDeclarationAction;
 import net.sourceforge.veditor.actions.ShowInHierarchy;
 import net.sourceforge.veditor.actions.ShowInOutline;
+import net.sourceforge.veditor.actions.SynthesizeAction;
 import net.sourceforge.veditor.actions.UnCommentAction;
 import net.sourceforge.veditor.document.HdlDocument;
 import net.sourceforge.veditor.parser.HdlParserException;
@@ -161,6 +162,7 @@ abstract public class HdlEditor extends TextEditor
 		setAction("OpenDeclaration", new OpenDeclarationAction());
 		setAction("Format", new FormatAction());
 		setAction("Compile", new CompileAction());
+		setAction("Synthesize", new SynthesizeAction());
 		setAction("Comment", new CommentAction());
 		setAction("Unomment", new UnCommentAction());
 		setAction("CollapseAll",new CollapseAll());

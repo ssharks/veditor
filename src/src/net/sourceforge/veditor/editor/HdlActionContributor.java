@@ -22,6 +22,7 @@ import net.sourceforge.veditor.actions.OpenDeclarationAction;
 import net.sourceforge.veditor.actions.CommentAction;
 import net.sourceforge.veditor.actions.ShowInHierarchy;
 import net.sourceforge.veditor.actions.ShowInOutline;
+import net.sourceforge.veditor.actions.SynthesizeAction;
 import net.sourceforge.veditor.actions.UnCommentAction;
 
 import org.eclipse.jface.action.IAction;
@@ -46,6 +47,7 @@ public class HdlActionContributor extends TextEditorActionContributor
 	private IAction expandAllAction;
 	private IAction format;
 	private IAction compile;
+	private IAction synthesize;
 	private IAction comment;
 	private IAction uncomment;
 	private IAction showInHierarchy;
@@ -71,7 +73,8 @@ public class HdlActionContributor extends TextEditorActionContributor
 		collapseAllAction = new CollapseAll();
 		expandAllAction   = new ExpandAll();
 		format = new FormatAction();
-		compile = new CompileAction();
+		compile = new CompileAction(); 
+		synthesize = new SynthesizeAction();
 		comment = new CommentAction();
 		uncomment = new UnCommentAction();
 		showInHierarchy=new ShowInHierarchy();
@@ -109,6 +112,7 @@ public class HdlActionContributor extends TextEditorActionContributor
 		if (projectMenu != null)
 		{			
 			projectMenu.insertAfter("buildProject", compile);
+			projectMenu.insertAfter(compile.getId(), synthesize);
 		}
 
 		IMenuManager navigateMenu = menuManager

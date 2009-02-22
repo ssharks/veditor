@@ -36,7 +36,7 @@ public class VerilogPreferenceInitializer extends AbstractPreferenceInitializer
 		"1"
 		+ "\n" + "ModelSim"
 		+ "\n" + "[#|\\*].*Error: ([^\\(]*)\\(([0-9]*)\\): (.*)"		
-		+ "\n" + "[#|\\*].*Warning: \\[.*\\] ([^\\(]*)\\(([0-9]*)\\): (.*)"		
+		+ "\n" + "[#|\\*].*Warning: ([^\\(]*)\\(([0-9]*)\\): (.*)"		
 		+ "\n" + ""
 		+ "\n" + "Cver"
 		+ "\n" + "\\*\\*(.*)\\(([0-9]+)\\) ERROR\\*\\* (.*)"
@@ -74,7 +74,9 @@ public class VerilogPreferenceInitializer extends AbstractPreferenceInitializer
 		preferences.setDefault("Outline.FilterPorts", false);
 		
 		preferences.setDefault("Compile.SaveBeforeCompile",true);
-		preferences.setDefault("Compile.command", "iverilog -tnull -y . -Wall");
+		preferences.setDefault("Compile.command", "vcom");
+		preferences.setDefault("Synthesize.command", "vcom -check_synthesis");
+		preferences.setDefault("Compile.Folder", "simulation");
 		
 		preferences.setDefault("ErrorParser", DEFAULT_ERROR_PARSER_REGEX);
 		

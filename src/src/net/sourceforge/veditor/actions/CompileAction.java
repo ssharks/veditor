@@ -10,6 +10,8 @@
  *******************************************************************************/
 package net.sourceforge.veditor.actions;
 
+import java.io.File;
+
 import net.sourceforge.veditor.VerilogPlugin;
 import net.sourceforge.veditor.builder.ErrorParser;
 import net.sourceforge.veditor.builder.ExternalLauncher;
@@ -21,9 +23,16 @@ import org.eclipse.core.runtime.IPath;
 
 public class CompileAction extends AbstractAction
 {
+	protected String commandString = "Compile.command";
+	
 	public CompileAction()
 	{
 		super("Compile");
+	}
+	
+	public CompileAction(String name)
+	{
+		super(name);
 	}
 	
 	 public static boolean isNeedToSaveSet() {
@@ -62,41 +71,23 @@ public class CompileAction extends AbstractAction
 		VerilogPlugin.deleteMarkers(file);
 		IPath path = parent.getLocation();
 		
-		boolean simulationdirfound = false;
-		boolean simdirfound = false;
+		String simulationdir = VerilogPlugin.getPreferenceString("Compile.Folder");
 		
-		
-		// Each file is compiled in the Modeulsim directory
-		// This is equal to $(project_loc)/simulation for Barco-SMD
-		//                  $(project_loc)/sim for Barco-MID
-		
-		if(parent.findMember("simulation")!=null) {
-			if(parent.findMember("simulation") instanceof IContainer) {
-				simulationdirfound=true;
-			}
-		}
-		if(parent.findMember("sim")!=null) {
-			if(parent.findMember("sim") instanceof IContainer) {
-				simdirfound=true;
-			}
-		}	
-		
-		if(!simulationdirfound && !simdirfound) {
-			VerilogPlugin.println("Warning simulation or sim directory not found");
+		if(simulationdir.length() != 0 && !(new File(path.toString()+"/"+simulationdir).exists()))
+		{			
+			VerilogPlugin.println("Warning directory \"" + path.toString()+"/"+simulationdir + "\" not found");
 			return;
 		}
 		
-		String simulationdir = simulationdirfound?"simulation":"sim";
-		
-		VerilogPlugin.println("Compiling file for modelsim");
-		VerilogPlugin.println("\tfilename: " + file.getLocation().toString());
-		VerilogPlugin.println("\tto: " + path.toString()+"/"+simulationdir+"/work");
-		VerilogPlugin.println("");
-		
 		IContainer workdir = (IContainer)parent.findMember(simulationdir);
 		
-		String command = VerilogPlugin.getPreferenceString("Compile.command")
-				+ " " + file.getLocation().toString();
+		String command = VerilogPlugin.getPreferenceString(commandString)
+				+ " \"" + file.getLocation().toString() + "\"";		
+		
+		VerilogPlugin.println("Compiling: " + file.getLocation().toString());
+		VerilogPlugin.println("       in: " + path.toString()+ (simulationdir.length()==0?"":"/") +simulationdir);
+		VerilogPlugin.println("");
+		VerilogPlugin.println("  Command: " + command + "\n");
 
 		checkAndSaveEditors();
         

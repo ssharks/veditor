@@ -173,6 +173,12 @@
             id="net.sourceforge.veditor.actions.Compile">
       </command>
       <command
+            name="Synthesize"
+            description="Synthesize"
+            categoryId="net.sourceforge.veditor.commands"
+            id="net.sourceforge.veditor.actions.Synthesize">
+      </command>      
+      <command
             name="Matching Bracket"
             description="Goto Matching Bracket"
             categoryId="net.sourceforge.veditor.commands"
@@ -247,6 +253,12 @@
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             contextId="net.sourceforge.veditor.scope"
             commandId="net.sourceforge.veditor.actions.Compile">
+      </key>
+      <key
+            sequence="F8"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="net.sourceforge.veditor.scope"
+            commandId="net.sourceforge.veditor.actions.Synthesize">
       </key>
       <key
             sequence="Esc ]"

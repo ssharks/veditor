@@ -32,6 +32,8 @@ public class TopPreferencePage extends AbstractSimplePreferencePage
 		addBooleanField("Outline.FilterPorts", "Filter Ports in Outline");
 		addBooleanField("Compile.SaveBeforeCompile","Save File Before Compile");
 		addStringField("Compile.command", "Compile command");
+		addStringField("Synthesize.command", "Synthesize command");
+		addStringField("Compile.Folder", "Compile folder");
 	}
 
 	public void init(IWorkbench workbench)
