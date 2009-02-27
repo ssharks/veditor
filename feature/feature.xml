@@ -1,20 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
       id="veditorfeature"
-      label="Veditorfeature Feature"
-      version="1.1.1">
+      label="VEditor"
+      version="0.6.2">
 
-   <description url="http://www.example.com/description">
-      [Enter Feature Description here.]
+   <description url="http://veditor.sourceforge.net">
+      VEditor is a Verilog/VHDL editor for the Eclipse IDE. It provides
+  Verilog(IEEE-1364) and VHDL language specific code viewer, contents
+  outline, code assist etc. It helps coding and debugging in hardware
+  development based on Verilog or VHDL.
    </description>
 
-   <copyright url="http://www.example.com/copyright">
-      [Enter Copyright Description here.]
+   <copyright url="http://www.eclipse.org/legal/epl-v10.html">
+      Copyright (c) 2004, 2006 VEditor Team. All rights reserved. This program and
+  the accompanying materials are made available under the terms of the
+  Eclipse Public License v1.0 which accompanies this distribution, and
+  is available at http://www.eclipse.org/legal/epl-v10.html
    </copyright>
 
-   <license url="http://www.example.com/license">
-      [Enter License Description here.]
+   <license url="http://www.eclipse.org/legal/epl-v10.html">
+      This program and the accompanying materials are made available under the
+  terms of the Eclipse Public License v1.0 which accompanies this
+  distribution, and is available at
+  http://www.eclipse.org/legal/epl-v10.html
    </license>
+
+   <url>
+      <update label="VEditor Update Site" url="http://veditor.sourceforge.net/update"/>
+   </url>
 
    <plugin
          id="net.sourceforge.veditor"
