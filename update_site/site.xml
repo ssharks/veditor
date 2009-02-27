@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <feature url="features/veditorfeature_0.6.2.jar" id="veditorfeature" version="0.6.2"/>
+</site>
