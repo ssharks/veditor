@@ -216,6 +216,13 @@ public class VhdlFormatAction extends AbstractAction {
 				adjustLineIndentValue(results,tokens.get(i).beginLine, 0);
 				int openParan=skipTo("(", tokens, i+1);
 				int closeParan=skipToCloseParan(tokens, openParan+1);
+				int isToken=skipTo("is", tokens, i+1);
+				// skip if there are no parameters
+				if( closeParan>isToken){
+					adjustLineIndentValue(results,tokens.get(isToken).beginLine+1, +1);
+					i=isToken;
+					break;
+				}
 				//did we find what we were looking for?
 				if(openParan==tokens.size() || closeParan==tokens.size()){
 					break;
