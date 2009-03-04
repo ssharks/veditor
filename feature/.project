@@ -3,6 +3,7 @@
 	<name>veditorfeature</name>
 	<comment></comment>
 	<projects>
+		<project>veditor</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
