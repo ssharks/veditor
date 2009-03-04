@@ -3,13 +3,13 @@
 <repository name='VEditor Upate' type='org.eclipse.equinox.internal.p2.metadata.repository.LocalMetadataRepository' version='1.0.0'>
   <properties size='2'>
     <property name='p2.compressed' value='false'/>
-    <property name='p2.timestamp' value='1235865465953'/>
+    <property name='p2.timestamp' value='1236204510299'/>
   </properties>
   <references size='2'>
     <repository url='http://veditor.sourceforge.net/update' type='1' options='0'/>
     <repository url='http://veditor.sourceforge.net/update' type='0' options='0'/>
   </references>
-  <units size='8'>
+  <units size='11'>
     <unit id='tooling.source.default' version='1.0.0' singleton='false'>
       <hostRequirements size='1'>
         <required namespace='org.eclipse.equinox.p2.eclipse.type' name='source' range='0.0.0' optional='true' multiple='true' greedy='false'/>
@@ -350,6 +350,116 @@
         <provided namespace='java.package' name='org.xml.sax.helpers' version='0.0.0'/>
       </provides>
       <touchpoint id='org.eclipse.equinox.p2.native' version='1.0.0'/>
+    </unit>
+    <unit id='veditorfeature.feature.jar' version='0.6.2'>
+      <update id='veditorfeature.feature.jar' range='[0.0.0,0.6.2)' severity='0'/>
+      <properties size='3'>
+        <property name='org.eclipse.equinox.p2.name' value='VEditor'/>
+        <property name='org.eclipse.equinox.p2.description' value='VEditor is a Verilog/VHDL editor for the Eclipse IDE. It provides&#xA;  Verilog(IEEE-1364) and VHDL language specific code viewer, contents&#xA;  outline, code assist etc. It helps coding and debugging in hardware&#xA;  development based on Verilog or VHDL.'/>
+        <property name='org.eclipse.equinox.p2.description.url' value='http://veditor.sourceforge.net'/>
+      </properties>
+      <provides size='3'>
+        <provided namespace='org.eclipse.equinox.p2.iu' name='veditorfeature.feature.jar' version='0.6.2'/>
+        <provided namespace='org.eclipse.equinox.p2.eclipse.type' name='feature' version='1.0.0'/>
+        <provided namespace='org.eclipse.update.feature' name='veditorfeature' version='0.6.2'/>
+      </provides>
+      <filter>
+        (org.eclipse.update.install.features=true)
+      </filter>
+      <artifacts size='1'>
+        <artifact classifier='org.eclipse.update.feature' id='veditorfeature' version='0.6.2'/>
+      </artifacts>
+      <touchpoint id='org.eclipse.equinox.p2.osgi' version='1.0.0'/>
+      <touchpointData size='1'>
+        <instructions size='1'>
+          <instruction key='zipped'>
+            true
+          </instruction>
+        </instructions>
+      </touchpointData>
+      <licenses size='1'>
+        <license url='http://www.eclipse.org/legal/epl-v10.html'>
+          This program and the accompanying materials are made available under the&#xA;  terms of the Eclipse Public License v1.0 which accompanies this&#xA;  distribution, and is available at&#xA;  http://www.eclipse.org/legal/epl-v10.html
+        </license>
+      </licenses>
+      <copyright url='http://www.eclipse.org/legal/epl-v10.html'>
+        Copyright (c) 2004, 2006 VEditor Team. All rights reserved. This program and&#xA;  the accompanying materials are made available under the terms of the&#xA;  Eclipse Public License v1.0 which accompanies this distribution, and&#xA;  is available at http://www.eclipse.org/legal/epl-v10.html
+      </copyright>
+    </unit>
+    <unit id='veditorfeature.feature.group' version='0.6.2' singleton='false'>
+      <update id='veditorfeature.feature.group' range='[0.0.0,0.6.2)' severity='0'/>
+      <properties size='4'>
+        <property name='org.eclipse.equinox.p2.name' value='VEditor'/>
+        <property name='org.eclipse.equinox.p2.description' value='VEditor is a Verilog/VHDL editor for the Eclipse IDE. It provides&#xA;  Verilog(IEEE-1364) and VHDL language specific code viewer, contents&#xA;  outline, code assist etc. It helps coding and debugging in hardware&#xA;  development based on Verilog or VHDL.'/>
+        <property name='org.eclipse.equinox.p2.description.url' value='http://veditor.sourceforge.net'/>
+        <property name='org.eclipse.equinox.p2.type.group' value='true'/>
+      </properties>
+      <provides size='1'>
+        <provided namespace='org.eclipse.equinox.p2.iu' name='veditorfeature.feature.group' version='0.6.2'/>
+      </provides>
+      <requires size='2'>
+        <required namespace='org.eclipse.equinox.p2.iu' name='net.sourceforge.veditor' range='[0.6.2,0.6.2]'/>
+        <required namespace='org.eclipse.equinox.p2.iu' name='veditorfeature.feature.jar' range='[0.6.2,0.6.2]'>
+          <filter>
+            (org.eclipse.update.install.features=true)
+          </filter>
+        </required>
+      </requires>
+      <touchpoint id='null' version='0.0.0'/>
+      <licenses size='1'>
+        <license url='http://www.eclipse.org/legal/epl-v10.html'>
+          This program and the accompanying materials are made available under the&#xA;  terms of the Eclipse Public License v1.0 which accompanies this&#xA;  distribution, and is available at&#xA;  http://www.eclipse.org/legal/epl-v10.html
+        </license>
+      </licenses>
+      <copyright url='http://www.eclipse.org/legal/epl-v10.html'>
+        Copyright (c) 2004, 2006 VEditor Team. All rights reserved. This program and&#xA;  the accompanying materials are made available under the terms of the&#xA;  Eclipse Public License v1.0 which accompanies this distribution, and&#xA;  is available at http://www.eclipse.org/legal/epl-v10.html
+      </copyright>
+    </unit>
+    <unit id='net.sourceforge.veditor' version='0.6.2.1'>
+      <update id='net.sourceforge.veditor' range='[0.0.0,0.6.2.1)' severity='0'/>
+      <properties size='2'>
+        <property name='org.eclipse.equinox.p2.name' value='Verilog/VHDL Plugin'/>
+        <property name='org.eclipse.equinox.p2.provider' value='tadashi'/>
+      </properties>
+      <provides size='11'>
+        <provided namespace='org.eclipse.equinox.p2.iu' name='net.sourceforge.veditor' version='0.6.2.1'/>
+        <provided namespace='osgi.bundle' name='net.sourceforge.veditor' version='0.6.2.1'/>
+        <provided namespace='java.package' name='net.sourceforge.veditor' version='0.0.0'/>
+        <provided namespace='java.package' name='net.sourceforge.veditor.actions' version='0.0.0'/>
+        <provided namespace='java.package' name='net.sourceforge.veditor.builder' version='0.0.0'/>
+        <provided namespace='java.package' name='net.sourceforge.veditor.editor' version='0.0.0'/>
+        <provided namespace='java.package' name='net.sourceforge.veditor.log' version='0.0.0'/>
+        <provided namespace='java.package' name='net.sourceforge.veditor.parser' version='0.0.0'/>
+        <provided namespace='java.package' name='net.sourceforge.veditor.preference' version='0.0.0'/>
+        <provided namespace='java.package' name='net.sourceforge.veditor.wizard' version='0.0.0'/>
+        <provided namespace='org.eclipse.equinox.p2.eclipse.type' name='bundle' version='1.0.0'/>
+      </provides>
+      <requires size='10'>
+        <required namespace='osgi.bundle' name='org.eclipse.ui' range='0.0.0'/>
+        <required namespace='osgi.bundle' name='org.eclipse.ui.editors' range='0.0.0'/>
+        <required namespace='osgi.bundle' name='org.eclipse.ui.workbench.texteditor' range='0.0.0'/>
+        <required namespace='osgi.bundle' name='org.eclipse.core.runtime' range='0.0.0'/>
+        <required namespace='osgi.bundle' name='org.eclipse.jface.text' range='0.0.0'/>
+        <required namespace='osgi.bundle' name='org.eclipse.core.resources' range='0.0.0'/>
+        <required namespace='osgi.bundle' name='org.eclipse.ui.views' range='0.0.0'/>
+        <required namespace='osgi.bundle' name='org.eclipse.ui.ide' range='0.0.0'/>
+        <required namespace='osgi.bundle' name='org.eclipse.ui.console' range='0.0.0'/>
+        <required namespace='osgi.bundle' name='org.eclipse.core.filesystem' range='0.0.0'/>
+      </requires>
+      <artifacts size='1'>
+        <artifact classifier='osgi.bundle' id='net.sourceforge.veditor' version='0.6.2.1'/>
+      </artifacts>
+      <touchpoint id='org.eclipse.equinox.p2.osgi' version='1.0.0'/>
+      <touchpointData size='1'>
+        <instructions size='2'>
+          <instruction key='manifest'>
+            Bundle-ManifestVersion: 2&#xA;Export-Package: net.sourceforge.veditor,net.sourceforge.veditor.actions,net.sourceforge.veditor.builder,net.sourceforge.veditor.editor,net.sourceforge.veditor.log,net.sourceforge.veditor.parser,net.sourceforge.veditor.preference,net.sourceforge.veditor.wizard&#xA;Bundle-Localization: plugin&#xA;Require-Bundle: org.eclipse.ui,org.eclipse.ui.editors,org.eclipse.ui.workbench.texteditor,org.eclipse.core.runtime,org.eclipse.jface.text,org.eclipse.core.resources,org.eclipse.ui.views,org.eclipse.ui.ide,org.eclipse.ui.console,org.eclipse.core.filesystem&#xA;Bundle-Activator: net.sourceforge.veditor.VerilogPlugin&#xA;Bundle-Name: Verilog/VHDL Plugin&#xA;Bundle-Version: 0.6.2.1&#xA;Bundle-Vendor: tadashi&#xA;Bundle-SymbolicName: net.sourceforge.veditor; singleton:=true&#xA;Bundle-ClassPath: veditor.jar&#xA;Manifest-Version: 1.0&#xA;Eclipse-LazyStart: true&#xA;
+          </instruction>
+          <instruction key='zipped'>
+            true
+          </instruction>
+        </instructions>
+      </touchpointData>
     </unit>
   </units>
 </repository>

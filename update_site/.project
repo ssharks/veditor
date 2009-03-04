@@ -3,6 +3,7 @@
 	<name>veditor_update_site</name>
 	<comment></comment>
 	<projects>
+		<project>veditorfeature</project>
 	</projects>
 	<buildSpec>
 	</buildSpec>
