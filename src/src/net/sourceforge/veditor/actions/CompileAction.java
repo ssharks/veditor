@@ -81,8 +81,23 @@ public class CompileAction extends AbstractAction
 		
 		IContainer workdir = (IContainer)parent.findMember(simulationdir);
 		
-		String command = VerilogPlugin.getPreferenceString(commandString)
-				+ " \"" + file.getLocation().toString() + "\"";		
+		/*
+		 * %f - filename
+		 * %p - path
+		 * %w - workspace path
+		 * %d - path relative to workspace path
+		 * %s - simulation dir
+		 */
+		
+		String command = VerilogPlugin.getPreferenceString(commandString);
+		String temp = file.getLocation().toString().replace(file.getName(), "");
+		
+		command = command.replace("%f", file.getName());
+		command = command.replace("%p", temp);
+		command = command.replace("%s", simulationdir);		
+		command = command.replace("%w", path.toString());
+		temp = temp.replace(path.toString(), "");
+		command = command.replace("%d", temp.substring(1,temp.length()));
 		
 		VerilogPlugin.println("Compiling: " + file.getLocation().toString());
 		VerilogPlugin.println("       in: " + path.toString()+ (simulationdir.length()==0?"":"/") +simulationdir);

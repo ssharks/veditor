@@ -74,8 +74,8 @@ public class VerilogPreferenceInitializer extends AbstractPreferenceInitializer
 		preferences.setDefault("Outline.FilterPorts", false);
 		
 		preferences.setDefault("Compile.SaveBeforeCompile",true);
-		preferences.setDefault("Compile.command", "vcom");
-		preferences.setDefault("Synthesize.command", "vcom -check_synthesis");
+		preferences.setDefault("Compile.command", "vcom %p%f");
+		preferences.setDefault("Synthesize.command", "vcom -check_synthesis %p%f");
 		preferences.setDefault("Compile.Folder", "simulation");
 		
 		preferences.setDefault("ErrorParser", DEFAULT_ERROR_PARSER_REGEX);
