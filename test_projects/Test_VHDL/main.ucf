@@ -1,0 +1,721 @@
+# -*- sh -*-
+#########################################################
+#           Virtex-II Pro Development Board             #
+#                                                       #
+#         Virtex-II Pro User Constraint File            #
+#########################################################
+#
+#
+#########################################################
+#               Clock / Reset Sources                   #
+#########################################################
+#
+#NET "CLK_33MHZ" LOC = "G15";     # 33MHz Single-ended, 3.3V
+#
+
+
+#########
+
+#NET "OPB_Clk" LOC = "F15"; # 100MHz Single-ended, 3.3V
+
+NET "CLK_100MHZ" LOC = "F15";    # 100MHz Single-ended, 3.3V
+# NOTE: reinstate these two when OPB_Clk is present in the design:
+NET "CLK_100MHZ" TNM_NET = "CLK_100MHZ";
+TIMESPEC "TS_CLK_100MHZ" = PERIOD "CLK_100MHZ" 100 MHz HIGH 50 %;
+
+
+#########
+#NET "BREF_CLK_P" LOC = "F16";    # 125MHz Differential, 2.5V
+#NET "BREF_CLK_N" LOC = "G16";
+#
+#NET "XAUI_CLK_P" LOC = "AH16";   # 156.25MHz Differential, 2.5V
+#NET "XAUI_CLK_N" LOC = "AJ16";
+#
+#   Reset borrowed from CLKEN  #
+NET "SYS_RESET_N" LOC = "AH8";
+NET "TRGT_IRQ" LOC = "AD23";
+
+#########################################################
+#   Shared Memory Bus (SDRAM,SRAM,FLASH,COMPACTFLASH)   #
+#########################################################
+#
+NET "A<31>" LOC = "AH24"; #"A0"  (Flash A1)
+NET "A<30>" LOC = "AG24";
+NET "A<29>" LOC = "AE22";
+NET "A<28>" LOC = "AC22";
+NET "A<27>" LOC = "AG21";
+NET "A<26>" LOC = "AJ22";
+NET "A<25>" LOC = "AD19";
+NET "A<24>" LOC = "AH22";
+NET "A<23>" LOC = "AC20";
+NET "A<22>" LOC = "AC19";
+NET "A<21>" LOC = "AF17";
+NET "A<20>" LOC = "AD20";
+NET "A<19>" LOC = "AE21";
+NET "A<18>" LOC = "AE23";
+NET "A<17>" LOC = "AG17";
+NET "A<16>" LOC = "AC21";
+NET "A<15>" LOC = "AF24";
+NET "A<14>" LOC = "AK23";
+NET "A<13>" LOC = "AJ23";
+NET "A<12>" LOC = "AF23";
+NET "A<11>" LOC = "AF22";
+NET "A<10>" LOC = "AD22"; #"A21"  (Flash A22)
+NET "A<9>" LOC = "AF21";
+NET "A<8>" LOC = "AD21"; #"A23"
+#
+NET "D<31>" LOC = "AF10"; #"D0"
+NET "D<30>" LOC = "AE10";
+NET "D<29>" LOC = "AC12";
+NET "D<28>" LOC = "AG14";
+NET "D<27>" LOC = "AC15";
+NET "D<26>" LOC = "AB15";
+NET "D<25>" LOC = "AD17";
+NET "D<24>" LOC = "AE17";
+NET "D<23>" LOC = "AD12";
+NET "D<22>" LOC = "AD10";
+NET "D<21>" LOC = "AF14";
+NET "D<20>" LOC = "AE14";
+NET "D<19>" LOC = "AC10";
+NET "D<18>" LOC = "AD14";
+NET "D<17>" LOC = "AB16";
+NET "D<16>" LOC = "AC16";
+NET "D<15>" LOC = "AK8";
+NET "D<14>" LOC = "AH9";
+NET "D<13>" LOC = "AG7";
+NET "D<12>" LOC = "AF9";
+NET "D<11>" LOC = "AJ9";
+NET "D<10>" LOC = "AD9";
+NET "D<9>" LOC = "AE9";
+NET "D<8>" LOC = "AG10";
+NET "D<7>" LOC = "AH7";
+NET "D<6>" LOC = "AE7";
+NET "D<5>" LOC = "AJ8";
+NET "D<4>" LOC = "AF8";
+NET "D<3>" LOC = "AE8";
+NET "D<2>" LOC = "AD11";
+NET "D<1>" LOC = "AC11";
+NET "D<0>" LOC = "AC9"; #"D31"
+#
+#****************************************************************************
+#*                          Control Signals                                **
+#****************************************************************************
+NET  "FLASH_CS_L<0>"	LOC = "AD15";  #note: set jp200 2-3 on acacia
+ #note: set jp200 2-3 on acacia
+NET "WE_L" LOC = "AG25"; #"WE#"  <Flash>
+NET  "RST_L"           LOC = "C5";   #RST for Flash not used - borrowed "AV_A1"
+ #RST for Flash not used - borrowed "AV_A1"
+NET "OE_L" LOC = "AH23"; #"OE#"  <Flash>
+NET  "SYS_ACE_CS_N"	LOC = "AD16";  #NO CONNECT ON SpartanIIE
+ #NO CONNECT ON SpartanIIE
+NET "GPIO_CS_N" LOC = "AG5";
+NET "SRAM_CS_L<0>" LOC = "AG16"; #sram chip select
+NET "SRAM_BS_L<3>" LOC = "AE15"; #sram/sdram byte enable 0
+NET "SRAM_BS_L<2>" LOC = "AH15"; #sram/sdram byte enable 1
+NET "SRAM_BS_L<1>" LOC = "AF16"; #sram/sdram byte enable 2
+NET "SRAM_BS_L<0>" LOC = "AJ15"; #sram/sdram byte enable 3
+# sasho: not too sure what this is about, but we do need the LED_CD here
+NET "LED_CS_L" LOC = "AD23"; #chip select from GPIO, borrow TRGT_IRQ pin
+#****************************************************************************
+#*                        SDRAM Control Signals                            **
+#****************************************************************************
+NET  "SDRAM_CAS_L"     LOC = "AG8";
+NET  "SDRAM_CLKEN"     LOC = "C4";    #borrowed "AV_A0" pin  
+ #borrowed "AV_A0" pin
+ #sasho: renamed SDRAM_CLK here to CLK_OUT
+NET  "CLK_OUT"       LOC = "AD8";
+
+NET  "SDRAM_CE_L"      LOC = "AE16";
+NET  "SDRAM_RAS_L"     LOC = "AG6";
+#
+#NET "flash_we_out" LOC = "U9";  # these are for test only
+#NET "sram_we_out" LOC = "U8";	  # borrowed from AV_B_IO0,1,2
+#NET "sdram_we_out" LOC = "T9";
+#
+#########################################################
+#               AVBus Connector (P10)                   #
+#########################################################
+#
+#NET "AV_A0" LOC = "C4";
+#NET "AV_A1" LOC = "C5";
+#NET "AV_A2" LOC = "C1";
+#NET "AV_A3" LOC = "C2";
+#NET "AV_A4" LOC = "D3";
+#NET "AV_A5" LOC = "D5";
+#NET "AV_A6" LOC = "G6";
+#NET "AV_A7" LOC = "G5";
+#NET "AV_A8" LOC = "J7";
+#NET "AV_A9" LOC = "J8";
+#NET "AV_A10" LOC = "N4";
+#NET "AV_A11" LOC = "N3";
+#NET "AV_A12" LOC = "P4";
+#NET "AV_A13" LOC = "P5";
+#NET "AV_A14" LOC = "P2";
+#NET "AV_A15" LOC = "T2";
+#NET "AV_A16" LOC = "P3";
+#NET "AV_A17" LOC = "R2";
+#NET "AV_A18" LOC = "R3";
+#NET "AV_A19" LOC = "R4";
+#NET "AV_A20" LOC = "R6";
+#NET "AV_A21" LOC = "R5";
+#NET "AV_A22" LOC = "P7";
+#NET "AV_A23" LOC = "R7";
+#NET "AV_A24" LOC = "R8";
+#NET "AV_A25" LOC = "P8";
+#NET "AV_A26" LOC = "E15";
+#NET "AV_A27" LOC = "E6";   # Bank 1 VRN
+#NET "AV_A28" LOC = "E7";   # Bank 1 VRP
+#NET "AV_A29" LOC = "B3";   # Bank 2 VRN
+#NET "AV_A30" LOC = "A3";   # Bank 2 VRP
+#NET "AV_A31" LOC = "H15";
+#
+#NET "AV_D0" LOC = "L5";
+#NET "AV_D1" LOC = "K6";
+#NET "AV_D2" LOC = "K5";
+#NET "AV_D3" LOC = "K4";
+#NET "AV_D4" LOC = "J4";
+#NET "AV_D5" LOC = "H2";
+#NET "AV_D6" LOC = "J1";
+#NET "AV_D7" LOC = "J2";
+#NET "AV_D8" LOC = "K1";
+#NET "AV_D9" LOC = "J3";
+#NET "AV_D10" LOC = "K2";
+#NET "AV_D11" LOC = "L2";
+#NET "AV_D12" LOC = "K3";
+#NET "AV_D13" LOC = "L1";
+#NET "AV_D14" LOC = "M3";
+#NET "AV_D15" LOC = "M1";
+#NET "AV_D16" LOC = "L4";
+#NET "AV_D17" LOC = "M2";
+#NET "AV_D18" LOC = "N1";
+#NET "AV_D19" LOC = "N2";
+#NET "AV_D20" LOC = "P1";
+#NET "AV_D21" LOC = "M4";
+#NET "AV_D22" LOC = "M5";
+#NET "AV_D23" LOC = "N5";
+#NET "AV_D24" LOC = "M6";
+#NET "AV_D25" LOC = "N6";
+#NET "AV_D26" LOC = "M7";
+#NET "AV_D27" LOC = "N7";
+#NET "AV_D28" LOC = "M8";
+#NET "AV_D29" LOC = "N8";
+#NET "AV_D30" LOC = "P9";
+#NET "AV_D31" LOC = "R9";
+#
+#NET "AV_CTL0" LOC = "H11";
+#NET "AV_CTL1" LOC = "E14";
+#NET "AV_CTL2" LOC = "C13";
+#NET "AV_CTL3" LOC = "D14";
+#NET "AV_CTL4" LOC = "D13";
+#NET "AV_CTL5" LOC = "G12";
+#NET "AV_CTL6" LOC = "D11";
+#NET "AV_CTL7" LOC = "G11";
+#NET "AV_CTL8" LOC = "E11";
+#NET "AV_CTL9" LOC = "G10";
+#NET "AV_CTL10" LOC = "E10";
+#NET "AV_CTL11" LOC = "D10";
+#NET "AV_CTL12" LOC = "F10";
+#NET "AV_CTL13" LOC = "F9";
+#NET "AV_CTL14" LOC = "B8";
+#NET "AV_CTL15" LOC = "A8";
+#NET "AV_CTL16" LOC = "C8";
+#NET "AV_CTL17" LOC = "C7";
+#NET "AV_CTL18" LOC = "D7";
+#NET "AV_CTL19" LOC = "D8";
+#NET "AV_CTL20" LOC = "G9";
+#NET "AV_CTL21" LOC = "G8";
+#
+###########################################################
+#                  AVBus Connector (P11)                  #
+###########################################################
+#
+#NET "AV_B_IO0" LOC = "U9";
+#NET "AV_B_IO1" LOC = "U8";
+#NET "AV_B_IO2" LOC = "T9";
+#NET "AV_B_IO3" LOC = "T8";
+#NET "AV_B_IO4" LOC = "W8";
+#NET "AV_B_IO5" LOC = "U7";
+#NET "AV_B_IO6" LOC = "V8";
+#NET "AV_B_IO7" LOC = "T7";
+#NET "AV_B_IO8" LOC = "W7";
+#NET "AV_B_IO9" LOC = "V6";
+#NET "AV_B_IO10" LOC = "V7";
+#NET "AV_B_IO11" LOC = "T6";
+#NET "AV_B_IO12" LOC = "AA6";
+#NET "AV_B_IO13" LOC = "W5";
+#NET "AV_B_IO14" LOC = "W6";
+#NET "AV_B_IO15" LOC = "V5";
+#NET "AV_B_IO16" LOC = "AA5";
+#NET "AV_B_IO17" LOC = "U2";
+#NET "AV_B_IO18" LOC = "Y5";
+#NET "AV_B_IO19" LOC = "U1";
+#NET "AV_B_IO20" LOC = "T5";
+#NET "AV_B_IO21" LOC = "V2";
+#NET "AV_B_IO22" LOC = "U5";
+#NET "AV_B_IO23" LOC = "V1";
+#NET "AV_B_IO24" LOC = "T4";
+#NET "AV_B_IO25" LOC = "W2";
+#NET "AV_B_IO26" LOC = "T3";
+#NET "AV_B_IO27" LOC = "W1";
+#NET "AV_B_IO28" LOC = "U4";
+#NET "AV_B_IO29" LOC = "Y1";
+#NET "AV_B_IO30" LOC = "U3";
+#NET "AV_B_IO31" LOC = "AA2";
+#NET "AV_B_IO32" LOC = "V4";
+#NET "AV_B_IO33" LOC = "AA1";
+#NET "AV_B_IO34" LOC = "V3";
+#NET "AV_B_IO35" LOC = "AB2";
+#NET "AV_B_IO36" LOC = "W4";
+#NET "AV_B_IO37" LOC = "AB1";
+#NET "AV_B_IO38" LOC = "W3";
+#NET "AV_B_IO39" LOC = "AC2";
+#NET "AV_B_IO40" LOC = "Y4";
+#NET "AV_B_IO41" LOC = "AD6";
+#NET "AV_B_IO42" LOC = "Y2";
+#NET "AV_B_IO43" LOC = "AD5";
+#NET "AV_B_IO44" LOC = "AA4";
+#NET "AV_B_IO45" LOC = "AG3";
+#NET "AV_B_IO46" LOC = "AA3";
+#NET "AV_B_IO47" LOC = "AG2";
+#NET "AV_B_IO48" LOC = "AB4";
+#NET "AV_B_IO49" LOC = "AG1";
+#NET "AV_B_IO50" LOC = "AB3";
+#NET "AV_B_IO51" LOC = "AH4";
+#NET "AV_B_IO52" LOC = "AC4";
+#NET "AV_B_IO53" LOC = "AH2";
+#NET "AV_B_IO54" LOC = "AC3";
+#NET "AV_B_IO55" LOC = "AH1";
+#
+#NET "AV_CTL24" LOC = "H9";
+#NET "AV_CTL25" LOC = "J15";
+#NET "AV_CTL26" LOC = "H10";
+#NET "AV_CTL27" LOC = "H12";
+##
+#NET "V33_IO0" LOC = "J5";
+#NET "V33_IO1" LOC = "J14";
+#NET "V33_IO2" LOC = "H14";
+#NET "V33_IO3" LOC = "J6";
+#NET "V33_IO4" LOC = "H3";
+#NET "V33_IO5" LOC = "G14";
+#NET "V33_IO6" LOC = "F14";
+#NET "V33_IO7" LOC = "H4";
+#NET "V33_IO8" LOC = "G1";
+#NET "V33_IO9" LOC = "H13";
+#NET "V33_IO10" LOC = "G13";
+#NET "V33_IO11" LOC = "G3";
+#NET "V33_IO12" LOC = "G4";
+#NET "V33_IO13" LOC = "E13";
+#NET "V33_IO14" LOC = "F12";
+#NET "V33_IO15" LOC = "F1";
+#NET "V33_IO16" LOC = "F3";
+#NET "V33_IO17" LOC = "E12";
+#NET "V33_IO18" LOC = "F11";
+#NET "V33_IO19" LOC = "F4";
+#NET "V33_IO20" LOC = "E1";
+#NET "V33_IO21" LOC = "C11";
+#NET "V33_IO22" LOC = "A10";
+#NET "V33_IO23" LOC = "E3";
+#NET "V33_IO24" LOC = "E4";
+#NET "V33_IO25" LOC = "B10";
+#NET "V33_IO26" LOC = "B9";
+#NET "V33_IO27" LOC = "D1";
+#NET "V33_IO28" LOC = "D2";
+#NET "V33_IO29" LOC = "C10";
+#NET "V33_IO30" LOC = "C9";
+#
+#####################################################
+#                  Debug Port                       #
+#####################################################
+#
+#NET "CPU_HALT#" LOC = "E16";
+#NET "CPU_TCK" LOC = "D17";
+#NET "CPU_TDI" LOC = "C18";
+#NET "CPU_TDO" LOC = "J16";
+#NET "CPU_TMS" LOC = "D18";
+#NET "CPU_TRST" LOC = "H16";
+#
+#####################################################
+#                DDR SDRAM SODIMM                   #
+#####################################################
+#
+#NET "DIMM_A0" LOC = "V25";
+#NET "DIMM_A1" LOC = "U26";
+#NET "DIMM_A2" LOC = "T28";
+#NET "DIMM_A3" LOC = "T25";
+#NET "DIMM_A4" LOC = "U27";
+#NET "DIMM_A5" LOC = "T26";
+#NET "DIMM_A6" LOC = "R27";
+#NET "DIMM_A7" LOC = "R25";
+#NET "DIMM_A8" LOC = "R28";
+#NET "DIMM_A9" LOC = "P26";
+#NET "DIMM_A10" LOC = "V26";
+#NET "DIMM_A11" LOC = "M30";
+#NET "DIMM_A12" LOC = "P27";
+##
+#NET "DIMM_BA0" LOC = "T27";
+#NET "DIMM_BA1" LOC = "R26";
+#NET "DIMM_CAS#" LOC = "T23";
+#NET "DIMM_CKE0" LOC = "P30";
+#NET "DIMM_CKE1" LOC = "R24";
+#NET "DIMM_CLK0" LOC = "K29";
+#NET "DIMM_CLK0#" LOC = "L29";
+#NET "DIMM_CLK1" LOC = "AA29";
+#NET "DIMM_CLK1#" LOC = "Y29";
+##
+#NET "DIMM_D0" LOC = "G25";
+#NET "DIMM_D1" LOC = "G26";
+#NET "DIMM_D2" LOC = "J23";
+#NET "DIMM_D3" LOC = "J24";
+#NET "DIMM_D4" LOC = "C26";
+#NET "DIMM_D5" LOC = "C27";
+#NET "DIMM_D6" LOC = "C30";
+#NET "DIMM_D7" LOC = "D26";
+#NET "DIMM_D8" LOC = "K25";
+#NET "DIMM_D9" LOC = "K26";
+#NET "DIMM_D10" LOC = "K27";
+#NET "DIMM_D11" LOC = "K28";
+#NET "DIMM_D12" LOC = "D28";
+#NET "DIMM_D13" LOC = "H29";
+#NET "DIMM_D14" LOC = "J29";
+#NET "DIMM_D15" LOC = "J28";
+#NET "DIMM_D16" LOC = "L26";
+#NET "DIMM_D17" LOC = "L27";
+#NET "DIMM_D18" LOC = "M25";
+#NET "DIMM_D19" LOC = "M26";
+#NET "DIMM_D20" LOC = "J27";
+#NET "DIMM_D21" LOC = "K30";
+#NET "DIMM_D22" LOC = "M28";
+#NET "DIMM_D23" LOC = "M29";
+#NET "DIMM_D24" LOC = "M27";
+#NET "DIMM_D25" LOC = "N27";
+#NET "DIMM_D26" LOC = "N26";
+#NET "DIMM_D27" LOC = "N25";
+#NET "DIMM_D28" LOC = "N28";
+#NET "DIMM_D29" LOC = "N29";
+#NET "DIMM_D30" LOC = "P28";
+#NET "DIMM_D31" LOC = "P29";
+#NET "DIMM_D32" LOC = "V28";
+#NET "DIMM_D33" LOC = "V27";
+#NET "DIMM_D34" LOC = "W26";
+#NET "DIMM_D35" LOC = "W28";
+#NET "DIMM_D36" LOC = "U30";
+#NET "DIMM_D37" LOC = "V30";
+#NET "DIMM_D38" LOC = "V29";
+#NET "DIMM_D39" LOC = "W29";
+#NET "DIMM_D40" LOC = "W27";
+#NET "DIMM_D41" LOC = "W25";
+#NET "DIMM_D42" LOC = "Y26";
+#NET "DIMM_D43" LOC = "Y27";
+#NET "DIMM_D44" LOC = "Y30";
+#NET "DIMM_D45" LOC = "AA27";
+#NET "DIMM_D46" LOC = "AA28";
+#NET "DIMM_D47" LOC = "AB30";
+#NET "DIMM_D48" LOC = "AA26";
+#NET "DIMM_D49" LOC = "AB28";
+#NET "DIMM_D50" LOC = "AB27";
+#NET "DIMM_D51" LOC = "AA25";
+#NET "DIMM_D52" LOC = "AC29";
+#NET "DIMM_D53" LOC = "AC28";
+#NET "DIMM_D54" LOC = "AC27";
+#NET "DIMM_D55" LOC = "AG30";
+#NET "DIMM_D56" LOC = "AD26";
+#NET "DIMM_D57" LOC = "AD25";
+#NET "DIMM_D58" LOC = "AG26";
+#NET "DIMM_D59" LOC = "AH26";
+#NET "DIMM_D60" LOC = "AG29";
+#NET "DIMM_D61" LOC = "AG28";
+#NET "DIMM_D62" LOC = "AH29";
+#NET "DIMM_D63" LOC = "AH27";
+#
+#NET "DIMM_I2C_SCL" LOC = "AF25";
+#NET "DIMM_I2C_SDA" LOC = "AE26";
+#NET "DIMM_MASK0" LOC = "R22";
+#NET "DIMM_MASK1" LOC = "N23";
+#NET "DIMM_MASK2" LOC = "N24";
+#NET "DIMM_MASK3" LOC = "P24";
+#NET "DIMM_MASK4" LOC = "U24";
+#NET "DIMM_MASK5" LOC = "W24";
+#NET "DIMM_MASK6" LOC = "V23";
+#NET "DIMM_MASK7" LOC = "U22";
+#NET "DIMM_RAS#" LOC = "R23";
+#NET "DIMM_S0" LOC = "T29";
+#NET "DIMM_S1" LOC = "U28";
+#NET "DIMM_STROBE0" LOC = "P22";
+#NET "DIMM_STROBE1" LOC = "M23";
+#NET "DIMM_STROBE2" LOC = "M24";
+#NET "DIMM_STROBE3" LOC = "P23";
+#NET "DIMM_STROBE4" LOC = "U23";
+#NET "DIMM_STROBE5" LOC = "V24";
+#NET "DIMM_STROBE6" LOC = "W23";
+#NET "DIMM_STROBE7" LOC = "T22";
+#NET "DIMM_WE#" LOC = "T24";
+#
+###############################################################
+#                   Ethernet PHY                              #
+###############################################################
+#
+#NET "phy_reset_n"     LOC = "H19";			#"GBE_RST#"
+#NET "phy_col"     LOC = "B23";			#"GMII_COL"
+#NET "phy_crs"     LOC = "C23";			#"GMII_CRS"
+#NET "phy_rxd<0>"    LOC = "D20";			#"GMII_RXD0"
+#NET "phy_rxd<1>"    LOC = "H22";			#"GMII_RXD1"
+#NET "phy_rxd<2>"    LOC = "H20";			#"GMII_RXD2"
+#NET "phy_rxd<3>"    LOC = "G21";			#"GMII_RXD3"
+#NET "phy_rxck"  LOC = "B16";			#"GMII_RX_CLK"
+#NET "phy_rxdv"   LOC = "E20";			#"GMII_RX_DV"
+#NET "phy_rxer"   LOC = "D23";			#"GMII_RX_ER"
+#NET "phy_txd<0>"    LOC = "E24";			#"GMII_TXD0"
+#NET "phy_txd<1>"    LOC = "D24";			#"GMII_TXD1"
+#NET "phy_txd<2>"    LOC = "C24";			#"GMII_TXD2"
+#NET "phy_txd<3>"    LOC = "F23";			#"GMII_TXD3"
+#NET "phy_txck"  LOC = "C16";			#"GMII_TX_CLK"
+#NET "phy_txen"   LOC = "G23";			#"GMII_TX_EN"
+#NET "phy_txer"   LOC = "G22";			#"GMII_TX_ER"
+#NET "phy_txck" 		TNM_NET = "phy_txck";
+#TIMESPEC "TS_phy_txck" = PERIOD "phy_txck" 25 MHz HIGH 50 %;
+#NET "phy_rxck" 		TNM_NET = "phy_rxck";
+#TIMESPEC "TS_phy_rxck" = PERIOD "phy_rxck" 25 MHz HIGH 50 %;
+###############################################################
+##                      Rocket I/O (MGT)                      #
+###############################################################
+##
+#NET "RX_P" LOC = "A25"; #PAD4 for P2
+#NET "RX_N" LOC = "A24";
+##
+#NET "TX_P" LOC = "A26";
+#NET "TX_N" LOC = "A27";
+##
+##NET "RXPPAD4" LOC = "A25";
+#NET "RXNPAD4" LOC = "A24";
+##
+#NET "TXPPAD4" LOC = "A26";
+#NET "TXNPAD4" LOC = "A27";
+##
+##
+#NET "RXPPAD6" LOC = "A18";
+#NET "RXNPAD6" LOC = "A17";
+##
+#NET "TXPPAD6" LOC = "A19";
+#NET "TXNPAD6" LOC = "A20";
+##
+##
+#NET "RXPPAD7" LOC = "A12";
+#NET "RXNPAD7" LOC = "A11";
+##
+#NET "TXPPAD7" LOC = "A13";
+#NET "TXNPAD7" LOC = "A14";
+##
+##
+#NET "RXPPAD9" LOC = "A5";
+#NET "RXNPAD9" LOC = "A4";
+##
+#NET "TXPPAD9" LOC = "A6";
+#NET "TXNPAD9" LOC = "A7";
+##
+##
+##NET "RXPPAD16" LOC = "AK5";
+##NET "RXNPAD16" LOC = "AK4";
+##
+#NET "TXPPAD16" LOC = "AK6";
+#NET "TXNPAD16" LOC = "AK7";
+##
+##
+#NET "RXPPAD18" LOC = "AK12";
+#NET "RXNPAD18" LOC = "AK11";
+##
+#NET "TXPPAD18" LOC = "AK13";
+#NET "TXNPAD18" LOC = "AK14";
+##
+##
+#NET "RXPPAD19" LOC = "AK18";
+#NET "RXNPAD19" LOC = "AK17";
+##
+#NET "TXPPAD19" LOC = "AK19";
+#NET "TXNPAD19" LOC = "AK20";
+##
+##
+#NET "RXPPAD21" LOC = "AK25";
+#NET "RXNPAD21" LOC = "AK24";
+##
+#NET "TXPPAD21" LOC = "AK26";
+#NET "TXNPAD21" LOC = "AK27";
+#
+##############################################################
+#                XAUI Management Signals                     #
+##############################################################
+#
+#NET "XAUI_LASI" LOC = "AH5";
+#NET "XAUI_MDC" LOC = "H21";
+#NET "XAUI_MDIO" LOC = "F21";
+#NET "XAUI_MDIO_DIR" LOC = "D15";
+##
+##############################################################
+#                SFP Management Signals                      #
+##############################################################
+#
+#NET "SFP0_LOS" LOC = "E8";
+#NET "SFP0_TX_FAULT" LOC = "E9";
+##
+#NET "SFP1_LOS" LOC = "F7";
+#NET "SFP1_TX_FAULT" LOC = "F8";
+#
+##############################################################
+#                    SMA Connectors                          #
+##############################################################
+#
+#NET "RXRECCLK" LOC = "AF15"; #J2
+#
+#NET "USR_CLK_N" LOC = "AG15";
+#NET "USR_CLK_P" LOC = "AF15";
+##
+#NET "SMA_AV_CTL_N" LOC = "B15";   # AV_CTL22
+#NET "SMA_AV_CTL_P" LOC = "C15";   # AV_CTL23
+#
+##############################################################
+#                     Serial Ports                           #
+##############################################################
+#
+#NET "TRGT_RXD1" LOC = "AK3";
+#NET "TRGT_TXD1" LOC = "AJ3";
+NET "RX" LOC = "AK3";
+NET "TX" LOC = "AJ3";
+##
+#NET "TRGT_RXD2" LOC = "D29";
+#NET "TRGT_TXD2" LOC = "D30";
+#
+##############################################################
+#                    AVBus Connector (P12)                   #
+##############################################################
+#
+#NET "V25_B_IO0" LOC = "AH10";
+#NET "V25_B_IO1" LOC = "AK10";
+#NET "V25_B_IO2" LOC = "AJ10";
+#NET "V25_B_IO3" LOC = "AG11";
+#NET "V25_B_IO4" LOC = "AA7";
+#NET "V25_B_IO5" LOC = "AH11";
+#NET "V25_B_IO6" LOC = "AA8";
+#NET "V25_B_IO7" LOC = "AE12";
+#NET "V25_B_IO8" LOC = "AF11";
+#NET "V25_B_IO9" LOC = "AF12";
+#NET "V25_B_IO10" LOC = "AE11";
+#NET "V25_B_IO11" LOC = "AG13";
+#NET "V25_B_IO12" LOC = "Y7";
+#NET "V25_B_IO13" LOC = "AH13";
+#NET "V25_B_IO14" LOC = "Y8";
+#NET "V25_B_IO15" LOC = "AB14";
+#NET "V25_B_IO16" LOC = "AF13";
+#NET "V25_B_IO17" LOC = "AC14";
+#NET "V25_B_IO18" LOC = "AD13";
+#NET "V25_B_IO19" LOC = "AC18";
+#NET "V25_B_IO20" LOC = "AC13";
+#NET "V25_B_IO21" LOC = "AF18";
+#NET "V25_B_IO22" LOC = "AB17";
+#NET "V25_B_IO23" LOC = "AG18";
+#NET "V25_B_IO24" LOC = "AC17";
+#NET "V25_B_IO25" LOC = "AF19";
+#NET "V25_B_IO26" LOC = "AD18";
+#NET "V25_B_IO27" LOC = "AE20";
+#NET "V25_B_IO28" LOC = "AH18";
+#NET "V25_B_IO29" LOC = "AF20";
+#NET "V25_B_IO30" LOC = "AE19";
+#NET "V25_B_IO31" LOC = "AH21";
+#NET "V25_B_IO32" LOC = "AH20";
+#NET "V25_B_IO33" LOC = "AJ21";
+#NET "V25_B_IO34" LOC = "AG20";
+#NET "V25_B_IO35" LOC = "AK21";
+#NET "V25_B_IO36" LOC = "AF28";
+#NET "V25_B_IO37" LOC = "AF27";
+#NET "V25_B_IO38" LOC = "AF30";
+#NET "V25_B_IO39" LOC = "AE28";
+#NET "V25_B_IO40" LOC = "AF29";
+#NET "V25_B_IO41" LOC = "AE27";
+#NET "V25_B_IO42" LOC = "AE30";
+#NET "V25_B_IO43" LOC = "AD28";
+#NET "V25_B_IO44" LOC = "AE29";
+#NET "V25_B_IO45" LOC = "AD27";
+#NET "V25_B_IO46" LOC = "AD30";
+#NET "V25_B_IO47" LOC = "AC26";
+#NET "V25_B_IO48" LOC = "AD29";
+#NET "V25_B_IO49" LOC = "AC25";
+#NET "V25_B_IO50" LOC = "AB26";
+#NET "V25_B_IO51" LOC = "AB24";
+#NET "V25_B_IO52" LOC = "AB25";
+#NET "V25_B_IO53" LOC = "AB23";
+#NET "V25_B_IO54" LOC = "AA24";
+#NET "V25_B_IO55" LOC = "Y23";
+#NET "V25_B_IO56" LOC = "AA23";
+#NET "V25_B_IO57" LOC = "Y24";
+#NET "V25_B_IO58" LOC = "K23";
+#NET "V25_B_IO59" LOC = "L23";
+#NET "V25_B_IO60" LOC = "K24";
+#NET "V25_B_IO61" LOC = "L24";
+#NET "V25_B_IO62" LOC = "H26";
+#NET "V25_B_IO63" LOC = "J25";
+#NET "V25_B_IO64" LOC = "H27";
+#NET "V25_B_IO65" LOC = "J26";
+#NET "V25_B_IO66" LOC = "H28";
+#NET "V25_B_IO67" LOC = "H25";
+#NET "V25_B_IO68" LOC = "G29";
+#NET "V25_B_IO69" LOC = "G27";
+#NET "V25_B_IO70" LOC = "F27";
+#NET "V25_B_IO71" LOC = "G28";
+#NET "V25_B_IO72" LOC = "F28";
+#NET "V25_B_IO73" LOC = "G30";
+#NET "V25_B_IO74" LOC = "E28";
+#NET "V25_B_IO75" LOC = "F29";
+#NET "V25_B_IO76" LOC = "E29";
+#NET "V25_B_IO77" LOC = "F30";
+#NET "V25_B_IO78" LOC = "E30";
+#NET "V25_B_IO79" LOC = "E27";
+#NET "V25_B_IO80" LOC = "C22";
+#NET "V25_B_IO81" LOC = "B22";
+#NET "V25_B_IO82" LOC = "B21";
+#NET "V25_B_IO83" LOC = "A21";
+#NET "V25_B_IO84" LOC = "C21";
+#NET "V25_B_IO85" LOC = "C20";
+#NET "V25_B_IO86" LOC = "F20";
+#NET "V25_B_IO87" LOC = "F19";
+#
+################################################################
+#                       JP16 Header                            #
+################################################################
+#
+#NET "V25_B_IO88" LOC = "E19";
+#NET "V25_B_IO89" LOC = "E18";
+#NET "V25_B_IO90" LOC = "H18";
+#NET "V25_B_IO91" LOC = "G18";
+#NET "V25_B_IO92" LOC = "G17";
+#NET "V25_B_IO93" LOC = "F17";
+#NET "V25_B_IO94" LOC = "J17";
+#NET "V25_B_IO95" LOC = "H17";
+#NET "V25_B_IO96" LOC = "AB8";
+#NET "V25_B_IO97" LOC = "AB7";
+#NET "V25_B_IO98" LOC = "AB6";
+#NET "V25_B_IO99" LOC = "AC6";
+#NET "V25_B_IO100" LOC = "AF6";
+#NET "V25_B_IO101" LOC = "AB5";
+#NET "V25_B_IO102" LOC = "AC5";
+#NET "V25_B_IO103" LOC = "AE5";
+#NET "V25_B_IO104" LOC = "AF4";
+#NET "V25_B_IO105" LOC = "AE4";
+#NET "V25_B_IO106" LOC = "AD4";
+#NET "V25_B_IO107" LOC = "AF3";
+#NET "V25_B_IO108" LOC = "AF2";
+#NET "V25_B_IO109" LOC = "AF1";
+#NET "V25_B_IO110" LOC = "AE3";
+#NET "V25_B_IO111" LOC = "AE2";
+#NET "V25_B_IO112" LOC = "AE1";
+#NET "V25_B_IO113" LOC = "AD3";
+#NET "V25_B_IO114" LOC = "AD2";
+#NET "V25_B_IO115" LOC = "AD1";
+#
+#NET "V33_IO31" LOC = "H5";
+#NET "V33_IO32" LOC = "E2";
+#NET "V33_IO33" LOC = "F2";
+#NET "V33_IO34" LOC = "K8";
+#NET "V33_IO35" LOC = "K7";
+#NET "V33_IO36" LOC = "G2";
+#NET "V33_IO37" LOC = "H6";
+#NET "V33_IO38" LOC = "L7";
+#NET "V33_IO39" LOC = "L8";
+#
