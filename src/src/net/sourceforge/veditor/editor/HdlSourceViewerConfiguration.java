@@ -16,6 +16,8 @@ import java.util.Vector;
 
 import net.sourceforge.veditor.document.HdlDocument;
 import net.sourceforge.veditor.document.VhdlDocument;
+import net.sourceforge.veditor.editor.scanner.HdlPartitionScanner;
+import net.sourceforge.veditor.editor.scanner.HdlScanner;
 import net.sourceforge.veditor.parser.OutlineElement;
 
 import org.eclipse.core.resources.IMarker;
