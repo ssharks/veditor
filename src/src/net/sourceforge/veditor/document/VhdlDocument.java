@@ -12,7 +12,8 @@ package net.sourceforge.veditor.document;
 
 import java.util.Vector;
 
-import net.sourceforge.veditor.editor.HdlPartitionScanner;
+import net.sourceforge.veditor.editor.scanner.HdlPartitionScanner;
+import net.sourceforge.veditor.editor.scanner.vhdl.VhdlPartitionScanner;
 import net.sourceforge.veditor.parser.HdlParserException;
 import net.sourceforge.veditor.parser.IParser;
 import net.sourceforge.veditor.parser.OutlineContainer;
@@ -37,7 +38,7 @@ public class VhdlDocument extends HdlDocument
 
 	public HdlPartitionScanner createPartitionScanner()
 	{
-		return HdlPartitionScanner.createVhdlPartitionScanner();
+		return new VhdlPartitionScanner();
 	}
 	
 	protected IParser createParser(String text)
