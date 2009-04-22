@@ -29,13 +29,12 @@ public class VhdlPartitionScanner extends HdlPartitionScanner {
 
         List<IPredicateRule> rules = new ArrayList<IPredicateRule>();
 
-        rules.add(new VhdlCommentRule(taskTagToken));
 
         // doxygen comment
-        //rules.add(new EndOfLineRule("--!", doxygenCommentToken));
+        rules.add(new EndOfLineRule("--!", doxygenSingleLineCommentToken));
 
         // single line comments.
-        //rules.add(new EndOfLineRule("--", singleLineCommentToken));
+        rules.add(new EndOfLineRule("--", singleLineCommentToken));
 
         // strings.
         rules.add(new SingleLineRule("\"", "\"", stringToken, '\\'));
