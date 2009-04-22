@@ -15,6 +15,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import net.sourceforge.veditor.VerilogPlugin;
 import net.sourceforge.veditor.parser.HdlParserException;
@@ -27,8 +29,10 @@ import net.sourceforge.veditor.parser.vhdl.VhdlParserCore;
 import net.sourceforge.veditor.semanticwarnings.SemanticWarnings;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
+
 
 /**
  * implementation class of VhdlParserCore<p/>
@@ -47,6 +51,7 @@ public class VhdlParser extends VhdlParserCore implements IParser
 	private int m_EndCommentBlock;
 	private StringBuffer m_Comment;
 	private OutlineContainer m_OutlineContainer;
+	private Pattern[] taskTokenPattern;
 
 
 	public VhdlParser(Reader reader, IProject project, IFile file)
@@ -61,6 +66,13 @@ public class VhdlParser extends VhdlParserCore implements IParser
 		if(database != null){
 			m_OutlineContainer = database.getOutlineContainer(file);
 		}
+		
+		taskTokenPattern=new Pattern[taskCommentTokens.length];
+		for(int i=0; i< taskCommentTokens.length;i++){
+		    String regex=".*\\b("+taskCommentTokens[i]+")(\\b.*)";
+		    taskTokenPattern[i]= Pattern.compile(regex);
+		}
+		
 	}
 	
 	protected void addCollapsible(int startLine,int endLine){		
@@ -161,12 +173,62 @@ public class VhdlParser extends VhdlParserCore implements IParser
 			VerilogPlugin.setErrorMarker(m_File, error.getLine(), error.getMessage());
 		}
 	}
+	
+	/**
+	 * Checks to see if a comment starts with one of the task tokens
+	 * @param comment The comment to check
+	 * @param msg String array to receive the message type associated with the string
+	 * @return The string of the Token. null if the comment does not have a task token
+	 */
+	protected String getTaskToken(String comment,String []msg ){
+	    	    
+	    for(Pattern pattern:taskTokenPattern){	        
+	        Matcher matcher= pattern.matcher(comment);
+	        if(matcher.find()){	            
+	            msg[0]=matcher.group(1)+matcher.group(2);
+	            return matcher.group(1);
+	        }
+	    }
+	    //if we get here, no task was found
+	    return null;
+	}
+	
+	/**
+	 * Adds a task to the given line based on the comment token
+	 * @param type
+	 * @param line
+	 */
+	protected void addTaskToLine(String type,String msg, int line){
+	    //The first marker is considered high priority
+	    if(type.startsWith(taskCommentTokens[0])){
+	        VerilogPlugin.setTaskMarker(m_File, line, msg,IMarker.PRIORITY_HIGH);
+	    }
+	    else{
+	        VerilogPlugin.setTaskMarker(m_File, line, msg,IMarker.PRIORITY_NORMAL);
+	    }
+	}
+	
+	/**
+	 * Removes a task from the given line
+	 * @param line Line number to remove the task from
+	 */
+	protected void removeTaskFromLine(int line){
+	    VerilogPlugin.clearAutoTaskMarker(m_File, line);
+	}
+	
+	/**
+	 * Removes all the auto generated tasks from the file
+	 */
+	protected void clearAutoTasks(){
+	    VerilogPlugin.clearAllAutoTaskMarkers(m_File);
+	}
 	/**
 	 * parse line comment for content outline
 	 */
 	protected void parseLineComment() {
 		try {
 			m_Reader.reset();
+			clearAutoTasks();
 
 			int line = 1;
 			int column = 0;
@@ -182,27 +244,33 @@ public class VhdlParser extends VhdlParserCore implements IParser
 					case '\n' :
 						line++;
 						column = 0;
-					firstNonSpace=0;
+						firstNonSpace=0;
 						break;
 					case '-' :
 						//comment
 					if (c[0] == '-') {
 							String comment = getLineComment(m_Reader);
 							if (comment != null){
+							    String []msg=new String[1];
 								addComment(line, comment);
+								//check to see if we need to add a task
+								String taskToken=getTaskToken(comment,msg);
+								if(taskToken != null){								    
+								    addTaskToLine(taskToken, msg[0], line);
+								}								
 							}
-						//if the beginning of the comment (the first "-" of "--") is
-						//the first non space character of the line 
-						if (column-1 == firstNonSpace) {
-							coalesceComments(line);
-							}
-						// increment the line counter because getLineComment
-						// consumes the new line character
+    						//if the beginning of the comment (the first "-" of "--") is
+    						//the first non space character of the line 
+    						if (column-1 == firstNonSpace) {
+    							coalesceComments(line);
+    							}
+    						// increment the line counter because getLineComment
+    						// consumes the new line character
 							line++;
 							column = 0;
-						c[0]=0;
-						c[1]=0;
-						firstNonSpace=0;
+							c[0]=0;
+							c[1]=0;
+							firstNonSpace=0;
 						}
 						break;
 					default :
