@@ -11,6 +11,7 @@
 package net.sourceforge.veditor.editor;
 
 import net.sourceforge.veditor.document.VhdlDocumentProvider;
+import net.sourceforge.veditor.editor.scanner.HdlPartitionScanner;
 
 import org.eclipse.jface.text.DocumentCommand;
 import org.eclipse.jface.text.IAutoEditStrategy;
