@@ -16,6 +16,7 @@ import java.util.Vector;
 
 import net.sourceforge.veditor.document.HdlDocument;
 import net.sourceforge.veditor.document.VhdlDocument;
+import net.sourceforge.veditor.editor.scanner.HdlCommentScanner;
 import net.sourceforge.veditor.editor.scanner.HdlPartitionScanner;
 import net.sourceforge.veditor.editor.scanner.HdlScanner;
 import net.sourceforge.veditor.parser.OutlineElement;
@@ -117,21 +118,37 @@ abstract public class HdlSourceViewerConfiguration extends
 			ISourceViewer sourceViewer)
 	{
 		PresentationReconciler reconciler = new PresentationReconciler();
-
+		
 		DefaultDamagerRepairer dr;
 		dr = new DefaultDamagerRepairer(getHdlScanner());
 		reconciler.setDamager(dr, IDocument.DEFAULT_CONTENT_TYPE);
 		reconciler.setRepairer(dr, IDocument.DEFAULT_CONTENT_TYPE);
-
-		String[] contentTypes = HdlPartitionScanner.getContentTypes();
+		
+	    String[] contentTypes = HdlPartitionScanner.getContentTypes();
 		HdlTextAttribute[] attrs = HdlPartitionScanner.getContentTypeAttributes();
 		for (int i = 0; i < contentTypes.length; i++)
 		{
 			addRepairer(reconciler, attrs[i], contentTypes[i]);
 		}
+		
+	    addCommentScanner(reconciler, HdlTextAttribute.SINGLE_LINE_COMMENT,HdlPartitionScanner.SINGLE_LINE_COMMENT);
+	    addCommentScanner(reconciler, HdlTextAttribute.MULTI_LINE_COMMENT,HdlPartitionScanner.MULTI_LINE_COMMENT);
+	    addCommentScanner(reconciler, HdlTextAttribute.DOXYGEN_COMMENT,HdlPartitionScanner.DOXYGEN_SINGLE_LINE_COMMENT);     
+	    addCommentScanner(reconciler, HdlTextAttribute.DOXYGEN_COMMENT,HdlPartitionScanner.DOXYGEN_MULTI_LINE_COMMENT);
+        
 		return reconciler;
 	}
+	
+	private void addCommentScanner(PresentationReconciler reconciler ,HdlTextAttribute attr,String contentType){	
 
+	    Token defaultToken=new Token(attr.getTextAttribute(colorManager));
+	    HdlCommentScanner commentScanner=new HdlCommentScanner(colorManager,defaultToken);        
+	    DefaultDamagerRepairer dr = new DefaultDamagerRepairer(commentScanner);
+        reconciler.setDamager(dr, contentType);
+        reconciler.setRepairer(dr, contentType);
+    
+	}
+	
 	private void addRepairer(PresentationReconciler reconciler,
 			HdlTextAttribute attr, String partition)
 	{
