@@ -423,5 +423,16 @@
        content-type="net.sourceforge.veditor.simulationLog"
        file-extensions="log"/>
     </extension>
+    
+     <extension
+       id="autotaskmarker"
+       name="Auto Task"
+       point="org.eclipse.core.resources.markers">
+      <persistent value="true"/>       
+      <super type="org.eclipse.core.resources.taskmarker"/>       
+    </extension>
+    
+   
+    
 </plugin>
 
