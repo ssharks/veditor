@@ -90,7 +90,8 @@ public class ColorPreferencePage extends AbstractPreferencePage
 			new TextAttribute("KeyWord", "Reserved word"),
 			new TextAttribute("String", "String"),
 			new TextAttribute("Directive", "Directive"),
-			new TextAttribute("Types", "Types")};
+			new TextAttribute("Types", "Types"),
+			new TextAttribute("AutoTasks", "Auto Tasks (FIXME,TODO,etc)")};
 
     protected Control createContents(Composite parent)
 	{
