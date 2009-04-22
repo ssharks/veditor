@@ -3,5 +3,5 @@
    <description url="http://veditor.sourceforge.net/update">
       VEditor Update Site
    </description>
-   <feature url="features/veditorfeature_0.6.2.1.jar" id="veditorfeature" version="0.6.2.1"/>
+   <feature url="features/veditorfeature_0.6.2.4.jar" id="veditorfeature" version="0.6.2.4"/>
 </site>
