@@ -12,8 +12,8 @@ package net.sourceforge.veditor.document;
 
 import java.util.Vector;
 
-import net.sourceforge.veditor.editor.VerilogPartitionScanner;
 import net.sourceforge.veditor.editor.scanner.HdlPartitionScanner;
+import net.sourceforge.veditor.editor.scanner.verilog.VerilogPartitionScanner;
 import net.sourceforge.veditor.parser.HdlParserException;
 import net.sourceforge.veditor.parser.IParser;
 import net.sourceforge.veditor.parser.OutlineDatabase;
