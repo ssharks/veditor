@@ -18,7 +18,6 @@ import net.sourceforge.veditor.editor.ColorManager;
 import net.sourceforge.veditor.editor.HdlTextAttribute;
 import org.eclipse.jface.text.rules.*;
 
-import net.sourceforge.veditor.editor.scanner.*;
 
 /**
  * find reserved word
