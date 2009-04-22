@@ -12,7 +12,8 @@ package net.sourceforge.veditor.document;
 
 import java.util.Vector;
 
-import net.sourceforge.veditor.editor.HdlPartitionScanner;
+import net.sourceforge.veditor.editor.VerilogPartitionScanner;
+import net.sourceforge.veditor.editor.scanner.HdlPartitionScanner;
 import net.sourceforge.veditor.parser.HdlParserException;
 import net.sourceforge.veditor.parser.IParser;
 import net.sourceforge.veditor.parser.OutlineDatabase;
@@ -33,7 +34,7 @@ public class VerilogDocument extends HdlDocument
 
 	public HdlPartitionScanner createPartitionScanner()
 	{
-		return HdlPartitionScanner.createVerilogPartitionScanner();
+		return new VerilogPartitionScanner();
 	}
 	
 	protected IParser createParser(String text)
