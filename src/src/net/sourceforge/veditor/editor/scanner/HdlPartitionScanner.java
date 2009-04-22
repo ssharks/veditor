@@ -22,14 +22,16 @@ import org.eclipse.jface.text.rules.Token;
  */
 abstract public class HdlPartitionScanner extends RuleBasedPartitionScanner
 {
-	public static final String DOXYGEN_COMMENT = "__hdl_doxygen_comment";
+	public static final String DOXYGEN_SINGLE_LINE_COMMENT = "__hdl_doxygen_singleline_comment";
+	public static final String DOXYGEN_MULTI_LINE_COMMENT = "__hdl_doxygen_multiline_comment";
 	public static final String SINGLE_LINE_COMMENT = "__hdl_singleline_comment";
 	public static final String MULTI_LINE_COMMENT = "__hdl_multiline_comment";
 	public static final String STRING = "__hdl_string";	
 	public static final String TASK_TAG = "_hdl_task_tag";
 	public static IToken stringToken = new Token(STRING);
 	public static IToken singleLineCommentToken = new Token(SINGLE_LINE_COMMENT);
-	public static IToken doxygenCommentToken = new Token(DOXYGEN_COMMENT);
+	public static IToken doxygenSingleLineCommentToken = new Token(DOXYGEN_SINGLE_LINE_COMMENT);
+	public static IToken doxygenMultiLineCommentToken = new Token(DOXYGEN_MULTI_LINE_COMMENT);
 	public static IToken taskTagToken = new Token(TASK_TAG);
 	public static IToken multiLineCommentToken=new Token(MULTI_LINE_COMMENT);
 
@@ -38,7 +40,8 @@ abstract public class HdlPartitionScanner extends RuleBasedPartitionScanner
 	{
 		return new String[] { 
 		        SINGLE_LINE_COMMENT,
-		        DOXYGEN_COMMENT, 
+		        DOXYGEN_SINGLE_LINE_COMMENT, 
+		        DOXYGEN_MULTI_LINE_COMMENT,
 		        MULTI_LINE_COMMENT,
 				STRING,
 				TASK_TAG
@@ -50,6 +53,7 @@ abstract public class HdlPartitionScanner extends RuleBasedPartitionScanner
 		// must be same sequence with getContentTypes
 		return new HdlTextAttribute[] { 
 		        HdlTextAttribute.SINGLE_LINE_COMMENT,
+		        HdlTextAttribute.DOXYGEN_COMMENT,
 		        HdlTextAttribute.DOXYGEN_COMMENT,
 				HdlTextAttribute.MULTI_LINE_COMMENT, 
 				HdlTextAttribute.STRING,
