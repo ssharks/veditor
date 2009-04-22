@@ -18,7 +18,7 @@ import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 
-import net.sourceforge.veditor.editor.HdlPartitionScanner;
+import net.sourceforge.veditor.editor.scanner.HdlPartitionScanner;
 
 import org.eclipse.core.filebuffers.FileBuffers;
 import org.eclipse.core.filebuffers.ITextFileBuffer;
