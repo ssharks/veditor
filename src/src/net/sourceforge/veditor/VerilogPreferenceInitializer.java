@@ -66,6 +66,7 @@ public class VerilogPreferenceInitializer extends AbstractPreferenceInitializer
 		setDefaultAttr(preferences, "KeyWord", "127,00,85", true);
 		setDefaultAttr(preferences, "Directive", "127,00,85", true);
 		setDefaultAttr(preferences, "Types", "64,64,255");
+		setDefaultAttr(preferences, "AutoTasks", "127,159,191",true,true);
 
 		preferences.setDefault("ContentAssist.ModuleParameter", false);
 		preferences.setDefault("ScanProject.Enable", true);
@@ -100,6 +101,14 @@ public class VerilogPreferenceInitializer extends AbstractPreferenceInitializer
 		preferences.setDefault("Bold." + name, bold);
 		preferences.setDefault("Italic." + name, false);
 	}
+	
+	private void setDefaultAttr(Preferences preferences, String name,
+            String color, boolean bold,boolean italic)
+    {
+        preferences.setDefault("Color." + name, color);
+        preferences.setDefault("Bold." + name, bold);
+        preferences.setDefault("Italic." + name, italic);
+    }
 	
 	private void setDefaultStyleSpace(Preferences preferences)
 	{
