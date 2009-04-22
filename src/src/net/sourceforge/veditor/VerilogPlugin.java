@@ -53,7 +53,8 @@ public class VerilogPlugin extends AbstractUIPlugin
 {
 	private static final String CONSOLE_NAME = "veditor";
 	private static VerilogPlugin plugin;
-	private static final String MARKER_TYPE = "org.eclipse.core.resources.problemmarker";
+	private static final String MARKER_TYPE = "org.eclipse.core.resources.problemmarker";	
+	private static final String AUTO_TASK_MARKER = "net.sourceforge.veditor.autotaskmarker";
 	private static final String OUTLINE_DATABASE_ID = "OutlineDatabase";
 	private static final String COLLAPSIBLE_PROPERTY_ID = "collapsible";
 	private static final String HIERARCHY_ID = "Hierarchy";
@@ -286,6 +287,77 @@ public class VerilogPlugin extends AbstractUIPlugin
 	{
 		setProblemMarker(file, IMarker.SEVERITY_INFO, lineNumber, msg);
 
+	}
+	/**
+	 * Creates a task marker
+	 * @param file The resource that needs the task added
+	 * @param lineNumber The line number of the task
+	 * @param msg Task message
+	 */
+	public static void setTaskMarker(IResource file,int lineNumber,String msg,int priority){
+	    //if there's already a marker at this location, remove it
+	    clearAutoTaskMarker(file,lineNumber);
+	    try {
+            IMarker marker = createAutoMarker(file);
+            marker.setAttribute(IMarker.MESSAGE, msg);
+            marker.setAttribute(IMarker.LINE_NUMBER, lineNumber);
+            marker.setAttribute(IMarker.PRIORITY,priority);
+            marker.setAttribute(IMarker.USER_EDITABLE, false);
+        } catch (CoreException e) {           
+            e.printStackTrace();
+        }
+	    
+	}
+	
+	public static IMarker createAutoMarker(IResource file){
+	    try {
+	         IMarker marker = file.createMarker(AUTO_TASK_MARKER);
+	         return marker;
+	      } catch (CoreException e) {
+	         // You need to handle the cases where attribute value is rejected
+	          e.printStackTrace();
+	      }
+	      return null;
+	}
+	/**
+	 * Removes a task marker from the given file and line number
+	 * @param file The resource that has the task in it
+	 * @param lineNumber The line number of the task
+	 */
+	public static void clearAutoTaskMarker(IResource file,int lineNumber){
+	    IMarker[] markers;
+        try {
+            markers = file.findMarkers(AUTO_TASK_MARKER, true, IResource.DEPTH_INFINITE);
+            for (int i = 0; i < markers.length; i++){                
+                Integer tempLineNumber = (Integer)markers[i].getAttribute(IMarker.LINE_NUMBER);
+                //if the line numbers match, remove the marker
+                if(tempLineNumber == lineNumber){
+                    markers[i].delete();
+                    break;
+                }
+            }
+                
+        } catch (CoreException e) {           
+            e.printStackTrace();
+        }
+        
+	}
+	
+	/**
+	 * Removes all the tasks from the file
+	 * @param file The file to remove the tasks from
+	 */
+	public static void clearAllAutoTaskMarkers(IResource file){
+	    IMarker [] markers;
+        try {
+            markers = file.findMarkers(AUTO_TASK_MARKER, false, IResource.DEPTH_INFINITE);
+            for (int i = 0; i < markers.length; i++){        
+                markers[i].delete();       
+                
+            }                
+        } catch (CoreException e) {           
+            e.printStackTrace();
+        }
 	}
 
 	public static void setProblemMarker(IResource file, int level,
