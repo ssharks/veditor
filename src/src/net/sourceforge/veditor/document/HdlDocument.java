@@ -13,7 +13,7 @@ package net.sourceforge.veditor.document;
 import java.util.Vector;
 
 import net.sourceforge.veditor.VerilogPlugin;
-import net.sourceforge.veditor.editor.HdlPartitionScanner;
+import net.sourceforge.veditor.editor.scanner.HdlPartitionScanner;
 import net.sourceforge.veditor.parser.HdlParserException;
 import net.sourceforge.veditor.parser.IParser;
 import net.sourceforge.veditor.parser.OutlineContainer;
