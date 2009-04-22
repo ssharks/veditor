@@ -24,10 +24,12 @@ public class VerilogPartitionScanner extends HdlPartitionScanner {
 
         List<Object> rules = new ArrayList<Object>();
 
+        //rules.add(new VerilogCommentRule(taskTagToken));
+        
         // doxygen comment
-        rules.add(new EndOfLineRule("///", doxygenCommentToken));
-        rules.add(new EndOfLineRule("//@", doxygenCommentToken));
-        rules.add(new MultiLineRule("/**", "*/", doxygenCommentToken));
+        rules.add(new EndOfLineRule("///", doxygenSingleLineCommentToken));
+        rules.add(new EndOfLineRule("//@", doxygenSingleLineCommentToken));
+        rules.add(new MultiLineRule("/**", "*/", doxygenSingleLineCommentToken));
 
         // single line comments.
         rules.add(new EndOfLineRule("//", singleLineCommentToken));
@@ -45,6 +47,10 @@ public class VerilogPartitionScanner extends HdlPartitionScanner {
         IPredicateRule[] result = new IPredicateRule[rules.size()];
         rules.toArray(result);
         setPredicateRules(result);
+    }
+    
+    public int getOffset(){
+        return fOffset;
     }
 
     /**
