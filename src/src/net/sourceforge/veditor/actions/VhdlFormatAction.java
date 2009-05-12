@@ -193,9 +193,13 @@ public class VhdlFormatAction extends AbstractAction {
 				break;
 			case VhdlParserCoreTokenManager.END:
 				if(i<tokens.size()-1 && tokens.get(i+1).kind==VhdlParserCoreTokenManager.CASE) {
+					adjustLineIndentValue(results,token.beginLine, -2);
 					if(incase>0) incase--;
 				}
-				adjustLineIndentValue(results,token.beginLine, -1);
+				else
+				{
+					adjustLineIndentValue(results,token.beginLine, -1);
+				}
 				//skip to eos
 				i=skipTo(";", tokens, i+1);				
 				break;
