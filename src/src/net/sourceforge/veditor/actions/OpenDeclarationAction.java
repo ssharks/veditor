@@ -15,7 +15,9 @@ import java.util.Vector;
 import net.sourceforge.veditor.VerilogPlugin;
 import net.sourceforge.veditor.document.HdlDocument;
 import net.sourceforge.veditor.editor.HdlEditor;
+import net.sourceforge.veditor.parser.OutlineDatabase;
 import net.sourceforge.veditor.parser.OutlineElement;
+import net.sourceforge.veditor.parser.vhdl.VhdlOutlineElementFactory.PackageDeclElement;
 
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
@@ -171,7 +173,29 @@ public class OpenDeclarationAction extends AbstractAction
 			
 			// if module is not found, show popup
 			showPopUp(definitionList, editor, selectionPos);
+		} else { // not found in this file, search in packages of other files
+			OutlineDatabase database = doc.getOutlineDatabase();	
+			if (database != null) {
+				OutlineElement[] elements = database.findTopLevelElements("");
+				for (int i = 0; i < elements.length; i++) {
+					if(elements[i] instanceof PackageDeclElement ){
+						OutlineElement[] subPackageElements=elements[i].getChildren();
+						for(int j=0; j< subPackageElements.length; j++){
+							if ( subPackageElements[j].getName()
+											.equalsIgnoreCase(selectionText)) {
+								editor.showElement(subPackageElements[j]);
+
+							}
+						}
+					}
+				
+				}	
+
+			}
+
+			return ;
 		}
+	
 		
 	}
 }
