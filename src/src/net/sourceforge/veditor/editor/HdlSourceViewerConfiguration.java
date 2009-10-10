@@ -19,7 +19,14 @@ import net.sourceforge.veditor.document.VhdlDocument;
 import net.sourceforge.veditor.editor.scanner.HdlCommentScanner;
 import net.sourceforge.veditor.editor.scanner.HdlPartitionScanner;
 import net.sourceforge.veditor.editor.scanner.HdlScanner;
+import net.sourceforge.veditor.parser.HdlParserException;
+import net.sourceforge.veditor.parser.OutlineContainer;
+import net.sourceforge.veditor.parser.OutlineDatabase;
 import net.sourceforge.veditor.parser.OutlineElement;
+import net.sourceforge.veditor.parser.vhdl.VhdlOutlineElementFactory.ComponentDeclElement;
+import net.sourceforge.veditor.parser.vhdl.VhdlOutlineElementFactory.ComponentInstElement;
+import net.sourceforge.veditor.parser.vhdl.VhdlOutlineElementFactory.PackageDeclElement;
+import net.sourceforge.veditor.parser.vhdl.VhdlOutlineElementFactory.VhdlOutlineElement;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.jface.text.BadLocationException;
@@ -275,28 +282,123 @@ abstract public class HdlSourceViewerConfiguration extends
 		
 		private String getVariableHover(String text, HdlDocument doc, int offset)
 		{
-			String results="";
-			Vector<OutlineElement> definitions=doc.getDefinitionList(text, offset);				
-			for(OutlineElement element:definitions){
-				String commentString;
-				results+=doc.getOutlineDatabase().getOutlineContainer(element.getFile()).getCommentsNear(element);
-				if(doc instanceof VhdlDocument){
-					commentString="--";
+			String results = "";
+			String signalName = text;
+			Vector<OutlineElement> definitions = doc.getDefinitionList(signalName, offset);
+			
+			OutlineElement component = getComponentElement(signalName, doc,offset);
+			boolean atLeftOfComponentInstantion = false;
+			
+			if(component instanceof ComponentInstElement) {
+				String doccontent = doc.get();
+				int indexArrow = doccontent.indexOf("=>", offset);
+				int lineNrArrow,lineNrString;
+				try {
+					lineNrArrow = doc.getLineOfOffset(indexArrow);
+					lineNrString = doc.getLineOfOffset(offset);
+					
+					if (lineNrString == lineNrArrow) {
+						atLeftOfComponentInstantion = true;
+					} else {
+						atLeftOfComponentInstantion = false;
+					}
+				} catch (BadLocationException e) {
 				}
-				else{
-					commentString="//";
-				}
-				results=results.trim();
-				if(results.length() > 0){
-					results=results.replaceAll("^",commentString+" ");
-					results=results.replaceAll("\n","\n"+commentString+" ");
-					results+="\n";
-				}
-				results+=element.getLongName()+"\n";
 			}
 			
+			if(!atLeftOfComponentInstantion) {  
+				for(OutlineElement element:definitions) {
+					String commentString;
+					OutlineDatabase cc=doc.getOutlineDatabase();
+					OutlineContainer pp=cc.getOutlineContainer(element.getFile());
+					results+=pp.getCommentsNear(element);
+					if(doc instanceof VhdlDocument){
+						commentString="--";
+					}
+					else{
+						commentString="//";
+					}
+					results=results.trim();
+					if(results.length() > 0){
+						results=results.replaceAll("^",commentString+" ");
+						results=results.replaceAll("\n","\n"+commentString+" ");
+						results+="\n";
+					}
+					results+=element.getLongName()+"\n";
+				}
+			} else {
+				VhdlOutlineElement component1 = (VhdlOutlineElement) component;
+				String componentName = component1.getTypePart1();
+				OutlineElement componentDef = searchComponent(doc,
+						componentName);
+				String signalType = searchSignalType(componentDef, signalName);
+				results += signalType;
+			}
+				
 			return results;
 		}
+
+		private String searchSignalType(OutlineElement componentDef,String signalName) {
+			if ( componentDef != null) {
+				OutlineElement[] memberElements =  componentDef.getChildren();
+				
+				for (int h = 0; h < memberElements.length; h++) {
+					String componentMember = memberElements[h].getName().toLowerCase();//Access
+					if (componentMember.equalsIgnoreCase(signalName)) {
+						String signalType=((VhdlOutlineElement)memberElements[h]).getTypePart1()+" "+((VhdlOutlineElement)memberElements[h]).getTypePart2();			 
+						 return signalType;
+						 
+						
+					}
+				}
+			}return null;
+		}
+
+		private OutlineElement getComponentElement (String text, HdlDocument doc,int offset) {
+			
+			OutlineElement currentElement = null;
+	         HdlDocument wi=doc;
+	         try {	
+	        	 currentElement=wi.getElementAt(offset,true);
+	         
+	         }
+	         catch (BadLocationException e) {
+	 		} catch (HdlParserException e) {
+	 			e.printStackTrace();			
+	 		}
+			
+	
+		
+			return currentElement;
+			
+		}
+
+	}
+		
+	public static OutlineElement searchComponent(HdlDocument doc,
+			 String componentName) {
+		
+		OutlineDatabase database = doc.getOutlineDatabase();
+		
+		if (database != null) {
+			OutlineElement[] elements = database.findTopLevelElements("");
+			for (int i = 0; i < elements.length; i++) {
+				if(elements[i] instanceof PackageDeclElement ){
+					OutlineElement[] subPackageElements=elements[i].getChildren();
+					for(int j=0; j< subPackageElements.length; j++){
+						if (subPackageElements[j] instanceof ComponentDeclElement
+								&& subPackageElements[j].getName()
+										.equalsIgnoreCase(componentName)) {
+							return subPackageElements[j];
+
+						}
+					}
+				}
+			
+			}	
+
+		}
+		return null;
 	}
 }
 
