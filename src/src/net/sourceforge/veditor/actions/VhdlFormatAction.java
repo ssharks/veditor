@@ -19,7 +19,9 @@ import net.sourceforge.veditor.parser.vhdl.SimpleCharStream;
 import net.sourceforge.veditor.parser.vhdl.Token;
 import net.sourceforge.veditor.parser.vhdl.VhdlParserCoreTokenManager;
 import net.sourceforge.veditor.preference.VhdlCodeStylePreferencePage;
+import net.sourceforge.veditor.editor.scanner.HdlScanner;
 
+import org.eclipse.jface.text.TextUtilities;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.graphics.Point;
 
@@ -27,6 +29,12 @@ public class VhdlFormatAction extends AbstractAction {
 	private boolean m_UseSpaceForTab;
 	private int     m_IndentSize=0;
 	private boolean m_PadOperators=true;
+	private boolean m_IndentLibrary=true;
+	private boolean m_KeywordsLowercase = true;
+	private boolean m_AlignOnArrowRight = true;
+	private boolean m_AlignOnArrowLeft = true;
+	private boolean m_AlignOnColon = true;
+	private String m_eol;
 	
 	public VhdlFormatAction(){
 		super("VhdlFormatAction");
@@ -51,10 +59,12 @@ public class VhdlFormatAction extends AbstractAction {
 		//get the user preferences
 		getPreferences();
 		
+		selectedText = selectedText.replaceAll("\r\n","\n");
+		selectedText = selectedText.replaceAll("\r","\n");
+	
+		selectedText=fixIndentation(selectedText);	
 		selectedText=addSpacePadding(selectedText);
 		selectedText=convertTabs(selectedText);		
-		selectedText=fixIndentation(selectedText);				
-		
 		
 		//replace the text
 		widget.replaceTextRange(begin, end - begin, selectedText);
@@ -75,6 +85,12 @@ public class VhdlFormatAction extends AbstractAction {
 		}
 		
 		m_PadOperators=VerilogPlugin.getPreferenceBoolean(VhdlCodeStylePreferencePage.PAD_OPERATORS);
+		m_IndentLibrary=VerilogPlugin.getPreferenceBoolean(VhdlCodeStylePreferencePage.INDENT_LIBRARY);
+		m_KeywordsLowercase = VerilogPlugin.getPreferenceBoolean(VhdlCodeStylePreferencePage.KEYWORDS_LOWERCASE);
+		m_AlignOnColon = VerilogPlugin.getPreferenceBoolean(VhdlCodeStylePreferencePage.ALIGNONCOLON);
+		m_AlignOnArrowRight = VerilogPlugin	.getPreferenceBoolean(VhdlCodeStylePreferencePage.ALIGNONARROWRIGHT);
+		m_AlignOnArrowLeft = VerilogPlugin	.getPreferenceBoolean(VhdlCodeStylePreferencePage.ALIGNONARROWLEFT);
+		m_eol = TextUtilities.getDefaultLineDelimiter(getViewer().getDocument());
 	}
 	
 	/**
@@ -147,6 +163,9 @@ public class VhdlFormatAction extends AbstractAction {
 		// we keep a counter whether we are in a case structure or not
 		// (cases can be nested)
 		int incase = 0;
+		int use;
+		int EOS;
+		int thenLine = 0;
 		for(int i=0;i < tokens.size();i++){
 			Token token=tokens.get(i);
 			switch(token.kind){
@@ -155,8 +174,28 @@ public class VhdlFormatAction extends AbstractAction {
 				incase++;
 				i = skipTo("is", tokens,i+1);
 				break;
+			case VhdlParserCoreTokenManager.LIBRARY:
+				i = skipTo(";", tokens, i + 1);
+				if (m_IndentLibrary) {
+					// skip to eos
+					use = skipTo("use", tokens, i + 1);
+					EOS = skipTo(";", tokens, i + 1);
+					if (use == tokens.size() || EOS == tokens.size()) {
+						break;
+					}
+					if (use < EOS) {
+						adjustLineIndentValue(results,tokens.get(use).beginLine, +1);
+					}
+					while (use < EOS) {
+						i = EOS;
+						use = skipTo("use", tokens, i + 1);
+						EOS = skipTo(";", tokens, i + 1);
+					}
+					adjustLineIndentValue(results, tokens.get(i).beginLine + 1,	-1);
+				}
+				break;
 			case VhdlParserCoreTokenManager.TYPE:
-				int EOS=skipTo(";", tokens, i+1);
+				EOS=skipTo(";", tokens, i+1);
 				int record=skipTo("record", tokens, i+1);
 				//if a record was found before EOF, then indent
 				if(EOS > record){
@@ -181,6 +220,7 @@ public class VhdlFormatAction extends AbstractAction {
 			case VhdlParserCoreTokenManager.IS:
 			case VhdlParserCoreTokenManager.LOOP:
 			case VhdlParserCoreTokenManager.THEN:
+				thenLine = token.beginLine;
 				results.put(token.beginLine+1, +1);
 				break;			
 			case VhdlParserCoreTokenManager.ELSIF:
@@ -195,10 +235,12 @@ public class VhdlFormatAction extends AbstractAction {
 				if(i<tokens.size()-1 && tokens.get(i+1).kind==VhdlParserCoreTokenManager.CASE) {
 					adjustLineIndentValue(results,token.beginLine, -2);
 					if(incase>0) incase--;
-				}
-				else
-				{
-					adjustLineIndentValue(results,token.beginLine, -1);
+				} else {
+					if (token.beginLine == thenLine) {
+						adjustLineIndentValue(results, token.beginLine + 1, -1); // undo the adjustment of then
+					} else {
+						adjustLineIndentValue(results, token.beginLine, -1);
+					}
 				}
 				//skip to eos
 				i=skipTo(";", tokens, i+1);				
@@ -215,8 +257,6 @@ public class VhdlFormatAction extends AbstractAction {
 				break;
 			case VhdlParserCoreTokenManager.PROCEDURE:
 			case VhdlParserCoreTokenManager.FUNCTION:
-			case VhdlParserCoreTokenManager.PORT:
-			case VhdlParserCoreTokenManager.GENERIC:
 				adjustLineIndentValue(results,tokens.get(i).beginLine, 0);
 				int openParan=skipTo("(", tokens, i+1);
 				int closeParan=skipToCloseParan(tokens, openParan+1);
@@ -245,6 +285,38 @@ public class VhdlFormatAction extends AbstractAction {
 				}
 				i=closeParan;
 				break;
+				
+			case VhdlParserCoreTokenManager.PORT:
+			case VhdlParserCoreTokenManager.GENERIC:
+			case VhdlParserCoreTokenManager.SIGNAL:
+			case VhdlParserCoreTokenManager.CONSTANT:
+			case VhdlParserCoreTokenManager.VARIABLE:
+				adjustLineIndentValue(results,tokens.get(i).beginLine, 0);
+				int openParan1=skipTo("(", tokens, i+1);
+				int closeParan1=skipToCloseParan(tokens, openParan1+1);
+			
+				// skip if there are no parameters
+				int semicolon=skipTo(";", tokens, i+1);
+				
+				//did we find what we were looking for?
+				if(openParan1>=semicolon || closeParan1 >= tokens.size()) {
+					break;
+				}
+
+				//if the open and close parentheses are on different lines
+				if(tokens.get(closeParan1).beginLine > tokens.get(openParan1).beginLine ){					
+					adjustLineIndentValue(results,tokens.get(openParan1).beginLine+1, +1);
+					//move the line with close parenthesis only if it is the only token on that line
+					if(tokens.get(closeParan1-1).beginLine != tokens.get(closeParan1).beginLine){
+						adjustLineIndentValue(results,tokens.get(closeParan1).beginLine, -1);
+					}
+					else{
+						//otherwise, just adjust the following line
+						adjustLineIndentValue(results,tokens.get(closeParan1).beginLine+1, -1);
+					}
+				}
+			//	i=closeParan1;
+				break;				
 			case VhdlParserCoreTokenManager.WHEN:
 				if(incase>0) {
 					adjustLineIndentValue(results,token.beginLine, -1);
@@ -278,6 +350,10 @@ public class VhdlFormatAction extends AbstractAction {
 		//adjust the lines
 		String indentString=getIndentString();		
 		String currentIndent=getLineIndent(lines[0]);
+		
+		if( m_KeywordsLowercase) {
+			putToLowercase(lines,tokens);
+		}
 		
 		for(int lineNum=0; lineNum < lines.length; lineNum++){			
 			//adjust the indentation. Need to add 1 since the token lines are zero based			
@@ -313,15 +389,28 @@ public class VhdlFormatAction extends AbstractAction {
 				prevline.trim().length()!=0;
 			if(!lines[lineNum].trim().startsWith("--") && !linecontinuation)
 				lines[lineNum]=currentIndent+lines[lineNum].trim();
+			else {
+				// remove <CR>
+				lines[lineNum] = lines[lineNum].replaceAll("\r", "");
+			}
+
 		}
+		if (m_AlignOnColon) {
+			align(lines, ":");
+		}
+		if (m_AlignOnArrowRight) {
+			align(lines, "=>");
+		}
+		if (m_AlignOnArrowLeft) {
+			align(lines, "<=");
+		}
+
 		//reassemble the lines
 		StringBuffer buffer=new StringBuffer();
 		for(int lineNum=0; lineNum < lines.length; lineNum++){
+			if (lines[lineNum].trim().length() != 0)
 			buffer.append(lines[lineNum]);
-			//if not the last line
-			if(lineNum < lines.length-1){
-				buffer.append("\n");
-			}			
+			buffer.append(m_eol);
 		}
 		return buffer.toString();
 	}
@@ -422,11 +511,10 @@ public class VhdlFormatAction extends AbstractAction {
 			else{
 				line=lines[lineNum];
 			}
+			// remove <CR>
+			line = line.replaceAll("\r", "");
 			buffer.append(line);			
-			// if not the last line
-			if (lineNum < lines.length - 1) {
-				buffer.append("\n");
-			}
+			buffer.append(m_eol);
 		}
 		return buffer.toString();
 	}
@@ -499,6 +587,203 @@ public class VhdlFormatAction extends AbstractAction {
 			}
 		}
 		return line.substring(0, firstNonSpace);
+	}
+
+	/**
+	 * align for symbol like "=>"":"
+	 * 
+	 * @param String
+	 *            [] lines
+	 * @param String
+	 *            regex
+	 * @return Converted text
+	 */
+	private void align(String[] lines, String regex) {
+
+		for (int lineNum = 0; lineNum < lines.length; lineNum++) {
+
+			int index = indexOfAlignSymbol(lines, regex, lineNum);
+			if (index == -1)
+				continue;
+			int startLine = lineNum;
+			int stopLine = lineNum;
+			int maxIndexassign = 0;
+			while (index != -1) {
+				if (index > maxIndexassign)
+					maxIndexassign = index;
+				stopLine++;
+				index = indexOfAlignSymbol(lines, regex, stopLine);
+			}
+			for (int LineNum2 = startLine; LineNum2 < stopLine; LineNum2++) {
+				index = indexOfAlignSymbol(lines, regex, LineNum2);
+				if(index==-1) {
+					VerilogPlugin.println("Format: error on line "+LineNum2);
+				} else {
+					String substring3 = trimRight(lines[LineNum2].substring(0, index));
+					String substring4 = lines[LineNum2].substring(index).trim();
+					for (int i = 0; i < maxIndexassign - index + 1; i++) {
+						if (!inString(lines[lineNum], regex)) {
+							substring3 = substring3 + " ";
+						}
+					}
+					lines[LineNum2] = "" + substring3 + substring4;
+				}
+			}
+
+			lineNum = stopLine;
+
+		}
+	}
+
+	/**
+	 * get the index of the regex in particular
+	 * 
+	 * @param lines
+	 * @param regex
+	 * @param array
+	 * @param lineNum
+	 * @return indexAssign
+	 */
+	private int indexOfAlignSymbol(String[] lines, String regex, int lineNum) {
+		if (!lines[lineNum].contains(regex))
+			return -1;
+		if (lines[lineNum].endsWith(regex))
+			return -1;
+		if (lines[lineNum].trim().startsWith("--"))
+			return -1;
+		if (!closebracket(lines[lineNum], regex))
+			return -1;
+		int indexAssign = lines[lineNum].indexOf(regex);
+		if(indexAssign==-1) { // thought it contained regex????
+			return -1;
+		}
+		String substring1 = lines[lineNum].substring(0, indexAssign);
+		if (substring1.trim().length() == 0)
+			return -1;
+
+		String substring2 = lines[lineNum].substring(indexAssign + regex.length());
+		String substring1_trimmed = trimRight(substring1);
+		String substring2_trimmed = substring2.trim();
+		lines[lineNum] = "" + substring1_trimmed + regex + substring2_trimmed;
+		indexAssign = lines[lineNum].indexOf(regex);
+
+		return indexAssign;
+	}
+	
+
+	/**
+	 * to judge if the regex is in the close bracket
+	 * 
+	 * @param stringc
+	 * @param regex
+	 * @return close bracket
+	 */
+	private boolean closebracket(String stringc, String regex) {
+		boolean closebracket = true;
+
+		if (stringc.contains(regex) && stringc.contains("(")) {
+			int indexAssign0 = stringc.indexOf(regex);
+			String substring0 = stringc.substring(0, indexAssign0);
+			int leftbracket = -1;
+			int rightbracket = -1;
+			int c = 1;
+			int d = 1;
+			do {
+				leftbracket++;
+				c = substring0.indexOf("(");
+				String substrin = substring0.substring(c + 1);
+				substring0 = substrin;
+			} while (c != -1);
+			substring0 = stringc.substring(0, indexAssign0);
+			do {
+				rightbracket++;
+				d = substring0.indexOf(")");
+				String substri = substring0.substring(d + 1);
+				substring0 = substri;
+
+			} while (d != -1);
+			if (leftbracket == rightbracket) {
+				closebracket = true;
+			} else
+				closebracket = false;
+
+		}
+		return closebracket;
+	}
+	
+
+	/**
+	 * trim only at right side of the string
+	 * 
+	 * @param s
+	 * @return String been trim
+	 */
+	public String trimRight(String s) {
+		String _s = s;
+
+		while (_s.length() > 0 && _s.charAt(_s.length() - 1) == ' ') {
+			_s = _s.substring(0, _s.length() - 1);
+		}
+
+		return _s;
+	}
+
+	/**
+	 * to see if the regex is within a string.if it is,no align.
+	 * @param stringc
+	 * @param regex
+	 * @return if regex in a string or not 
+	 */
+	private boolean inString(String stringc, String regex) {
+		boolean inString = false;
+		if (stringc.contains(regex) && stringc.contains("\"")) {
+			int indexAssign0 = stringc.indexOf(regex);
+			String substring0 = stringc.substring(0, indexAssign0);
+			int quotation = -1;
+			int c = 1;
+			do {
+				quotation++;
+				c = substring0.indexOf("\"");
+				String substrin = substring0.substring(c + 1);
+				substring0 = substrin;
+			} while (c != -1);
+			if (quotation % 2 == 1) {
+				inString = true;
+			} else {
+				inString = false;
+			}
+		}
+		return inString;
+	}
+
+	/**
+	 * put tokens in lowercase
+	 * @param lines
+	 * @param tokens
+	 */
+	private void putToLowercase(String[] lines, ArrayList<Token> tokens) {
+
+		for (int tokennr = 0; tokennr < tokens.size(); tokennr++) {
+			Token token = tokens.get(tokennr);
+			for (int s = 0; s < HdlScanner.vhdlWords.length; s++) {
+
+				if (token.image.equalsIgnoreCase(HdlScanner.vhdlWords[s])) {
+
+					token.image = token.image.toLowerCase();
+					int l = token.beginLine - 1;
+					String curline = lines[l];
+
+					String sub1 = curline.substring(0, token.beginColumn - 1);
+					if (token.endColumn == lines[l].length()) {
+						;
+						lines[l] = "" + sub1 + HdlScanner.vhdlWords[s];
+					} else {
+						String sub2 = curline.substring(token.endColumn);
+						lines[l] = "" + sub1 + HdlScanner.vhdlWords[s] + sub2;
+					}
+				}
+			}
+		}
 	}
 
 }
