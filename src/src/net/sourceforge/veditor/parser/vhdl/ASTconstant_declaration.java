@@ -23,6 +23,23 @@ public class ASTconstant_declaration extends SimpleNode {
   
   public String getSubType(){
 	  ASTsubtype_indication subtype= (ASTsubtype_indication)jjtGetChild(1);
-	  return subtype.getIdentifier();
+	  String result = subtype.getIdentifier();
+	  if(jjtGetNumChildren()>2) {
+		  if(jjtGetChild(2) instanceof SimpleNode) {
+			  SimpleNode initvalue = (SimpleNode)jjtGetChild(2);
+			 
+			  String completevalue = "";
+			  Token curtoken = initvalue.getFirstToken();
+			  if(curtoken!=null) {
+				  completevalue = curtoken.toString();
+				  while(curtoken!=initvalue.getLastToken() && curtoken.next!=null) {
+					  curtoken = curtoken.next;
+					  completevalue = completevalue + " " +curtoken.toString();
+				  }
+			  }
+			  result += "#"+completevalue;
+		  }
+	  }
+	  return result;
   }
 }
