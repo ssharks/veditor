@@ -20,6 +20,7 @@ import net.sourceforge.veditor.document.VhdlDocument;
 import net.sourceforge.veditor.editor.completionProposals.HdlTemplateProposal;
 import net.sourceforge.veditor.editor.completionProposals.IComparableCompletionProposal;
 import net.sourceforge.veditor.editor.completionProposals.VhdlInstanceCompletionProposal;
+import net.sourceforge.veditor.editor.completionProposals.VhdlRecordCompletionProposal;
 import net.sourceforge.veditor.editor.completionProposals.VhdlSubprogramProposalProvider;
 import net.sourceforge.veditor.parser.HdlParserException;
 import net.sourceforge.veditor.parser.IParser;
@@ -29,6 +30,7 @@ import net.sourceforge.veditor.parser.OutlineElement;
 import net.sourceforge.veditor.parser.vhdl.VhdlOutlineElementFactory.ArchitectureElement;
 import net.sourceforge.veditor.parser.vhdl.VhdlOutlineElementFactory.EntityDeclElement;
 import net.sourceforge.veditor.parser.vhdl.VhdlOutlineElementFactory.PackageDeclElement;
+import net.sourceforge.veditor.parser.vhdl.VhdlOutlineElementFactory.RecordElement;
 import net.sourceforge.veditor.parser.vhdl.VhdlOutlineElementFactory.VhdlOutlineElement;
 import net.sourceforge.veditor.parser.vhdl.VhdlOutlineElementFactory.VhdlSignalElement;
 import net.sourceforge.veditor.parser.vhdl.VhdlOutlineElementFactory.VhdlSubprogram;
@@ -60,20 +62,52 @@ public class VhdlCompletionProcessor extends HdlCompletionProcessor {
 		} catch (BadLocationException e) {
 		} catch (HdlParserException e) {
 		}
+		String matchwithdot = getMatchingWordWithdot(doc.get(), documentOffset);
 		
-
-		switch (context) {
-		case VhdlDocument.VHDL_GLOBAL_CONTEXT:
-			matchList = getGlobalPropsals(doc, documentOffset, match);
-			break;
-		default:
-			Display.getCurrent().beep();
-			return null;
+		matchwithdot = matchwithdot+" ";//add space
+		String matchword[]=matchwithdot.split("[.]");
+		
+		if(matchword.length==1) {
+			switch (context) {
+		 		case VhdlDocument.VHDL_GLOBAL_CONTEXT:
+		 			matchList = getGlobalPropsals(doc, documentOffset, match);
+		 			break;
+		 		default:
+		 			Display.getCurrent().beep(); return null;
+		 	}
+		 
+		 	matchList.addAll(getTemplates(viewer, documentOffset, context));
+			addSignalPropsals(doc, documentOffset, match, currentElement,matchList);
+			addSubprogramProposals(doc, documentOffset, match,currentElement, matchList);
+		} else {  // record member auto completion
+			String recordname = null;
+			recordname = getSignalType(doc, documentOffset, matchword[0], currentElement);
+			for(int i=1;i<matchword.length-1;i++){
+				OutlineElement[] tempRecord=searchRecordDefinition(doc, documentOffset, recordname,currentElement).getChildren();
+				recordname=getMemberType(doc,documentOffset,matchword[i],tempRecord);
+			}
+			
+			RecordElement finalRecord=(RecordElement)searchRecordDefinition(doc, documentOffset, recordname,currentElement);
+			
+			
+			matchList = new ArrayList<IComparableCompletionProposal>();
+			
+			if (finalRecord != null) {
+				OutlineElement[] memberElements = finalRecord.getChildren();
+				String matchlc1 = matchword[matchword.length-1];
+				                            String matchlc=matchlc1.trim().toLowerCase();   
+				for (int h = 0; h < memberElements.length; h++) {
+					String recordmember = memberElements[h].getName().toLowerCase();
+					if (recordmember.startsWith(matchlc)) {
+						 int cc=matchlc.length();
+						 String replace = memberElements[h].getName();
+						
+						 matchList.add(new VhdlRecordCompletionProposal(replace, documentOffset, cc, replace.length(), replace));
+					}
+				}
+			}
 		}
 
-		matchList.addAll(getTemplates(viewer, documentOffset, context));
-		addSignalPropsals(doc, documentOffset, match,currentElement,matchList);
-		addSubprogramProposals(doc, documentOffset, match,currentElement,matchList);
 		Collections.sort(matchList);
 		ICompletionProposal[] result = new ICompletionProposal[matchList.size()];
 		for (int i = 0; i < matchList.size(); i++) {
@@ -81,6 +115,27 @@ public class VhdlCompletionProcessor extends HdlCompletionProcessor {
 		}
 		return result;
 	}
+	
+
+
+	// returns typename of member
+	private String getMemberType(HdlDocument doc, int documentOffset,
+			String membername, OutlineElement[] record) {
+
+		String typeName = null;
+		OutlineElement[] children = record;
+		for (int i = 0; i < children.length; i++) {
+			if (children[i].getName().equalsIgnoreCase(membername)) {
+				if (!(children[i] instanceof VhdlOutlineElement))
+					continue;
+				typeName = ((VhdlOutlineElement) children[i]).getTypePart1();
+			}
+		}
+		return typeName;
+	}
+
+
+
 
 	/**
 	 * Returns a list of global proposals based on the given replace string
@@ -111,7 +166,7 @@ public class VhdlCompletionProcessor extends HdlCompletionProcessor {
 					OutlineElement[] subPackageElements=elements[i].getChildren();
 					for(int j=0; j< subPackageElements.length; j++){
 						if(subPackageElements[j] instanceof VhdlOutlineElement &&
-								subPackageElements[j].getName().startsWith(replace)){
+								subPackageElements[j].getName().toLowerCase().startsWith(replace.toLowerCase())){
 							matchList.add(new VhdlInstanceCompletionProposal(doc,
 									subPackageElements[j], offset, length));
 						}
@@ -133,6 +188,55 @@ public class VhdlCompletionProcessor extends HdlCompletionProcessor {
 		return matchList;
 	}
 	
+	public OutlineElement searchRecordDefinition(HdlDocument doc,
+			int offset, String recordname, OutlineElement  element) {
+		
+		// first search in this file:
+		VhdlOutlineElement parent=null;
+		if (element instanceof VhdlOutlineElement) {
+			parent = (VhdlOutlineElement) element;
+		}
+		//work your way up
+		while(parent != null){
+			OutlineElement[] children =parent.getChildren();
+		
+			for(int i=0;i < children.length;i++){
+				if (children[i] instanceof RecordElement && children[i].getName()
+						.equalsIgnoreCase(recordname)) {
+					return children[i];
+				}
+			}
+			if (parent.getParent() instanceof VhdlOutlineElement) {
+				parent = (VhdlOutlineElement) parent.getParent();
+			} else {
+				parent=null;
+			}
+		}
+		
+		// not found in this file, search it in packages of other files
+		OutlineDatabase database = doc.getOutlineDatabase();
+		
+		if (database != null) {
+			OutlineElement[] elements = database.findTopLevelElements("");
+			for (int i = 0; i < elements.length; i++) {
+				if(elements[i] instanceof PackageDeclElement ){
+					OutlineElement[] subPackageElements=elements[i].getChildren();
+					for(int j=0; j< subPackageElements.length; j++){
+						if (subPackageElements[j] instanceof RecordElement
+								&& subPackageElements[j].getName()
+										.equalsIgnoreCase(recordname)) {
+							return subPackageElements[j];
+
+						}
+					}
+				}
+			
+			}
+		}
+
+		return null;
+	}
+
 	private IComparableCompletionProposal createTestBench(HdlDocument doc, VhdlOutlineElement mod, int offset, int length) {
 		String modname = mod.toString();
 		
@@ -307,6 +411,62 @@ public class VhdlCompletionProcessor extends HdlCompletionProcessor {
 			}
 		}	
 	}
+
+	
+	// returns typename of the signal.
+	
+	private String getSignalType(HdlDocument doc,int offset, String signalname, OutlineElement  element){
+		VhdlOutlineElement parent=null;
+		
+		String architectureEntityName=null;
+		
+		if (element instanceof VhdlOutlineElement) {
+			parent = (VhdlOutlineElement) element;
+			
+			while (parent != null) {
+				OutlineElement[] children = parent.getChildren();	
+				//if we encounter an architecture, remember its entity
+				if (parent instanceof ArchitectureElement){
+					architectureEntityName=((ArchitectureElement)parent).GetEntityName();
+				}
+				for (int i = 0; i < children.length; i++) {
+					if (children[i].getName().equalsIgnoreCase(signalname)) {
+						if (! (children[i] instanceof VhdlOutlineElement)) continue;
+						return ((VhdlOutlineElement)children[i]).getTypePart1();
+					}
+				}
+				if (parent.getParent() instanceof VhdlOutlineElement) {
+					parent = (VhdlOutlineElement) parent.getParent();
+				} else {
+					parent = null;
+				}
+			}
+		}
+		
+		// now search in the port of the entity of this architecture:
+		if(architectureEntityName!=null){
+			OutlineDatabase database = doc.getOutlineDatabase();
+			OutlineContainer outline = database.getOutlineContainer(doc.getFile());
+			OutlineElement[] children= outline.getTopLevelElements();
+			
+			for (OutlineElement child:children){
+				if (! (child instanceof EntityDeclElement)) continue;
+				EntityDeclElement entityDecl = (EntityDeclElement) child;			
+				//if we find an entity declaration, search ports for signalname
+				if (!entityDecl.getName().equalsIgnoreCase(architectureEntityName)) continue;			
+				//get the entity's children
+				OutlineElement[] entityChildren=entityDecl.getChildren();
+				for(OutlineElement entitychild:entityChildren) {
+					if(!entitychild.getName().equalsIgnoreCase(signalname)) continue;
+					if(!(entitychild instanceof VhdlOutlineElement)) continue;				
+					return ((VhdlOutlineElement)entitychild).getTypePart2();
+				}
+			}
+		}		
+		
+		return "";
+	}
+	
 	/**
 	 * Adds a list of variables to the completion proposal;
 	 * @param doc
