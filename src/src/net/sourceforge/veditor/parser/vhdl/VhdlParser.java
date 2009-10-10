@@ -33,7 +33,6 @@ import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 
-
 /**
  * implementation class of VhdlParserCore<p/>
  * for separating definition from JavaCC code
@@ -45,11 +44,9 @@ public class VhdlParser extends VhdlParserCore implements IParser
 	private static OutlineElementFactory m_OutlineElementFactory=new VhdlOutlineElementFactory();
 	//Minimum number of comment lines before they are collapsible
 	private final int COMMENT_LINE_GROUP=5;
-	private int m_PrevCommentLine;
 	private int m_StartCommentBlock;
 	private int m_LastCommentLine;
 	private int m_EndCommentBlock;
-	private StringBuffer m_Comment;
 	private OutlineContainer m_OutlineContainer;
 	private Pattern[] taskTokenPattern;
 
@@ -59,9 +56,7 @@ public class VhdlParser extends VhdlParserCore implements IParser
 		super(reader);
 		m_Reader = reader;
 		m_File = file;	
-		m_LastCommentLine=-1;
-		m_PrevCommentLine=-1;
-		m_Comment=new StringBuffer();		
+		m_LastCommentLine=-1;	
 		OutlineDatabase database = OutlineDatabase.getProjectsDatabase(project);		
 		if(database != null){
 			m_OutlineContainer = database.getOutlineContainer(file);
@@ -252,7 +247,7 @@ public class VhdlParser extends VhdlParserCore implements IParser
 							String comment = getLineComment(m_Reader);
 							if (comment != null){
 							    String []msg=new String[1];
-								addComment(line, comment);
+								addComment(line, comment,(column-1 == firstNonSpace));
 								//check to see if we need to add a task
 								String taskToken=getTaskToken(comment,msg);
 								if(taskToken != null){								    
@@ -313,27 +308,12 @@ public class VhdlParser extends VhdlParserCore implements IParser
 				str.deleteCharAt(i);
 		}
 
-		if (str.length() != 0)
-			return str.toString();
-		else
-			return null;
+		return str.toString();
 	}
 
-	private void addComment(int line, String comment)
+	private void addComment(int line, String comment, Boolean onlycomment)
 	{
-
-		//continuous comments
-		if (m_PrevCommentLine + 1 == line){
-			m_PrevCommentLine = line;			
-		}
-		else{
-			//if starting a new block
-			m_OutlineContainer.addComment(m_PrevCommentLine, m_Comment.toString());
-			m_Comment=new StringBuffer();			
-			m_PrevCommentLine = line;			
-		}
-		m_Comment.append(comment);
-		m_Comment.append("\n");
+		m_OutlineContainer.addComment(line, comment, onlycomment);
 	}
 	/**
 	 * This function keeps track of contiguous comment blocks and 
@@ -414,6 +394,21 @@ public class VhdlParser extends VhdlParserCore implements IParser
 			childNum += examineEntityDecl((ASTentity_declaration) node, name,
 					type);
 
+		} else if (node instanceof ASTfull_type_declaration) {	
+			bNeetToOutline = true;
+			for (Node c : ((ASTfull_type_declaration) node).children) {
+
+				if (!(c instanceof SimpleNode)) continue;
+				SimpleNode child = (SimpleNode) c;
+				if (c instanceof ASTidentifier) {
+					ASTidentifier identifier = (ASTidentifier) c;
+					name.append(identifier.name);
+				}
+
+			}
+			type.append("record#");
+		} else if (node instanceof ASTrecord_type_definition) {		
+			childNum += examineRecordDeclaration((ASTrecord_type_definition)node);
 		} else if (node instanceof ASTport_clause) {
 			childNum += examinePortClause((ASTport_clause) node);
 		} else if (node instanceof ASTgeneric_clause) {
@@ -572,6 +567,32 @@ public class VhdlParser extends VhdlParserCore implements IParser
 		type.append("entityDecl#");	
 		return 0;
 	}
+	
+ 	protected int examineRecordDeclaration(ASTrecord_type_definition recorddecl) {
+		String[] names2 = null;
+
+		for (Node c : recorddecl.children) {
+			if(! (c instanceof SimpleNode)) continue;
+			SimpleNode child = (SimpleNode) c;
+			String subtype = "";
+
+			if (child instanceof ASTelement_declaration) {
+				ASTelement_declaration var = (ASTelement_declaration) child;
+				names2 = var.getIdentifierList();
+				subtype = var.getSubType();
+			}
+
+			for (String identifier : names2) {
+				beginOutlineElement(child.getFirstToken().beginLine, child
+						.getFirstToken().beginColumn, identifier,"recordmember#"+subtype);
+				endOutlineElement(child.getLastToken().endLine, child
+						.getLastToken().endColumn, identifier, "recordmember#"+subtype);
+			}
+		}
+		return recorddecl.getChildCount();// no more update
+
+	}
+	
 	/**
 	 * Breaks out a port clause and adds its children to the outline
 	 * @param portClause
@@ -702,7 +723,7 @@ public class VhdlParser extends VhdlParserCore implements IParser
 			ASTfile_declaration file = (ASTfile_declaration) node;
 			names=file.getIdentifierList();
 			type="file#"+file.getSubType();
-		}	
+		}
 		
 		for(String identifier:names){
 			beginOutlineElement(
@@ -736,6 +757,8 @@ public class VhdlParser extends VhdlParserCore implements IParser
 			type.append("functionDecl#");
 		}else if(subType.contains("procedure")){
 			type.append("procedureDecl#");
+		} else if(subType.contains("record")){
+				type.append("recordDecl#");
 		}
 		
 		ASTformal_parameter_list paramters=spec.getParameters();
@@ -758,6 +781,8 @@ public class VhdlParser extends VhdlParserCore implements IParser
 			type.append("function#");
 		}else if(subType.contains("procedure")){
 			type.append("procedure#");
+		}else if(subType.contains("record")){
+			type.append("record#");
 		}
 		
 		ASTformal_parameter_list paramters=spec.getParameters();
