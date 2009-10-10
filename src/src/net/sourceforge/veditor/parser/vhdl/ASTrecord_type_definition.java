@@ -17,4 +17,12 @@ public class ASTrecord_type_definition extends SimpleNode {
   ASTrecord_type_definition(int id) {
     super(id);
   }
+
+ public ASTinterface_list getInterfaceList(){
+	  for(Node child:children){
+		  if(child instanceof ASTinterface_list)
+			  return (ASTinterface_list)child; 
+	  }
+	  return null;
+  }
 }
