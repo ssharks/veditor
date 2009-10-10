@@ -20,14 +20,24 @@ import org.eclipse.core.resources.IFile;
  */
 public class OutlineContainer
 {	
+	
+	class Comment {
+		public Comment(String s, Boolean o) {
+			m_comment = s;
+			m_onlycommentline = o;
+		}
+		public String m_comment;
+		public Boolean m_onlycommentline; // true when this line contains nothing else then comment		
+	}
+	
 	private static final int  MINIMUM_COLLAPSIBLE_SIZE=1;
 	ArrayList<Collapsible> m_Collapsibles;
-	HashMap<Integer,String> m_Comments; 
+	HashMap<Integer,Comment > m_Comments; 
 		
 	
 	public OutlineContainer(){
 		m_Collapsibles=new ArrayList<Collapsible>();
-		m_Comments=new HashMap<Integer,String>();
+		m_Comments=new HashMap<Integer,Comment>();
 	}
 	
 	/**
@@ -184,8 +194,8 @@ public class OutlineContainer
 	 * @param endLine Ending line of the comment
 	 * @param text The comment text
 	 */
-	public void addComment(int endLine,String text){
-		m_Comments.put(endLine, text);
+	public void addComment(int endLine,String text, Boolean onlycomment){
+		m_Comments.put(endLine,new Comment(text,onlycomment));
 	}
 	
 	/**
@@ -195,20 +205,19 @@ public class OutlineContainer
 	 * @return Comment string
 	 */
 	public String getCommentsNear(OutlineElement element){
-		//look for comments immediately before the element
 		int startLine=element.getStartingLine();
-		if(m_Comments.containsKey(startLine-1)){
-			return m_Comments.get(startLine-1);
-		}
-		if(m_Comments.containsKey(startLine-2)){
-			return m_Comments.get(startLine-2);
-		}
 		//look on the same line
 		if(m_Comments.containsKey(startLine)){
-			return m_Comments.get(startLine);
+			return m_Comments.get(startLine).m_comment;
 		}
-		
-		return "";
+		// look on previous lines:
+		String comment = "";
+		for(int line = startLine-1;;line--) {
+			if(!m_Comments.containsKey(line)) break;
+			if(!m_Comments.get(line).m_onlycommentline) break;
+			comment = m_Comments.get(line).m_comment+"\n"+comment;
+		}	
+		return comment;
 	}
 	
 	
