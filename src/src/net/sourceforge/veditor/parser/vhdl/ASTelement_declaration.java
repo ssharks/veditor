@@ -17,4 +17,16 @@ public class ASTelement_declaration extends SimpleNode {
   ASTelement_declaration(int id) {
     super(id);
   }
+
+  public String[] getIdentifierList(){
+	  if(getChildCount()==0) return new String[0];
+	  if(!(jjtGetChild(0) instanceof ASTidentifier_list)) return new String[0];
+	  return ((ASTidentifier_list)jjtGetChild(0)).getIdentifierNames();
+  }
+  
+  public String getSubType() {
+	  if(getChildCount()<2) return "";
+	  if(!(jjtGetChild(1) instanceof ASTsubtype_indication)) return "";
+	  return ((ASTsubtype_indication)jjtGetChild(1)).getIdentifier();
+  }
 }
