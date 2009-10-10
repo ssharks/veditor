@@ -5,8 +5,6 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 
 import net.sourceforge.veditor.VerilogPlugin;
-import net.sourceforge.veditor.editor.HdlCompletionProcessor;
-import net.sourceforge.veditor.editor.completionProposals.*;
 
 public class VhdlRecordCompletionProposal extends CompletionProposal {
 	private int cursor;
