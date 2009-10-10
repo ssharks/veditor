@@ -84,7 +84,8 @@ public class VerilogPreferenceInitializer extends AbstractPreferenceInitializer
 		preferences.setDefault("Style.indent","Tab");
 		preferences.setDefault("Style.indentSize", "4");
 		preferences.setDefault("Style.noSpaceInBracket", true);
-		preferences.setDefault("Style.Vhdl.PadOperators",true);
+		preferences.setDefault("Style.Vhdl.PadOperators", true);
+		preferences.setDefault("Style.Vhdl.IndentLibrary", false);
 		setDefaultStyleSpace(preferences);
 	}
 	
