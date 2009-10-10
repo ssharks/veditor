@@ -56,7 +56,7 @@ public class HdlScanner extends RuleBasedScanner
 	private static final String[] verilogDirectives = { "`ifdef", "`else",
 			"`endif", "`if", "`define", "`undef", "`timescale", "`include" };
 
-	private static final String[] vhdlWords = { "abs", "access", "after",
+	public static final String[] vhdlWords = { "abs", "access", "after",
 			"alias", "all", "and", "architecture", "array", "assert",
 			"attribute", "begin", "block", "body", "buffer", "bus", "case",
 			"component", "configuration", "constant", "disconnect", "downto",
