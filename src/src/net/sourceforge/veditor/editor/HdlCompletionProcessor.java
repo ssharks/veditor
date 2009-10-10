@@ -106,6 +106,20 @@ abstract public class HdlCompletionProcessor implements IContentAssistProcessor
 		}
 		return text.substring(0, offset);
 	}
+	protected static String getMatchingWordWithdot(String text, int offset)
+	{
+		int start = offset;
+		while (start > 0)
+		{
+			start--;
+			char c = text.charAt(start);
+			if (!Character.isJavaIdentifierPart(c)&&c!='.')
+				return text.substring(start + 1, offset);
+		}
+		return text.substring(0, offset);
+	}
+	
+	
 
 	protected static IComparableCompletionProposal getSimpleProposal(String word,
 			int offset, int length)
@@ -122,8 +136,7 @@ abstract public class HdlCompletionProcessor implements IContentAssistProcessor
 
 	public char[] getCompletionProposalAutoActivationCharacters()
 	{
-		// return new char[] { '.', '(' };
-		return null;
+		return new char[] { '.' };
 	}
 
 	public String getErrorMessage()
