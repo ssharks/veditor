@@ -25,7 +25,10 @@ public class VerilogOutlineElementFactory extends OutlineElementFactory {
 	private boolean isTask(String type)  { return type.startsWith("task#");	}
 	private boolean isFunction(String type)  { return type.startsWith("function#");	}
 	private boolean isInstance(String type) {return  type.startsWith("instance#"); }
-	private boolean isParameter(String type) {return  type.startsWith("parameter#"); }
+	private boolean isParameter(String type)
+	{
+		return type.startsWith("parameter#") || type.startsWith("localparam#");
+	}
 	private boolean isPort(String type)      {return  type.startsWith("port#"); }
 	private boolean isSignal(String type)    {return  type.startsWith("variable#"); }
 	private boolean isRegister(String type)    {return  type.startsWith("variable#reg#"); }
@@ -133,20 +136,22 @@ public class VerilogOutlineElementFactory extends OutlineElementFactory {
 			else{
 				m_Direction = INOUT;
 				m_ImageName="$nl$/icons/port_inout.gif";
-			}	
-			m_LongName=String.format("%s", name);
-			
-			if(m_TypeParts.length > 2)
-				m_LongName+=String.format(" %s",m_TypeParts[2]);
-			if(m_TypeParts.length > 3)
-				m_LongName+=String.format(" %s",m_TypeParts[3]);
-
+			}
+			m_LongName = String.format("%s :", name);
+			for (int i = 1; i < m_TypeParts.length; i++) {
+				m_LongName += String.format(" %s", m_TypeParts[i]);
+			}
 		}
 	}
 	public class VerilogParameterElement extends VerilogOutlineElement{
 		public VerilogParameterElement(String name,String type,int startLine,int startCol,int endLine,int endCol,IFile file,boolean bVisible){
-			super(name,type,startLine,startCol,endLine,endCol,file,bVisible);					
+			super(name,type,startLine,startCol,endLine,endCol,file,bVisible);
 			m_ImageName="$nl$/icons/P.gif";
+			m_LongName = String.format("%s : %s %s", name, m_TypeParts[0], GetValue());
+		}
+		
+		public boolean isLocal() {
+			return m_Type.startsWith("localparam#");
 		}
 		
 		public String GetValue(){
@@ -158,12 +163,12 @@ public class VerilogOutlineElementFactory extends OutlineElementFactory {
 	}
 	public class VerilogSignalElement extends VerilogOutlineElement{		
 		public VerilogSignalElement(String name,String type,int startLine,int startCol,int endLine,int endCol,IFile file,boolean bVisible){
-			super(name,type,startLine,startCol,endLine,endCol,file,bVisible);			
-			m_ImageName="$nl$/icons/signal.gif";	
-			m_LongName=String.format("%s", name);			
-			if(m_TypeParts.length > 2)
-				m_LongName+=String.format(" %s",m_TypeParts[2]);
-			
+			super(name, type, startLine, startCol, endLine, endCol, file, bVisible);
+			m_ImageName = "$nl$/icons/signal.gif";
+			m_LongName = String.format("%s :", name);
+			for (int i = 1; i < m_TypeParts.length; i++) {
+				m_LongName += String.format(" %s", m_TypeParts[i]);
+			}
 		}	
 	}
 	public class VerilogWireElement extends VerilogSignalElement{		
