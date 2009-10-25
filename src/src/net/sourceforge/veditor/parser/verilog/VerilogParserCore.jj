@@ -40,7 +40,7 @@ MORE :
 <IN_MULTI_LINE_COMMENT>
 SKIP :
 {
-	<MULTI_LINE_COMMENT: "*/" > : DEFAULT
+	<MULTI_LINE_COMMENT: "*/"> : DEFAULT
 }
 
 <IN_MULTI_LINE_COMMENT>
@@ -49,6 +49,25 @@ MORE :
 	< ~[] >
 }
 
+//
+// operation for (* *)
+//
+MORE :
+{
+	<"(*" ~[")"]> : IN_PROPERTY
+}
+
+<IN_PROPERTY>
+SKIP :
+{
+	<PROPERTY: "*)"> : DEFAULT
+}
+
+<IN_PROPERTY>
+MORE :
+{
+	< ~[] >
+}
 
 //
 // ignore from `else to `endif
@@ -120,9 +139,10 @@ TOKEN :
 |	<GENVAR:	"genvar">
 |	<REAL:		"real">
 |	<PARAMETER:	"parameter"> 
+|	<LOCALPARAM:	"localparam">
 |	<SIGNED:	"signed">
 |	<STMT_HEAD: (
-		"localparam" | "time" |
+		"time" |
 		"assign" | "defparam" | "tri0" | "tri1" | "pullup" | "pulldown" |
 		"buf"
 	)>
@@ -148,6 +168,7 @@ TOKEN :
 |	<COMMA:		"," >
 |	<COLON:		":" >
 |	<EQUAL:		"=" >
+|	<STAR:		"*" >
 |	<IDENT: 	([ "a"-"z", "A"-"Z", "0"-"9", "_", ".", "'", "?", "\""])+>
 |	<SPC_CHAR:	~[ " ", "\t" ] >
 |	<OTHER:		"[.]" >
@@ -165,6 +186,9 @@ void modules() :
 			beginOutlineElement(name.beginLine,name.beginColumn, name.image,"module#");
 		}
 		[
+			"#" "(" [ parameterArg() ("," parameterArg() )* ] ")"
+		]
+		[
 			"(" [ argument() ( "," argument() )* ] ")"
 		]
 		<EOS>
@@ -176,6 +200,24 @@ void modules() :
 	)*
 }
 
+void parameterArg() :
+{
+	Token name,value;
+}
+{ 
+	<PARAMETER>
+	[   <REAL>
+	  |	<INTEGER>
+	  |	"[" skipTo(RBRACKET)
+	]
+	name = identifier()
+	"="
+	value = skipToOr(COMMA,RPAREN)
+	{
+		beginOutlineElement(name.beginLine,name.beginColumn,name.image,"parameter#"+value.image);
+		endOutlineElement( name.endLine,name.endColumn,name.image,"parameter#"+value.image);
+	}
+}
 
 void argument() :
 {
@@ -190,11 +232,12 @@ void argument() :
 		range = bitRange()
 		name = identifier()
 		{
-			String type = "port#" + direction.image + "#" + "" + "#" + range;
+			String type = "port#" + direction.image + "#" + modifier + "#" + range;
 			beginOutlineElement(
 				name.beginLine, name.beginColumn, name.image, type);
 			endOutlineElement(name.endLine, name.endColumn, name.image, type);
 		}
+		skipToOr(COMMA,RPAREN)
 	|
 		// C style argument, portDecl will add it to OutlineContainer
 		identifier()
@@ -385,25 +428,37 @@ Token identifier() :
 
 void parameterDecl():
 {
-	Token name,value;
+	String type;
 }
 { 
-	<PARAMETER>
+	(
+		<PARAMETER>  {type = "parameter";}
+	|	<LOCALPARAM> {type = "localparam";}
+	)
 	[   <REAL>
 	  |	<INTEGER>
 	  |	"[" skipTo(RBRACKET)
 	]
-	(	
-		LOOKAHEAD(2)
-		name = identifier()
-		"="
-		value = skipToOr(COMMA,EOS)
-		{			
-			beginOutlineElement(name.beginLine,name.beginColumn,name.image,"parameter#"+value.image);
-			endOutlineElement( name.endLine,name.endColumn,name.image,"parameter#"+value.image);
-		}
-	)+	
+	parameterDeclBody(type)
+	(
+		","
+		parameterDeclBody(type)
+	)*
+	";"
+}
 
+void parameterDeclBody(String type) :
+{
+	Token name,value;
+}
+{
+	name = identifier()
+	"="
+	value = skipToOr(COMMA,EOS)
+	{		
+		beginOutlineElement(name.beginLine,name.beginColumn,name.image,type+"#"+value.image);
+		endOutlineElement( name.endLine,name.endColumn,name.image,type+"#"+value.image);
+	}
 }
  
 
@@ -411,7 +466,7 @@ void delay() :
 {
 }
 {
-	( "@" | "#" ) ( "(" skipParen() ")" | identifier() )
+	( "@" | "#" ) ( "(" skipParen() ")" | identifier() | "*" )
 }
 
 void statement() :
@@ -422,6 +477,7 @@ void statement() :
 	( delay() )*
 	(	";"
 	|	":" identifier()
+	|	variableDecl()
 	|	<STMT_HEAD> skipTo( EOS )
 	|	ifStatement()
 	|	block()
@@ -469,6 +525,7 @@ void function() :
 	Token name, end ;
 }
 {
+	[ variableModifier() ]
 	[ "[" skipParen() "]" ]
 	name = identifier()
 	{
@@ -502,7 +559,7 @@ void generate() :
 }
 {
 	<GENERATE>
-	generateStatement()
+	(generateStatement())*
 	<ENDGENERATE>
 }
 
@@ -511,16 +568,18 @@ void generateStatement() :
 }
 {	
 	(
-		   variableDecl()		
+		   variableDecl()
 		|  generateForStatement()
 	    |  generateIfStatement()
+	    |  generateCaseStatement()
 		|  <STMT_HEAD> skipTo( EOS )
-	    |  moduleInst()
 	    |  blockDecl() 
 	    |  functionDecl()
 		|  taskDecl()
-		|	generate()  
-	)*
+		|  generate()
+		|  <BEGIN> [ ":" identifier() ] (generateStatement())* <END>
+	    |  moduleInst()
+	)
 	
 }
 
@@ -586,10 +645,7 @@ void generateForStatement() :
 }
 {
 	<FOR> "(" skipParen() ")"
-	<BEGIN>
-	[ ":" identifier() ]
 	generateStatement()
-	<END>
 }
 
 void generateIfStatement() :
@@ -597,19 +653,23 @@ void generateIfStatement() :
 }
 {
 	<IF> "(" skipParen() ")"
-	<BEGIN>
-	[ ":" identifier() ]
 	generateStatement()
-	<END>
 	[ LOOKAHEAD(1) <ELSE>
-		(
-			generateIfStatement()
-		|	<BEGIN>
-			[ ":" identifier() ]
-			generateStatement()
-			<END>
-		)
+		generateStatement()
 	]
+}
+void generateCaseStatement() :
+{
+}
+{
+	(<CASE>|<CASEX>) "(" skipParen() ")"
+	(
+			identifier() ( "," identifier() )* ":" generateStatement()
+		|	("{") identifier() ( "," identifier() )* ("}")
+			( (",")  ("{") identifier() ( "," identifier() )* ("}") )*  ":" generateStatement()
+		|	"default" [ LOOKAHEAD(2) ":" ] generateStatement()
+	)*
+	<ENDCASE>
 }
 
 JAVACODE
@@ -688,7 +748,7 @@ Token skipToOr(int skip1, int skip2)
 			unexpectedEof(current);
 		if (token.kind == skip1 || token.kind == skip2)
 		{
-			getNextToken();
+			// getNextToken();
 			break ;
 		}
 
