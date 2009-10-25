@@ -64,8 +64,8 @@ abstract public class ParserFactory
 	/**
 	 *	Wrapper of StringReader. It can support rewind.
 	 *  @note
-	 *  The earlier version had special code for two byte character.
-	 *  But it is no longer necessary because JavaCC can handle correctly.
+	 *  VHDL parser cannot handle two byte character.
+	 *  So AsciiReader change two byte character to single space.
 	 */
 	private static class AsciiReader extends Reader
 	{
@@ -86,6 +86,11 @@ abstract public class ParserFactory
 		public int read(char[] cbuf, int off, int len) throws IOException
 		{
 			int n = reference.read(cbuf, off, len);
+			for(int i = 0; i < n; i++)
+			{
+				if (cbuf[i] >= 0x0100)
+					cbuf[i] = ' ';
+			}
 			return n;
 		}
 
