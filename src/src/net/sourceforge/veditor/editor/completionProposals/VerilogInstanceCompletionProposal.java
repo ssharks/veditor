@@ -78,7 +78,10 @@ InstanceCompletionProposal
 			for(OutlineElement child : module.getChildren()){
 				if (child instanceof VerilogParameterElement) {
 					VerilogParameterElement p = (VerilogParameterElement) child;
-					parameters.add(p);						
+
+					// localparam is not included parameter list
+					if (!p.isLocal())
+						parameters.add(p);						
 				}
 				if (child instanceof VerilogPortElement) {
 					VerilogPortElement p = (VerilogPortElement) child;
