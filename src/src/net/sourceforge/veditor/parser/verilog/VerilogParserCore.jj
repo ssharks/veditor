@@ -169,7 +169,8 @@ TOKEN :
 |	<COLON:		":" >
 |	<EQUAL:		"=" >
 |	<STAR:		"*" >
-|	<IDENT: 	([ "a"-"z", "A"-"Z", "0"-"9", "_", ".", "'", "?", "\""])+>
+|	<STRING: "\"" (~["\""])+ "\"">
+|	<IDENT: 	([ "a"-"z", "A"-"Z", "0"-"9", "_", ".", "'", "?"])+>
 |	<SPC_CHAR:	~[ " ", "\t" ] >
 |	<OTHER:		"[.]" >
 }
@@ -421,7 +422,7 @@ Token identifier() :
 }
 {
 	[ "`" ]
-    (<ESCAPE> {token = skipToSpace();}	| token = <IDENT> )		
+    (<ESCAPE> {token = skipToSpace();}	| token = <IDENT> | token = <STRING>)		
 	{return token;}	
 }
 
@@ -741,17 +742,18 @@ Token skipToOr(int skip1, int skip2)
 	Token token ;
 	StringBuffer image = new StringBuffer();
 
+	int nesting = 1 ;
 	for(;;)
 	{
 		token = getToken(1);
 		if (token.kind == EOF)
 			unexpectedEof(current);
-		if (token.kind == skip1 || token.kind == skip2)
-		{
-			// getNextToken();
+		if (nesting <= 1 && (token.kind == skip1 || token.kind == skip2))
 			break ;
-		}
-
+		if (token.kind == LPAREN || token.kind == LBRACKET || token.kind == LBRACE)
+			nesting++;
+		if (token.kind == RPAREN || token.kind == RBRACKET || token.kind == RBRACE)
+			nesting--;
 		image.append(token.image);
 		getNextToken();
 	}
