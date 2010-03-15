@@ -1314,7 +1314,8 @@ void file_logical_name() #void :
 void file_open_information() :
 {}
 {
-  [ <OPEN> file_open_kind_expression() ] <IS> file_logical_name()
+  <OPEN> file_open_kind_expression() <IS> file_logical_name()
+  | <IS> [ <IN> | <OUT> ] file_logical_name()
 }
 
 void file_type_definition() #void :

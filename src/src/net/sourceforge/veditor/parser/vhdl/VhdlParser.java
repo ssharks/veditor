@@ -11,10 +11,10 @@
 
 package net.sourceforge.veditor.parser.vhdl;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -37,7 +37,7 @@ import org.eclipse.core.runtime.CoreException;
  * implementation class of VhdlParserCore<p/>
  * for separating definition from JavaCC code
  */
-public class VhdlParser extends VhdlParserCore implements IParser
+public class VhdlParser implements IParser
 {
 	private IFile m_File;
 	private Reader m_Reader;
@@ -47,20 +47,25 @@ public class VhdlParser extends VhdlParserCore implements IParser
 	private int m_StartCommentBlock;
 	private int m_LastCommentLine;
 	private int m_EndCommentBlock;
+	private int m_synopsisTranslateOff;
 	private OutlineContainer m_OutlineContainer;
 	private Pattern[] taskTokenPattern;
+	private Vector<Integer> m_lineOffsets;
+	
+	private VHDLParserThread parser;
 
 
 	public VhdlParser(Reader reader, IProject project, IFile file)
 	{
-		super(reader);
 		m_Reader = reader;
 		m_File = file;	
-		m_LastCommentLine=-1;	
+		m_LastCommentLine=-1;
+		m_synopsisTranslateOff=-1;
 		OutlineDatabase database = OutlineDatabase.getProjectsDatabase(project);		
 		if(database != null){
 			m_OutlineContainer = database.getOutlineContainer(file);
 		}
+		parser = new VHDLParserThread(m_Reader,m_File);
 		
 		taskTokenPattern=new Pattern[taskCommentTokens.length];
 		for(int i=0; i< taskCommentTokens.length;i++){
@@ -95,76 +100,47 @@ public class VhdlParser extends VhdlParserCore implements IParser
 			m_Reader.reset();
 		} catch (IOException e1) {			
 		}
-		
-		try
-		{	
-			//clear the tree
-			m_OutlineContainer.clear();
-			//start by looking for a design file entity;
-
-			boolean ignorefile = false;
-			int filesize=0;
-			{
-				InputStreamReader reader;
-				try {
-					reader = new InputStreamReader(m_File.getContents());
-					BufferedReader breader = new BufferedReader(reader);
-					
-					try {
-						while(true) {
-							String line = breader.readLine();
-							if(line==null) {
-								break;
-							}
-							filesize+=line.length();
-							if(line.contains("-- turn off superfluous VHDL processor warnings")) {
-								ignorefile=true;
-							}
-						}
-					} catch(IOException e) {
-						ignorefile=true;	
-					}
-				} catch (CoreException e1) {
-					ignorefile=true;
-				}
+		Thread parsethread = new Thread(parser);
+		parsethread.start();
+		try {
+			parsethread.join(2000);
+			if(parsethread.isAlive()) {
+				parsethread.stop();
+				parsethread.join(2000);
 			}
-			
-			if(!ignorefile && filesize < 500000) {
-				ASTdesign_file designFile=design_file();
-				updateOutline(designFile);
-				SemanticWarnings warn = new SemanticWarnings(m_File);
-				warn.check(designFile);
-			} else {
-				ASTdesign_file designFile=new ASTdesign_file(JJTDESIGN_FILE);
-				updateOutline(designFile);
-			}
-			
-		}
-		catch (ParseException e){
-			//convert the exception to a generic one			
-			HdlParserException hdlParserException =new HdlParserException(e);
-			errs.Error("Parser cannot recover from previous error(s).", hdlParserException);
+		} catch (InterruptedException e) {
+			HdlParserException hdlParserException=new HdlParserException(e);
 			updateMarkers();
 			throw hdlParserException;
 		}
-		catch (TokenMgrError e){			
-			HdlParserException hdlParserException =new HdlParserException(e);
-			errs.Error("Parser cannot recover from previous error(s).Unexpected character", hdlParserException);
-			updateMarkers();			
-			throw hdlParserException;
-		}		
-		parseLineComment();		
-		updateMarkers();
+		
+		try {
+			ASTdesign_file designFile = parser.getResult();
+			if(designFile!=null) {
+				updateOutline(designFile);
+				parseLineComment();
+				VerilogPlugin.clearProblemMarker(m_File);
+				SemanticWarnings warn = new SemanticWarnings(m_File);
+				warn.check(designFile);
+				updateMarkers();
+			} else {
+				designFile=new ASTdesign_file(VhdlParserCore.JJTDESIGN_FILE);
+				updateOutline(designFile);
+			}
+		} catch(HdlParserException e) {
+			updateMarkers();
+			throw e;
+		}
 	}
 
 	/**
 	 * Updates the error and warning markers
 	 */
 	protected void updateMarkers(){
-		for(ErrorHandler.Error error:getErrorHandler().getErrors()){
+		for(ErrorHandler.Error error:parser.getErrorHandler().getErrors()){
 			VerilogPlugin.setErrorMarker(m_File, error.getLine(), error.getMessage());
 		}
-		for(ErrorHandler.Error error:getErrorHandler().getWarnings()){
+		for(ErrorHandler.Error error:parser.getErrorHandler().getWarnings()){
 			VerilogPlugin.setErrorMarker(m_File, error.getLine(), error.getMessage());
 		}
 	}
@@ -221,16 +197,19 @@ public class VhdlParser extends VhdlParserCore implements IParser
 	 * parse line comment for content outline
 	 */
 	protected void parseLineComment() {
+		m_lineOffsets = new Vector<Integer>();
 		try {
-			m_Reader.reset();
+			InputStreamReader newreader = new InputStreamReader(m_File.getContents());
 			clearAutoTasks();
 
 			int line = 1;
 			int column = 0;
 			int []c = new int[2];
 			int firstNonSpace=0;
+			int fileoffset=0;
+			m_lineOffsets.add(fileoffset);
 			
-			c[1]= m_Reader.read();		
+			c[1]= newreader.read();
 			while ( c[1] != -1) {				
 				if(!Character.isWhitespace( c[1] ) && firstNonSpace==0){
 					firstNonSpace=column;
@@ -238,13 +217,23 @@ public class VhdlParser extends VhdlParserCore implements IParser
 				switch ( c[1] ) {
 					case '\n' :
 						line++;
+						m_lineOffsets.add(fileoffset);
 						column = 0;
 						firstNonSpace=0;
 						break;
 					case '-' :
 						//comment
 					if (c[0] == '-') {
-							String comment = getLineComment(m_Reader);
+							StringBuffer commentstrbuf = new StringBuffer();
+							int readc = newreader.read();
+							fileoffset++;
+							while (readc != '\n' && readc != -1)
+							{
+								commentstrbuf.append((char)readc);
+								readc = newreader.read();
+								fileoffset++;
+							}
+							String comment = commentstrbuf.toString().trim();
 							if (comment != null){
 							    String []msg=new String[1];
 								addComment(line, comment,(column-1 == firstNonSpace));
@@ -253,15 +242,17 @@ public class VhdlParser extends VhdlParserCore implements IParser
 								if(taskToken != null){								    
 								    addTaskToLine(taskToken, msg[0], line);
 								}								
+								checkSynopsisTranslate(comment,line);
 							}
-    						//if the beginning of the comment (the first "-" of "--") is
-    						//the first non space character of the line 
-    						if (column-1 == firstNonSpace) {
-    							coalesceComments(line);
-    							}
-    						// increment the line counter because getLineComment
-    						// consumes the new line character
+							//if the beginning of the comment (the first "-" of "--") is
+							//the first non space character of the line 
+							if (column-1 == firstNonSpace) {
+								coalesceComments(line);
+							}
+							// increment the line counter because getLineComment
+							// consumes the new line character
 							line++;
+							m_lineOffsets.add(fileoffset);
 							column = 0;
 							c[0]=0;
 							c[1]=0;
@@ -272,46 +263,29 @@ public class VhdlParser extends VhdlParserCore implements IParser
 						break;
 				}
 				c[0] = c[1];
-				c[1] = m_Reader.read();
+				c[1] = newreader.read();
 				column++;
+				fileoffset++;
 			}
 			//call one last time to catch the last comment
 			coalesceComments(Integer.MAX_VALUE);
-		} catch (IOException e) {
+		}
+		catch (IOException e) {}
+		catch (CoreException e) {}
+	}
+
+	private void checkSynopsisTranslate(String line, int linenr) {
+		if(line.contains("synopsis translate off")) {
+			m_synopsisTranslateOff = linenr;
+		}
+		if(m_synopsisTranslateOff!=-1 && 
+			line.contains("synopsis translate on")) {
+			addCollapsible(m_synopsisTranslateOff, linenr);
+			m_synopsisTranslateOff=-1;
 		}
 	}
 
-	private String getLineComment(Reader reader) throws IOException
-	{
-		StringBuffer str = new StringBuffer();
-		boolean enable = false;
-
-		//  copy to StringBuffer
-		int c = reader.read();
-		while (c != '\n' && c != -1)
-		{
-			if (Character.isLetterOrDigit((char)c) || enable)
-			{
-				str.append((char)c);
-				enable = true;
-			}
-			c = reader.read();
-		}
-
-		// delete tail
-		for (int i = str.length() - 1; i >= 0; i--)
-		{
-			char ch = str.charAt(i);
-			if (Character.isLetterOrDigit(ch))
-				break;
-			else
-				str.deleteCharAt(i);
-		}
-
-		return str.toString();
-	}
-
-	private void addComment(int line, String comment, Boolean onlycomment)
+	private void addComment(int line, String comment, boolean onlycomment)
 	{
 		m_OutlineContainer.addComment(line, comment, onlycomment);
 	}
@@ -370,11 +344,11 @@ public class VhdlParser extends VhdlParserCore implements IParser
 		} else if (node instanceof ASTprocess_statement) {
 			bNeetToOutline = true;
 			childNum += examineProcess((ASTprocess_statement) node, name, type);
-		} else if (node.id == JJTSUBPROGRAM_SPECIFICATION) {
+		} else if (node.id == VhdlParserCore.JJTSUBPROGRAM_SPECIFICATION) {
 			bNeetToOutline = true;
 			bIsCollapsible = true;
 			childNum += examineSubProgramSpec((ASTsubprogram_specification)node,name,type);
-		} else if (node.id == JJTSUBPROGRAM_BODY) {
+		} else if (node.id == VhdlParserCore.JJTSUBPROGRAM_BODY) {
 			bNeetToOutline = true;
 			bIsCollapsible = true;
 			childNum += examineSubProgramBody((ASTsubprogram_body)node,name,type);
@@ -399,7 +373,6 @@ public class VhdlParser extends VhdlParserCore implements IParser
 			for (Node c : ((ASTfull_type_declaration) node).children) {
 
 				if (!(c instanceof SimpleNode)) continue;
-				SimpleNode child = (SimpleNode) c;
 				if (c instanceof ASTidentifier) {
 					ASTidentifier identifier = (ASTidentifier) c;
 					name.append(identifier.name);
@@ -426,6 +399,8 @@ public class VhdlParser extends VhdlParserCore implements IParser
 		} else if (node instanceof ASTblock_statement) {
 			bIsCollapsible = true;
 		} else if (node instanceof ASTprocess_statement) {
+			bIsCollapsible = true;
+		} else if (node instanceof ASTgenerate_statement) {
 			bIsCollapsible = true;
 		}
 
