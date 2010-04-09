@@ -370,16 +370,15 @@ public class VhdlParser implements IParser
 
 		} else if (node instanceof ASTfull_type_declaration) {	
 			bNeetToOutline = true;
+			
 			for (Node c : ((ASTfull_type_declaration) node).children) {
-
 				if (!(c instanceof SimpleNode)) continue;
 				if (c instanceof ASTidentifier) {
 					ASTidentifier identifier = (ASTidentifier) c;
 					name.append(identifier.name);
 				}
-
 			}
-			type.append("record#");
+			type.append("type#");
 		} else if (node instanceof ASTrecord_type_definition) {		
 			childNum += examineRecordDeclaration((ASTrecord_type_definition)node);
 		} else if (node instanceof ASTport_clause) {
