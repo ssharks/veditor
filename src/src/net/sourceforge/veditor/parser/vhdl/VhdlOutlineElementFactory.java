@@ -44,6 +44,7 @@ public class VhdlOutlineElementFactory extends OutlineElementFactory {
     private boolean isFile         (String type){return type.toLowerCase().startsWith("file#"); }
     private boolean isRecord       (String type){return type.toLowerCase().startsWith("record#"); }
     private boolean isRecordMember (String type){return type.toLowerCase().startsWith("recordmember#"); }
+    private boolean isTypeDecl     (String type){return type.toLowerCase().startsWith("type#"); }
 	
 	/**
 	 * All VHDL outline classes are derived from this one;
@@ -364,6 +365,12 @@ public class VhdlOutlineElementFactory extends OutlineElementFactory {
 			m_ImageName="$nl$/icons/ar_obj.gif";				
 		}
 	}
+	public class TypeDecl extends VhdlOutlineElement{
+        public TypeDecl(String name,String type,int startLine,int startCol,int endLine,int endCol,IFile file,boolean bVisible){
+            super(name,type,startLine,startCol,endLine,endCol,file,bVisible);
+            m_ImageName="$nl$/icons/type.gif";                
+        }
+    }
 	/**  @note type string: port#[in,out,buffer,inout]#[type] */
 	public class VhdlPortElement extends VhdlOutlineElement{
 		public static final int INPUT	=0;
@@ -471,6 +478,9 @@ public class VhdlOutlineElementFactory extends OutlineElementFactory {
 		else if (isRecordMember(type)){
 			return new RecordMemberElement(name,type,startLine,startCol,endLine,endCol,file,true);
 		}
+		else if (isTypeDecl(type)){
+            return new TypeDecl(name,type,startLine,startCol,endLine,endCol,file,true);
+        }
 		
 		
 		
