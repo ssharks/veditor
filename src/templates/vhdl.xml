@@ -83,19 +83,30 @@ end component ${name};
 	autoinsert="false" 
 	context="net.sourceforge.veditor.templates.vhdl.context.global" 
 	deleted="false" 
-	description="Test Bench Template"
+	description="Test Bench Template. This template is also used to automatically instantiate test benches. test_bench: name of the test bench arch, signals: the section where the signals will be placed, module: The name of the module under test, mod_def: the definition of the module"
 	id="net.sourceforge.veditor.templates.vhdl.testBench" 
 	enabled="true" 
 	name="testbench">library ieee;
 use ieee.std_logic_1164.all;
+use ieee.std_logic_arith.all;
+library pck_fio_library;
+use pck_fio_library.pck_fio.all;
+library sim_library;
+use sim_library.SimClocks.all;
+library work;
 
-entity test_bench is
-end test_bench;
+entity ${testbench} is
+end ${testbench};
 
-architecture Test of test_bench is
-	begin
-	${cursor}
-end architure Test;
+-------------------------------
+-- Test bench for ${module}
+-------------------------------
+architecture Test of ${testbench} is
+${signals}
+begin
+  uut:
+   ${mod_def}
+end architecture Test;
 </template>
 
 
@@ -106,6 +117,7 @@ end architure Test;
 	deleted="false"
 	description=""
 	enabled="true"
+    id="net.sourceforge.veditor.templates.vhdl.constant"
 	name="constant"
 >constant</template>	
 
@@ -115,7 +127,8 @@ end architure Test;
 	deleted="false"
 	description=""
 	enabled="true"
-	name="signal"
+	name="signal" 
+    id="net.sourceforge.veditor.templates.vhdl.signal"
 >signal</template>
 
 <template
@@ -125,6 +138,7 @@ end architure Test;
 	description=""
 	enabled="true"
 	name="std_logic"
+    id="net.sourceforge.veditor.templates.vhdl.std_logic"
 >std_logic</template>
 
 <template
@@ -134,6 +148,7 @@ end architure Test;
 	description=""
 	enabled="true"
 	name="std_logic_vector"
+    id="net.sourceforge.veditor.templates.vhdl.std_logic_vector"
 >std_logic_vector(${cursor} downto 0);</template>
 
 <template
@@ -143,6 +158,7 @@ end architure Test;
 	description=""
 	enabled="true"
 	name="conv_std_logic_vector"
+    id="net.sourceforge.veditor.templates.vhdl.conv_std_logic_vector"
 >conv_std_logic_vector($cursor},${size});</template>
 
 
@@ -153,6 +169,7 @@ end architure Test;
 	description="(others=>'0')"
 	enabled="true"
 	name="others"
+    id="net.sourceforge.veditor.templates.vhdl.others"
 >(others=>'0')</template>
 
 
@@ -163,7 +180,7 @@ end architure Test;
 	description="Create asynchronous process"
 	enabled="true"
 	id="net.sourceforge.veditor.templates.vhdl.process"
-	name="process"
+	name="process"    
 >process()
 begin
 	${cursor}
@@ -178,6 +195,7 @@ end process;
 	description="Create synchronous process"
 	enabled="true"
 	name="process(clk)"
+    id="net.sourceforge.veditor.templates.vhdl.process_clk"
 >process(clk)
 begin
 	if rising_edge(clk) then
@@ -193,6 +211,7 @@ end process;
 	description="Create synchronous process with asynchronous reset"
 	enabled="true"
 	name="process(clk,rst)"
+    id="net.sourceforge.veditor.templates.vhdl.process_clk_rst"
 >process(${rst},${clk})
 begin
 	if ${rst}='1' then
@@ -211,6 +230,7 @@ end process;
 	description=""
 	enabled="true"
 	name="if"
+    id="net.sourceforge.veditor.templates.vhdl.if"
 >if ${cursor} then
 	
 end if;
@@ -223,6 +243,7 @@ end if;
 	description=""
 	enabled="true"
 	name="if-else"
+    id="net.sourceforge.veditor.templates.vhdl.if_else"
 >if ${cursor} then
 	
 else
@@ -238,6 +259,7 @@ end if;
 	description=""
 	enabled="true"
 	name="for"
+    id="net.sourceforge.veditor.templates.vhdl.for"
 >for ${var}  in ${ll} to ${ul} loop
 	${cursor}
 end loop;
@@ -250,6 +272,7 @@ end loop;
 	description=""
 	enabled="true"
 	name="assert"
+    id="net.sourceforge.veditor.templates.vhdl.assert"
 >assert ${cursor} report "Error: " severity failure;</template>
 
 
@@ -260,6 +283,7 @@ end loop;
 	description=""
 	enabled="true"
 	name="case"
+    id="net.sourceforge.veditor.templates.vhdl.case"
 >case ${cursor} is
 	when "0" =>
 		
@@ -278,6 +302,7 @@ end case;
 	description=""
 	enabled="true"
 	name="statemachine"
+    id="net.sourceforge.veditor.templates.vhdl.statemachine"
 >b_statemachine: block
 	type t_State is (sIDLE, sRUNNING);
 	signal mystate: t_State:=sIDLE;
@@ -306,6 +331,7 @@ end block;
 	description=""
 	enabled="true"
 	name="statemachine with reset"
+    id="net.sourceforge.veditor.templates.vhdl.statemachine_rst"
 >b_statemachine: block
 	type t_State is (sIDLE, sRUNNING);
 	signal mystate: t_State:=sIDLE;
