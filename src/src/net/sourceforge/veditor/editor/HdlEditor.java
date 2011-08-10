@@ -606,6 +606,8 @@ abstract public class HdlEditor extends TextEditor
 		StringBuffer buffer = new StringBuffer();
 		HdlDocument doc = getHdlDocument();
 
+		if (doc == null)
+		    return;
 		//check for non-workspace file
 		IFile file = doc.getFile();
 		if (file == null)
