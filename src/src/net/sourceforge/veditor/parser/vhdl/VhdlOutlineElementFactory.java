@@ -42,7 +42,6 @@ public class VhdlOutlineElementFactory extends OutlineElementFactory {
     private boolean isConstant     (String type){return type.toLowerCase().startsWith("constant#"); }  
     private boolean isAlias        (String type){return type.toLowerCase().startsWith("alias#"); }
     private boolean isFile         (String type){return type.toLowerCase().startsWith("file#"); }
-    private boolean isRecord       (String type){return type.toLowerCase().startsWith("record#"); }
     private boolean isRecordMember (String type){return type.toLowerCase().startsWith("recordmember#"); }
     private boolean isTypeDecl     (String type){return type.toLowerCase().startsWith("type#"); }
 	
@@ -409,13 +408,6 @@ public class VhdlOutlineElementFactory extends OutlineElementFactory {
 		}		
 	}
 	/**  @note type string: record# */
-	public class RecordElement extends VhdlOutlineElement{
-		public RecordElement(String name,String type,int startLine,int startCol,int endLine,int endCol,IFile file,boolean bVisible){
-			super(name,type,startLine,startCol,endLine,endCol,file,bVisible);
-			m_ImageName="$nl$/icons/record.gif";				
-		}
-	}
-	/**  @note type string: record# */
 	public class RecordMemberElement extends VhdlOutlineElement{
 		public RecordMemberElement(String name,String type,int startLine,int startCol,int endLine,int endCol,IFile file,boolean bVisible){
 			super(name,type,startLine,startCol,endLine,endCol,file,bVisible);
@@ -471,9 +463,6 @@ public class VhdlOutlineElementFactory extends OutlineElementFactory {
 		}
 		else if (isFile(type)){
 			return new FileElement(name,type,startLine,startCol,endLine,endCol,file,true);
-		}
-		else if (isRecord(type)){
-			return new RecordElement(name,type,startLine,startCol,endLine,endCol,file,true);
 		}
 		else if (isRecordMember(type)){
 			return new RecordMemberElement(name,type,startLine,startCol,endLine,endCol,file,true);
