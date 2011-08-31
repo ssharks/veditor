@@ -11,6 +11,7 @@
 package net.sourceforge.veditor.editor;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 
@@ -27,15 +28,7 @@ import net.sourceforge.veditor.parser.IParser;
 import net.sourceforge.veditor.parser.OutlineContainer;
 import net.sourceforge.veditor.parser.OutlineDatabase;
 import net.sourceforge.veditor.parser.OutlineElement;
-import net.sourceforge.veditor.parser.vhdl.VhdlOutlineElementFactory.ArchitectureElement;
-import net.sourceforge.veditor.parser.vhdl.VhdlOutlineElementFactory.EntityDeclElement;
-import net.sourceforge.veditor.parser.vhdl.VhdlOutlineElementFactory.PackageDeclElement;
-import net.sourceforge.veditor.parser.vhdl.VhdlOutlineElementFactory.RecordElement;
-import net.sourceforge.veditor.parser.vhdl.VhdlOutlineElementFactory.VhdlOutlineElement;
-import net.sourceforge.veditor.parser.vhdl.VhdlOutlineElementFactory.VhdlSignalElement;
-import net.sourceforge.veditor.parser.vhdl.VhdlOutlineElementFactory.VhdlSubprogram;
-import net.sourceforge.veditor.parser.vhdl.VhdlOutlineElementFactory.GenericElement;
-import net.sourceforge.veditor.parser.vhdl.VhdlOutlineElementFactory.VhdlPortElement;
+import net.sourceforge.veditor.parser.vhdl.VhdlOutlineElementFactory.*;
 import net.sourceforge.veditor.templates.VhdlGlobalContext;
 
 import org.eclipse.core.resources.IFile;
@@ -46,8 +39,8 @@ import org.eclipse.jface.text.templates.Template;
 import org.eclipse.swt.widgets.Display;
 
 public class VhdlCompletionProcessor extends HdlCompletionProcessor {
-    private static String TEST_BENCH_TEMPLATE_NAME="testbench";
-    
+	private static String TEST_BENCH_TEMPLATE_NAME="testbench";
+
 	public ICompletionProposal[] computeCompletionProposals(ITextViewer viewer,
 			int documentOffset) {
 		HdlDocument doc = (HdlDocument) viewer.getDocument();
@@ -80,30 +73,44 @@ public class VhdlCompletionProcessor extends HdlCompletionProcessor {
 		 	matchList.addAll(getTemplates(viewer, documentOffset, context));
 			addSignalPropsals(doc, documentOffset, match, currentElement,matchList);
 			addSubprogramProposals(doc, documentOffset, match,currentElement, matchList);
-		} else {  // record member auto completion
-			String recordname = null;
-			recordname = getSignalType(doc, documentOffset, matchword[0], currentElement);
-			for(int i=1;i<matchword.length-1;i++){
-				OutlineElement[] tempRecord=searchRecordDefinition(doc, documentOffset, recordname,currentElement).getChildren();
-				recordname=getMemberType(doc,documentOffset,matchword[i],tempRecord);
-			}
-			
-			RecordElement finalRecord=(RecordElement)searchRecordDefinition(doc, documentOffset, recordname,currentElement);
-			
-			
-			matchList = new ArrayList<IComparableCompletionProposal>();
-			
-			if (finalRecord != null) {
-				OutlineElement[] memberElements = finalRecord.getChildren();
-				String matchlc1 = matchword[matchword.length-1];
-				                            String matchlc=matchlc1.trim().toLowerCase();   
-				for (int h = 0; h < memberElements.length; h++) {
-					String recordmember = memberElements[h].getName().toLowerCase();
-					if (recordmember.startsWith(matchlc)) {
-						 int cc=matchlc.length();
-						 String replace = memberElements[h].getName();
-						
-						 matchList.add(new VhdlRecordCompletionProposal(replace, documentOffset, cc, replace.length(), replace));
+		} else {  
+			if(matchword.length==2 && matchword[0].equals("work")) { // packages auto completion
+				String match2 = matchword[1].trim();
+				OutlineDatabase database = doc.getOutlineDatabase();
+				OutlineElement[] elements = database.findTopLevelElements(match2);
+				
+				matchList = new ArrayList<IComparableCompletionProposal>();
+				
+				for (int i = 0; i < elements.length; i++) {
+					if(elements[i] instanceof PackageDeclElement){
+						matchList.add(new VhdlInstanceCompletionProposal(doc, elements[i], documentOffset, match2.length()));
+					}
+				}
+			} else { // record member auto completion
+				String recordname = null;
+				recordname = getSignalType(doc, documentOffset, matchword[0], currentElement);
+				for(int i=1;i<matchword.length-1;i++){
+					OutlineElement[] tempRecord=searchRecordDefinition(doc, documentOffset, recordname,currentElement).getChildren();
+					recordname=getMemberType(doc,documentOffset,matchword[i],tempRecord);
+				}
+				
+				TypeDecl finalRecord=(TypeDecl)searchRecordDefinition(doc, documentOffset, recordname,currentElement);
+				
+				
+				matchList = new ArrayList<IComparableCompletionProposal>();
+				
+				if (finalRecord != null) {
+					OutlineElement[] memberElements = finalRecord.getChildren();
+					String matchlc1 = matchword[matchword.length-1];
+					String matchlc=matchlc1.trim().toLowerCase();   
+					for (int h = 0; h < memberElements.length; h++) {
+						String recordmember = memberElements[h].getName().toLowerCase();
+						if (recordmember.startsWith(matchlc)) {
+							 int cc=matchlc.length();
+							 String replace = memberElements[h].getName();
+							
+							 matchList.add(new VhdlRecordCompletionProposal(replace, documentOffset, cc, replace.length(), replace));
+						}
 					}
 				}
 			}
@@ -155,7 +162,7 @@ public class VhdlCompletionProcessor extends HdlCompletionProcessor {
 		if (database != null) {
 			OutlineElement[] elements = database.findTopLevelElements(replace);
 			for (int i = 0; i < elements.length; i++) {
-				if(elements[i] instanceof VhdlOutlineElement){
+				if(VhdlInstanceCompletionProposal.canHandle(elements[i])) {
 					matchList.add(new VhdlInstanceCompletionProposal(doc,
 							elements[i], offset, length));				
 				}
@@ -166,7 +173,7 @@ public class VhdlCompletionProcessor extends HdlCompletionProcessor {
 				if(elements[i] instanceof PackageDeclElement){
 					OutlineElement[] subPackageElements=elements[i].getChildren();
 					for(int j=0; j< subPackageElements.length; j++){
-						if(subPackageElements[j] instanceof VhdlOutlineElement &&
+						if(VhdlInstanceCompletionProposal.canHandle(subPackageElements[j]) &&
 								subPackageElements[j].getName().toLowerCase().startsWith(replace.toLowerCase())){
 							matchList.add(new VhdlInstanceCompletionProposal(doc,
 									subPackageElements[j], offset, length));
@@ -176,7 +183,7 @@ public class VhdlCompletionProcessor extends HdlCompletionProcessor {
 			}
 			
 			for (int i = 0; i < elements.length; i++) {
-				if(elements[i] instanceof VhdlOutlineElement) {
+				if(elements[i] instanceof EntityDeclElement || elements[i] instanceof ComponentDeclElement) {
 					String name = elements[i].getName();
 					if(name.startsWith("tb_")) continue;
 					if(isMatch(replace, "tb_"+name)) {
@@ -202,7 +209,7 @@ public class VhdlCompletionProcessor extends HdlCompletionProcessor {
 			OutlineElement[] children =parent.getChildren();
 		
 			for(int i=0;i < children.length;i++){
-				if (children[i] instanceof RecordElement && children[i].getName()
+				if (children[i] instanceof TypeDecl && children[i].getName()
 						.equalsIgnoreCase(recordname)) {
 					return children[i];
 				}
@@ -223,7 +230,7 @@ public class VhdlCompletionProcessor extends HdlCompletionProcessor {
 				if(elements[i] instanceof PackageDeclElement ){
 					OutlineElement[] subPackageElements=elements[i].getChildren();
 					for(int j=0; j< subPackageElements.length; j++){
-						if (subPackageElements[j] instanceof RecordElement
+						if (subPackageElements[j] instanceof TypeDecl
 								&& subPackageElements[j].getName()
 										.equalsIgnoreCase(recordname)) {
 							return subPackageElements[j];
@@ -297,12 +304,21 @@ public class VhdlCompletionProcessor extends HdlCompletionProcessor {
        VhdlInstanceCompletionProposal prop = new VhdlInstanceCompletionProposal(doc, mod, offset, length);
        String module_def = prop.getReplaceString();
        module_def = module_def.replace("\n", "\n\t"); 
-                     
-       String indentationstring = VerilogPlugin.getIndentationString();
-       results=results.replace("${testbench}", test_bench);
-       results=results.replace("${signals}", signals);
-       results=results.replace("${module}", modname);
-       results=results.replace("${mod_def}", module_def);
+
+		String indentationstring = VerilogPlugin.getIndentationString();
+		results=results.replace("${testbench}", test_bench);
+		results=results.replace("${signals}", signals);
+		results=results.replace("${module}", modname);
+		results=results.replace("${mod_def}", module_def);
+		results=results.replace("${user}", System.getProperty("user.name"));
+		results=results.replace("${year}", Integer.toString(Calendar.getInstance().get(Calendar.YEAR)));
+		String month = Integer.toString(Calendar.getInstance().get(Calendar.MONTH)+1);
+		if(month.length()<2) month = "0"+month;
+		String day = Integer.toString(Calendar.getInstance().get(Calendar.DAY_OF_MONTH));
+		if(day.length()<2) day = "0"+day;
+		results=results.replace("${month}", month);
+		results=results.replace("${day}", day);
+
        results = results.replace("\t", indentationstring);
        
        return getCompletionProposal(results, offset, length, results.length() , test_bench+" (auto gen testbench) ");
@@ -367,7 +383,7 @@ public class VhdlCompletionProcessor extends HdlCompletionProcessor {
 				if (children[i] instanceof VhdlSubprogram) {
 					VhdlSubprogram subProgram = (VhdlSubprogram) children[i];
 					
-					if(subProgram.getName().startsWith(replace)){
+					if(subProgram.getName().toLowerCase().startsWith(replace.toLowerCase())){
 						VhdlSubprogramProposalProvider proposalProvider=
 							new VhdlSubprogramProposalProvider(doc,subProgram,offset,length);
 						HdlTemplateProposal proposal=proposalProvider.createProposal();
@@ -383,6 +399,27 @@ public class VhdlCompletionProcessor extends HdlCompletionProcessor {
 				parent=null;
 			}
 		}	
+		//look into packages
+		OutlineDatabase database = doc.getOutlineDatabase();
+		
+		if (database != null) {
+			OutlineElement[] elements = database.findTopLevelElements("");
+			for (int i = 0; i < elements.length; i++) {
+				if(elements[i] instanceof PackageDeclElement){
+					OutlineElement[] subPackageElements=elements[i].getChildren();
+					for(int j=0; j< subPackageElements.length; j++){
+						if(subPackageElements[j] instanceof VhdlSubprogram) {
+							if(subPackageElements[j].getName().toLowerCase().startsWith(replace.toLowerCase())){
+								VhdlSubprogramProposalProvider proposalProvider=
+									new VhdlSubprogramProposalProvider(doc,(VhdlSubprogram)subPackageElements[j],offset,length);
+								HdlTemplateProposal proposal=proposalProvider.createProposal();
+								matchList.add(proposal);
+							}
+						}
+					}
+				}
+			}
+		}
 	}
 
 	
@@ -468,13 +505,11 @@ public class VhdlCompletionProcessor extends HdlCompletionProcessor {
 			}
 			
 			for(int i=0;i < children.length;i++){
-				if (children[i] instanceof VhdlSignalElement) {
-					VhdlSignalElement signalElement = (VhdlSignalElement) children[i];
-					
-					if(signalElement.getName().startsWith(replace)){
-						matchList.add(new VhdlInstanceCompletionProposal(doc,signalElement, offset, length));
+				if (VhdlInstanceCompletionProposal.canHandle(children[i])) {
+					if(children[i].getName().toLowerCase().startsWith(replace.toLowerCase())){
+						matchList.add(new VhdlInstanceCompletionProposal(doc,children[i], offset, length));
 					}
-				}				
+				}
 			}
 			if (parent.getParent() instanceof VhdlOutlineElement) {
 				parent = (VhdlOutlineElement) parent.getParent();
