@@ -196,7 +196,6 @@ abstract public class HdlSourceViewerConfiguration extends
 	private static class AnnotationHover implements IAnnotationHover
 	{
 
-		@SuppressWarnings("unchecked")
 		public String getHoverInfo(ISourceViewer sourceViewer, int lineNumber)
 		{
 			IAnnotationModel model = sourceViewer.getAnnotationModel();
