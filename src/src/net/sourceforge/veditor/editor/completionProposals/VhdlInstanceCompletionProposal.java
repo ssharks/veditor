@@ -13,11 +13,7 @@ package net.sourceforge.veditor.editor.completionProposals;
 import net.sourceforge.veditor.VerilogPlugin;
 import net.sourceforge.veditor.document.HdlDocument;
 import net.sourceforge.veditor.parser.OutlineElement;
-import net.sourceforge.veditor.parser.vhdl.VhdlOutlineElementFactory.ComponentDeclElement;
-import net.sourceforge.veditor.parser.vhdl.VhdlOutlineElementFactory.EntityDeclElement;
-import net.sourceforge.veditor.parser.vhdl.VhdlOutlineElementFactory.GenericElement;
-import net.sourceforge.veditor.parser.vhdl.VhdlOutlineElementFactory.VhdlOutlineElement;
-import net.sourceforge.veditor.parser.vhdl.VhdlOutlineElementFactory.VhdlPortElement;
+import net.sourceforge.veditor.parser.vhdl.VhdlOutlineElementFactory.*;
 
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
@@ -64,6 +60,17 @@ public class VhdlInstanceCompletionProposal extends
 		return null;
 	}
 	
+	public static boolean canHandle(OutlineElement outlineElement) {
+		if(outlineElement instanceof EntityDeclElement) return true;
+		if(outlineElement instanceof ComponentDeclElement) return true;
+		if(outlineElement instanceof VhdlSignalElement) return true;
+		if(outlineElement instanceof VariableElement) return true;
+		if(outlineElement instanceof ConstantElement) return true;
+		if(outlineElement instanceof TypeDecl) return true;
+
+		return false;
+	}
+
 	/**
 	 * Called when the user selects a proposal
 	 */
@@ -105,6 +112,9 @@ public class VhdlInstanceCompletionProposal extends
 			}							
 		}
 		//assemble the replace string
+		if (m_Element instanceof EntityDeclElement) {
+			replaceString += "entity work.";
+		}
 		replaceString += m_Element.getName();
 		//do we have any generics
 		if(generics.length() > 0){
@@ -128,7 +138,7 @@ public class VhdlInstanceCompletionProposal extends
 		replaceString = replaceString.replace("\n ", "\n\t");
 		String indentationstring = VerilogPlugin.getIndentationString();	
 		replaceString = replaceString.replace("\t", indentationstring);
-		return  replaceString.replace("\n", "\n" + getIndentString());
+		return  replaceString.replace("\n", eol + getIndentString());
 	}
 		
 	/**
