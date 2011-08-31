@@ -26,6 +26,7 @@ import net.sourceforge.veditor.parser.OutlineDatabase;
 import net.sourceforge.veditor.parser.OutlineElementFactory;
 import net.sourceforge.veditor.parser.OutlineContainer.Collapsible;
 import net.sourceforge.veditor.parser.vhdl.VhdlParserCore;
+import net.sourceforge.veditor.preference.TopPreferencePage;
 import net.sourceforge.veditor.semanticwarnings.SemanticWarnings;
 
 import org.eclipse.core.resources.IFile;
@@ -96,6 +97,16 @@ public class VhdlParser implements IParser
 	 */	
 	public void parse() throws HdlParserException
 	{
+		String  sTime_out=VerilogPlugin.getPreferenceString(TopPreferencePage.MAX_PARSE_TIME);
+		int nTimeout;
+		try{
+			Integer time_out = Integer.parseInt(sTime_out);
+			nTimeout = time_out;
+		}catch (NumberFormatException e) {
+			//if we cannot parse the string
+			nTimeout=2000;
+		}
+		
 		try {
 			m_Reader.reset();
 		} catch (IOException e1) {			
@@ -103,10 +114,12 @@ public class VhdlParser implements IParser
 		Thread parsethread = new Thread(parser);
 		parsethread.start();
 		try {
-			parsethread.join(2000);
+			parsethread.join(nTimeout);
 			if(parsethread.isAlive()) {
+				VerilogPlugin.println("VHDL Parser is taking too long parsing "+m_File.getName()+" . I'm killing it\n");
 				parsethread.stop();
-				parsethread.join(2000);
+				parsethread.join(nTimeout);
+				
 			}
 		} catch (InterruptedException e) {
 			HdlParserException hdlParserException=new HdlParserException(e);
@@ -129,7 +142,7 @@ public class VhdlParser implements IParser
 			}
 		} catch(HdlParserException e) {
 			updateMarkers();
-			throw e;
+			//throw e;
 		}
 	}
 
