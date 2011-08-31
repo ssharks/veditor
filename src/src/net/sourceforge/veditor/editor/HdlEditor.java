@@ -399,7 +399,6 @@ abstract public class HdlEditor extends TextEditor
 		setInputPages(input);
 	}
 
-	@SuppressWarnings("unchecked")
 	public Object getAdapter(Class required)
 	{
 		HdlHierarchyPage page=null;
