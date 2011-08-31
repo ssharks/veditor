@@ -43,7 +43,7 @@ public class CompileAction extends AbstractAction
 	 * if necessary.
 	 */
 	private void checkAndSaveEditors(){
-		if(isNeedToSaveSet()){
+		if(isNeedToSaveSet() && getEditor().isDirty()){
 			getEditor().doSave(null);
 		}
 	}
@@ -68,7 +68,7 @@ public class CompileAction extends AbstractAction
 		
 		VerilogPlugin.clear();
 		
-		VerilogPlugin.deleteMarkers(file);
+		VerilogPlugin.deleteExternalMarkers(file);
 		IPath path = parent.getLocation();
 		
 		String simulationdir = VerilogPlugin.getPreferenceString("Compile.Folder");
@@ -80,6 +80,12 @@ public class CompileAction extends AbstractAction
 		}
 		
 		IContainer workdir = (IContainer)parent.findMember(simulationdir);
+		
+		if(workdir==null) {
+			VerilogPlugin.println("Warning directory \"" + path.toString()+"/"+simulationdir + "\""+
+					" exists on file system, but not in your project, try refreshing your project");
+			return;
+		}
 		
 		/*
 		 * %f - filename
@@ -108,14 +114,6 @@ public class CompileAction extends AbstractAction
         
 		ExternalLauncher launchar = new ExternalLauncher(workdir, command);
 		launchar.run();
-		
-		String msg = launchar.getMessage();
-
-		ErrorParser[] parsers = ErrorParser.getParsers();
-		for(int i = 0 ; i < parsers.length ; i++)
-		{
-			parsers[i].parse(parent, msg);
-		}
 
 		getEditor().update();
 	}
