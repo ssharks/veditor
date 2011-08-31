@@ -20,78 +20,157 @@ import java.util.regex.Pattern;
 import net.sourceforge.veditor.VerilogPlugin;
 
 import org.eclipse.core.resources.IContainer;
-import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.debug.ui.console.FileLink;
+import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.ui.console.IPatternMatchListener;
+import org.eclipse.ui.console.PatternMatchEvent;
+import org.eclipse.ui.console.TextConsole;
 
 public class ErrorParser
 {
+	private static final String DEFAULT_ERROR_PARSER_REGEX =
+		"ModelSim"
+		+ "\n" + "[#|\\*].*Error: ([^\\(]*)\\(([0-9]*)\\): (.*)"		
+		+ "\n" + "[#|\\*].*Warning: ([^\\(]*)\\(([0-9]*)\\): (.*)"		
+		+ "\n" + ""
+		+ "\n" + "ModelSimSimulation"
+		+ "\n" + "[#|\\*] Break in ([^\\#]*) at ([^\\(#]*) line ([0-9]*)"
+		+ "\n" + ""
+		+ "\n" + "[#|\\*](.*)File: ([^\\#]*) Line: ([0-9]*)"
+		+ "\n" + "Cver"
+		+ "\n" + "\\*\\*(.*)\\(([0-9]+)\\) ERROR\\*\\* (.*)"
+		+ "\n" + "\\*\\*(.*)\\(([0-9]+)\\) WARN\\*\\* (.*)"
+		+ "\n" + "--(.*)\\(([0-9]+)\\) INFORM-- (.*)" 
+		+ "\n" + "Icarus Verilog"
+		+ "\n" + "(.*):([0-9]+): [a-z ]*error: (.*)"
+		+ "\n" + "(.*):([0-9]+): warning: (.*)"
+		+ "\n" + ""
+		+ "\n" + "FreeHDL"
+		+ "\n" + "(.*):([0-9]+): error: (.*)" 
+		+ "\n" + "(.*):([0-9]+): warning: (.*)" 
+		+ "\n" + "";
+	
+	
 	private static final String PREFERENCE_NAME = "ErrorParser";
+	private static ErrorParser[] parsers = null;
+	private static String previousCompiler = "";
+	
 	public static ErrorParser[] getParsers()
 	{
-		List<String> strings = VerilogPlugin.getPreferenceStrings(PREFERENCE_NAME);
+		if(parsers==null) {
+			// first add the default parsers:
+			String[] stringsdefault = DEFAULT_ERROR_PARSER_REGEX.split("\n",-1);
+			List<String> stringsuser = VerilogPlugin.getPreferenceStrings(PREFERENCE_NAME);
+			
+			// remove user parsers with the same name as a default parser:
+			for (int i = 0; i < stringsuser.size(); i += 4) {
+				String username = stringsuser.get(i);
+				boolean found=false;
+				for (int j = 0; j < stringsdefault.length; j += 4) {
+					String defaultname = stringsdefault[j];
+					if(defaultname.equals(username)) found=true;
+				}
+				if(found) {
+					stringsuser.remove(i+3);
+					stringsuser.remove(i+2);
+					stringsuser.remove(i+1);
+					stringsuser.remove(i);
+					i-=4;
+				}
+			}
 		
-		ErrorParser[] parsers = new ErrorParser[strings.size() / 4];
-		for (int i = 0; i < strings.size(); i += 4)
+			parsers = new ErrorParser[stringsdefault.length/4  + stringsuser.size() / 4];
+			
+			for (int i = 0; i < stringsdefault.length; i += 4) {
+				String name = stringsdefault[i];
+				String err = stringsdefault[i + 1];
+				String warn = stringsdefault[i + 2];
+				String info = stringsdefault[i + 3];
+				ErrorParser parser = new ErrorParser(name);
+				parser.setRegex(err, warn, info);
+				parser.editable = false;
+				parsers[i/4] = parser;
+			}
+			
+			for (int i = 0; i < stringsuser.size(); i += 4)
 		{
-			parsers[i/4] = createParser(strings, i);
+				String name = stringsuser.get(i).toString();
+				String err = stringsuser.get(i + 1).toString();
+				String warn = stringsuser.get(i + 2).toString();
+				String info = stringsuser.get(i + 3).toString();
+				ErrorParser parser = new ErrorParser(name);
+				parser.setRegex(err, warn, info);
+				parser.editable = true;
+				parsers[stringsdefault.length/4 + i/4] = parser;
+			}
 		}
 		return parsers;
 	}
+	
 	public static List<ErrorParser> getParserList()
 	{
+		ErrorParser[] parsers = getParsers();
 		List<ErrorParser> list = new ArrayList<ErrorParser>();
-		List<String> strings = VerilogPlugin.getPreferenceStrings(PREFERENCE_NAME);
-
-		if (strings != null)
-		{
-			for (int i = 0; i < strings.size(); i += 4)
+		for (ErrorParser parser:parsers)
 			{
-				list.add(createParser(strings, i));
-			}
+			list.add(parser);
 		}
 		return list;
 	}
-	public static ErrorParser getParser(String compiler)
-	{
-		List<String> strings = VerilogPlugin.getPreferenceStrings(PREFERENCE_NAME);
 		
-		for (int i = 0; i < strings.size(); i += 4)
+	public static void installParser(String compiler, IProject proj)
 		{
-			if (strings.get(i).equals(compiler))
+		ErrorParser[] parsers = getParsers();
+		for (ErrorParser parse:parsers)
 			{
-				return createParser(strings, i);
+			if (parse.getCompilerName().equals(compiler))
+			{
+				parse.project = proj;
 			}
 		}
-		return null;
+		
+		if(!compiler.equals(previousCompiler)) {
+			for (ErrorParser parse:parsers)
+			{
+				if (parse.getCompilerName().equals(compiler))
+				{
+					VerilogPlugin.addPatternMatchListener(parse.errParser);
+					VerilogPlugin.addPatternMatchListener(parse.warnParser);
+					VerilogPlugin.addPatternMatchListener(parse.infoParser);
 	}
-	private static ErrorParser createParser(List<String> strings, int top)
+				if (parse.getCompilerName().equals(previousCompiler))
 	{
-		String name = strings.get(top).toString();
-		String err = strings.get(top + 1).toString();
-		String warn = strings.get(top + 2).toString();
-		String info = strings.get(top + 3).toString();
-		ErrorParser parser = new ErrorParser(name);
-		parser.setRegex(err, warn, info);
-
-		return parser;
+					VerilogPlugin.removePatternMatchListener(parse.errParser);
+					VerilogPlugin.removePatternMatchListener(parse.warnParser);
+					VerilogPlugin.removePatternMatchListener(parse.infoParser);
+				}
+			}
+			previousCompiler = compiler;
+		}
 	}
+	
 	public static void setParsers(ErrorParser[] parsers)
 	{
 		List<String> strings = new ArrayList<String>();
 		for (int i = 0; i < parsers.length; i++)
 		{
+			if(!parsers[i].isEditable()) continue;
 			strings.add(parsers[i].compilerName);
 			strings.add(parsers[i].errRegex);
 			strings.add(parsers[i].warnRegex);
 			strings.add(parsers[i].infoRegex);
 		}
 		VerilogPlugin.setPreference(PREFERENCE_NAME, strings);
+		parsers = null;
 	}
+	
 	public static void setParserList(List<ErrorParser> list)
 	{
 		List<String> strings = new ArrayList<String>();
@@ -99,30 +178,36 @@ public class ErrorParser
 		while(i.hasNext())
 		{
 			ErrorParser parser = (ErrorParser)i.next();
+			if(!parser.isEditable()) continue;
 			strings.add(parser.compilerName);
 			strings.add(parser.errRegex);
 			strings.add(parser.warnRegex);
 			strings.add(parser.infoRegex);
 		}
 		VerilogPlugin.setPreference(PREFERENCE_NAME, strings);
+		parsers = null;
 	}
+	
 	public static void setDefaultParsers()
 	{
 		VerilogPlugin.setDefaultPreference(PREFERENCE_NAME);
+		parsers = null;
 	}
 
 	private IProject project;
-	private IContainer folder;
-	private String message;
-	private int msgIdx;
 	private String compilerName;
 	private String errRegex;
 	private String warnRegex;
 	private String infoRegex;
+	private boolean editable;
+	ConsoleParser errParser;
+	ConsoleParser warnParser;
+	ConsoleParser infoParser;
 
 	public ErrorParser(String compilerName)
 	{
 		this.compilerName = compilerName;
+		editable = true;
 	}
 	
 	public String getCompilerName()
@@ -130,11 +215,19 @@ public class ErrorParser
 		return compilerName;
 	}
 	
+	public boolean isEditable()
+	{
+		return editable;
+	}
+	
 	public void setRegex(String errRegex, String warnRegex, String infoRegex)
 	{
 		this.errRegex = errRegex;
 		this.warnRegex = warnRegex;
 		this.infoRegex = infoRegex;
+		errParser = new ConsoleParser(errRegex, IMarker.SEVERITY_ERROR);
+		warnParser = new ConsoleParser(warnRegex, IMarker.SEVERITY_WARNING);
+		infoParser = new ConsoleParser(infoRegex, IMarker.SEVERITY_INFO);
 	}
 	public void setRegex(int num, String regex)
 	{
@@ -164,113 +257,11 @@ public class ErrorParser
 		return infoRegex;
 	}
 	
-	/**
-	 * parse compiler message.
-	 */
-	public void parse(IContainer folder, String message)
-	{
-		this.folder = folder;
-
-		while (folder instanceof IFolder)
-		{
-			folder = folder.getParent();
-		}
-		if (folder instanceof IProject)
-		{
-			project = (IProject)folder;
-		}
-		else
-		{
-			// maybe never execute
-			return;
-		}
-
-		this.message = message;
-		msgIdx = 0;
-
-		Pattern errPattern = Pattern.compile(errRegex);
-		Pattern warnPattern = Pattern.compile(warnRegex);
-		Pattern infoPattern = Pattern.compile(infoRegex);
-				
-		String lineStr;
-		for (lineStr = getLine(); lineStr != null; lineStr = getLine())
-		{
-			//declare the segments here to ensure that they are empty
-			String[] segs = new String[3]; 
-			if (!lineStr.equals(""))
-			{
-				Matcher m;
-				m = errPattern.matcher(lineStr);
-				if (m.matches())
-				{
-					getSegment(m, segs);
-					setErrorMarker(segs[0], segs[1], segs[2]);
-				}
-				m = warnPattern.matcher(lineStr);
-				if (m.matches())
-				{
-					getSegment(m, segs);
-					setWarningMarker(segs[0], segs[1], segs[2]);
-				}
-				m = infoPattern.matcher(lineStr);
-				if (m.matches())
-				{
-					getSegment(m, segs);
-					setInfoMarker(segs[0], segs[1], segs[2]);
-				}
-			}
-		}
-	}
-	
-	private void getSegment(Matcher m, String[] segs)
-	{
-		int groupCount=m.groupCount();
-		if(groupCount>2){
-			segs[2] = m.group(groupCount);
-			segs[1] = m.group(--groupCount);
-			segs[0] = m.group(--groupCount);
-		}
-		
-	}
-	
-	private String getLine()
-	{
-		int next = message.indexOf("\n", msgIdx);
-		if (next >= 0)
-		{
-			String line;
-			if (next > 0 && message.charAt(next - 1) == '\r')
-			{
-				line = message.substring(msgIdx, next-1);
-			}
-			else
-			{
-				line = message.substring(msgIdx, next);
-			}
-			msgIdx = next + 1;
-			return line;
-		}
-		else
-			return null;
-	}
-	
-	private int parseLineNumber(String str)
-	{
-		try
-		{
-			return Integer.parseInt(str);
-		}
-		catch (NumberFormatException e)
-		{
-			return -1;
-		}
-	}
-	
 	private void reportMissingFile(String filename){
 		String message = new String();
 		message=String.format("\"%s\" is not found in the project. MS Windows users, check filename case!!!", filename);			
 		try{
-			IMarker marker=project.createMarker("org.eclipse.core.resources.problemmarker");
+			IMarker marker=project.createMarker("net.sourceforge.veditor.builderproblemmarker");
 			marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);			
 			marker.setAttribute(IMarker.MESSAGE, message);
 		}
@@ -278,40 +269,31 @@ public class ErrorParser
 		{
 		}		
 	}
-	private void setErrorMarker(String filename, String line, String msg)
+
+	private void setProblemMarker(String filename, int level, int lineNumber, String msg)
 	{
 		IResource file = getFile(filename);
-		int lineNumber = parseLineNumber(line);
 		if (file != null && lineNumber > 0){
-			VerilogPlugin.setErrorMarker(file, lineNumber, msg);
+			VerilogPlugin.setExternalProblemMarker(file, level, lineNumber, msg);
 		}
 		else{
 			reportMissingFile(filename);
 		}
 	}
 
-	private void setWarningMarker(String filename, String line, String msg)
-	{
-		IResource file = getFile(filename);
-		int lineNumber = parseLineNumber(line);
-		if (file != null && lineNumber > 0){
-			VerilogPlugin.setWarningMarker(file, lineNumber, msg);
+	private IFile getFileRecursive(IContainer cont, String filename) {
+		try {
+			for(IResource res: cont.members()) {
+				if(res instanceof IContainer) {
+					IFile result = getFileRecursive((IContainer)res,filename);
+					if(result!=null) return result;
+				} else if(res instanceof IFile) {
+					if(((IFile)res).getName().equals(filename)) return (IFile)res;
 		}
-		else{
-			reportMissingFile(filename);
 		}
-	}
-
-	private void setInfoMarker(String filename, String line, String msg)
-	{
-		IResource file = getFile(filename);
-		int lineNumber = parseLineNumber(line);
-		if (file != null && lineNumber > 0){
-			VerilogPlugin.setInfoMarker(file, lineNumber, msg);
+		} catch (CoreException e) {
 		}
-		else{
-			reportMissingFile(filename);
-		}
+		return null;
 	}
 	
 	private IResource getFile(String filename)
@@ -325,7 +307,7 @@ public class ErrorParser
 			{
 				if (!projPath.segment(i).equals(filePath.segment(i)))
 				{
-					return folder.findMember(filename);
+					return project.findMember(filename);
 				}
 			}
 			StringBuffer refPath = new StringBuffer();
@@ -338,9 +320,131 @@ public class ErrorParser
 		}
 		else
 		{
-			return folder.findMember(filename);
+			IResource member = project.findMember(filename);
+			if(member!=null) return member;
+			return getFileRecursive(project,filename);
 		}
 	}
+	
+	public static class ParseErrorString {
+		private String regex;
+		// results of parse(String string);
+		public String filename;
+		public int linenr;
+		public String message;
+		public int startinmatchedstring;
+		public int endinmatchedstring;
+		
+		public ParseErrorString(String regexpr) {
+			regex = regexpr;
+		}
+
+		/**
+		 * Tries to parse string using regex
+		 * @return boolean: parse succeeded
+		 */
+		public boolean parse(String string) {
+			Pattern errPattern = Pattern.compile(regex);
+			Matcher m = errPattern.matcher(string);
+			if (!m.matches()) return false;
+
+			int groupCount=m.groupCount();
+			if(groupCount < 3) return false;
+			
+			int linenrindex = -1;
+		
+			for(int i=2;i<=groupCount;i++) {
+				String group = m.group(i);
+				try {
+					linenr = Integer.parseInt(group);
+					linenrindex = i;
+				}
+				catch (NumberFormatException e) {
+				}
+			}
+			if(linenrindex==-1) return false;
+			
+			// filename is now at linenrindex-1
+			filename = m.group(linenrindex-1);
+			
+			// now search for the longest string to capture the message:
+			int length_win=-1;
+			int messageindex=-1;
+			for(int i=1;i<=groupCount;i++) {
+				if(i==linenrindex-1) continue;
+				if(i==linenrindex) continue;
+				String group = m.group(i);
+				if(group.length()>length_win) {
+					length_win = group.length();
+					messageindex = i;
+				}
+			}
+			if(messageindex==-1) return false;
+			
+			message = m.group(messageindex);
+			startinmatchedstring = m.start(linenrindex-1);
+			endinmatchedstring = m.end(linenrindex);
+			
+			return true;
+		}
+	}
+	
+	public class ConsoleParser implements IPatternMatchListener {
+		private String regex;
+		private int problemlevel;
+		
+		ConsoleParser(String regexpr, int level) {
+			regex = regexpr;
+			problemlevel = level;
+		}
+		
+		public int getCompilerFlags() {
+			return 0;
+		}
+	
+		public String getLineQualifier() {
+			return null;
+		}
+	
+		public String getPattern() {
+			return regex;
+		}
+
+		public void connect(TextConsole console) {}
+		public void disconnect() {}
+	
+		public void matchFound(PatternMatchEvent event) {
+			int offset = event.getOffset();
+			int length = event.getLength();
+			
+			Object object = event.getSource();
+			if(! (object instanceof TextConsole)) return;
+			TextConsole console = (TextConsole)object;
+			
+			String consolecontent = console.getDocument().get();
+			String matchedstring = consolecontent.substring(offset, offset+length);
+			
+			ParseErrorString parser = new ParseErrorString(regex);
+			boolean success = parser.parse(matchedstring);
+			if (!success) return;
+				
+			setProblemMarker(parser.filename, problemlevel, parser.linenr, parser.message);			
+			
+			IResource resource = getFile(parser.filename);
+			if(resource instanceof IFile) {
+				IFile file = (IFile) resource;
+				FileLink hyperlink = new FileLink(file,null,-1,-1,parser.linenr);
+				try {
+					console.addHyperlink(hyperlink, offset+parser.startinmatchedstring,
+							parser.endinmatchedstring-parser.startinmatchedstring+1);
+				} catch (BadLocationException e) {
+				}
+			} else {
+				//VerilogPlugin.println("Not a filename!");
+			}
+		}
+	}
+
 }
 
 
