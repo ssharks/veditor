@@ -226,7 +226,7 @@ public class ErrorParserPreferencePage extends AbstractPreferencePage
 			warnText.setText(parser.getWarningRegex());
 			infoText.setText(parser.getInfoRegex());
 		
-			boolean editable = (idx >= NUM_OF_DEFAULT_ERROR_PARSERS);
+			boolean editable = ((ErrorParser)parserList.get(idx)).isEditable();
 			errText.setEditable(editable);
 			warnText.setEditable(editable);
 			infoText.setEditable(editable);
