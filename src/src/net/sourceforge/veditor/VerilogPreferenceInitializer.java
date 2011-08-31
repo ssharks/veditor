@@ -10,6 +10,8 @@
  *******************************************************************************/
 package net.sourceforge.veditor;
 
+import net.sourceforge.veditor.preference.TopPreferencePage;
+
 import org.eclipse.core.runtime.Preferences;
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 
@@ -32,26 +34,6 @@ public class VerilogPreferenceInitializer extends AbstractPreferenceInitializer
 	 *  )*
 	 * </PRE>
 	 */
-	private static final String DEFAULT_ERROR_PARSER_REGEX =
-		"1"
-		+ "\n" + "ModelSim"
-		+ "\n" + "[#|\\*].*Error: ([^\\(]*)\\(([0-9]*)\\): (.*)"		
-		+ "\n" + "[#|\\*].*Warning: ([^\\(]*)\\(([0-9]*)\\): (.*)"		
-		+ "\n" + ""
-		+ "\n" + "Cver"
-		+ "\n" + "\\*\\*(.*)\\(([0-9]+)\\) ERROR\\*\\* (.*)"
-		+ "\n" + "\\*\\*(.*)\\(([0-9]+)\\) WARN\\*\\* (.*)"
-		+ "\n" + "--(.*)\\(([0-9]+)\\) INFORM-- (.*)" 
-		+ "\n" + "Icarus Verilog"
-		+ "\n" + "(.*):([0-9]+): [a-z ]*error: (.*)"
-		+ "\n" + "(.*):([0-9]+): warning: (.*)"
-		+ "\n" + ""
-		+ "\n" + "FreeHDL"
-		+ "\n" + "(.*):([0-9]+): error: (.*)" 
-		+ "\n" + "(.*):([0-9]+): warning: (.*)" 
-		+ "\n" + ""	
-		+ "\n";
-	public static final int NUM_OF_DEFAULT_ERROR_PARSERS = 4;
 	
 	public void initializeDefaultPreferences()
 	{
@@ -70,6 +52,8 @@ public class VerilogPreferenceInitializer extends AbstractPreferenceInitializer
 
 		preferences.setDefault("ContentAssist.ModuleParameter", false);
 		preferences.setDefault("ScanProject.Enable", true);
+		preferences.setDefault(TopPreferencePage.MAX_PARSE_LINES, "50000");
+		preferences.setDefault(TopPreferencePage.MAX_PARSE_TIME, "2000");
 		preferences.setDefault("Outline.Sort", false);
 		preferences.setDefault("Outline.FilterSignals", false);
 		preferences.setDefault("Outline.FilterPorts", false);
@@ -79,7 +63,7 @@ public class VerilogPreferenceInitializer extends AbstractPreferenceInitializer
 		preferences.setDefault("Synthesize.command", "vcom -check_synthesis %p%f");
 		preferences.setDefault("Compile.Folder", "simulation");
 		
-		preferences.setDefault("ErrorParser", DEFAULT_ERROR_PARSER_REGEX);
+		preferences.setDefault("ErrorParser", "1\n");
 		
 		preferences.setDefault("Style.indent","Tab");
 		preferences.setDefault("Style.indentSize", "4");
