@@ -44,7 +44,7 @@
             icon="icons/pers.gif"
             class="net.sourceforge.veditor.VerilogPerspective"
             id="net.sourceforge.veditor.editor.perspective"
-            fixed="true"/>
+            fixed="false"/>
    </extension>
 
    <extension
@@ -177,7 +177,7 @@
             description="Synthesize"
             categoryId="net.sourceforge.veditor.commands"
             id="net.sourceforge.veditor.actions.Synthesize">
-      </command>      
+      </command>
       <command
             name="Matching Bracket"
             description="Goto Matching Bracket"
@@ -429,10 +429,16 @@
        name="Auto Task"
        point="org.eclipse.core.resources.markers">
       <persistent value="true"/>       
-      <super type="org.eclipse.core.resources.taskmarker"/>       
+      <super type="org.eclipse.core.resources.taskmarker"/>
     </extension>
-    
-   
-    
+
+     <extension
+       id="builderproblemmarker"
+       name="Problem of the external builder"
+       point="org.eclipse.core.resources.markers">
+      <persistent value="true"/>
+      <super type="org.eclipse.core.resources.problemmarker"/>
+    </extension>
+
 </plugin>
 
