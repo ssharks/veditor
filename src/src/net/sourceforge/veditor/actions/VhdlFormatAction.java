@@ -165,9 +165,34 @@ public class VhdlFormatAction extends AbstractAction {
 		int incase = 0;
 		int use;
 		int EOS;
-		int thenLine = 0;
 		for(int i=0;i < tokens.size();i++){
 			Token token=tokens.get(i);
+			if(token.image.equals("(")) {
+				int openParan1=i;
+				int closeParan1=skipToCloseParan(tokens, openParan1+1);
+
+				// skip if there are no parameters
+				int semicolon=skipTo(";", tokens, i+1);
+				
+				//did we find what we were looking for?
+				if(openParan1>=semicolon || closeParan1 >= tokens.size()) {
+					break;
+				}
+
+				//if the open and close parentheses are on different lines
+				if(tokens.get(closeParan1).beginLine > tokens.get(openParan1).beginLine ){
+					adjustLineIndentValue(results,tokens.get(openParan1).beginLine+1, +1);
+					//move the line with close parenthesis only if it is the only token on that line
+					if(tokens.get(closeParan1-1).beginLine != tokens.get(closeParan1).beginLine){
+						adjustLineIndentValue(results,tokens.get(closeParan1).beginLine, -1);
+					}
+					else{
+						//otherwise, just adjust the following line
+						adjustLineIndentValue(results,tokens.get(closeParan1).beginLine+1, -1);
+					}
+				}
+				i=closeParan1;
+			}
 			switch(token.kind){
 			case VhdlParserCoreTokenManager.CASE:
 				adjustLineIndentValue(results,token.beginLine+1, +2);
@@ -201,9 +226,13 @@ public class VhdlFormatAction extends AbstractAction {
 				if(EOS > record){
 					i=record;
 					adjustLineIndentValue(results,tokens.get(record).beginLine+1, +1);
-				}
-				else{
-					i=EOS;
+				} else {
+					int semicolon=skipTo(";", tokens, i+1);
+					int isToken=skipTo("is", tokens, i+1);
+					if(isToken<semicolon) {
+						//breaks the "indent after 'is'" rule. 
+						i=isToken;
+					}
 				}
 				break;
 			case VhdlParserCoreTokenManager.ATTRIBUTE:
@@ -214,30 +243,54 @@ public class VhdlFormatAction extends AbstractAction {
 				//One is encountered, just skip to EOS
 				i=skipTo(";", tokens, i+1);
 				break;
-			case VhdlParserCoreTokenManager.BLOCK:
+			case VhdlParserCoreTokenManager.COMPONENT:
+				// component can be defined without an "is"
+				int isTokenPos=skipTo("is", tokens, i+1);
+				EOS = skipTo(";", tokens, i+1);
+				if(isTokenPos > EOS) {
+					results.put(token.beginLine+1, +1);
+				}
+				break;
 			case VhdlParserCoreTokenManager.PROCESS:
+				// process can be defined without an "is"
+				if(tokens.get(i+1).image.equals("(")) {
+					// process has sensitivity list, indent after ")"
+					int closeParan = skipToCloseParan(tokens, i+2);
+					if(!tokens.get(closeParan+1).image.equals("is")) {
+						adjustLineIndentValue(results,tokens.get(closeParan).beginLine+1, +1);
+					}
+				} else {
+					// no sensitivity list indent next line:
+					if(!tokens.get(i+1).image.equals("is")) {
+						adjustLineIndentValue(results,token.beginLine+1, +1);
+					}
+				}
+				break;
+			case VhdlParserCoreTokenManager.BLOCK:
 			case VhdlParserCoreTokenManager.GENERATE:
 			case VhdlParserCoreTokenManager.IS:
 			case VhdlParserCoreTokenManager.LOOP:
 			case VhdlParserCoreTokenManager.THEN:
-				thenLine = token.beginLine;
-				results.put(token.beginLine+1, +1);
+				adjustLineIndentValue(results,token.beginLine+1, +1);
 				break;			
 			case VhdlParserCoreTokenManager.ELSIF:
 				adjustLineIndentValue(results,token.beginLine, -1);
 				break;
 			case VhdlParserCoreTokenManager.BEGIN:
 			case VhdlParserCoreTokenManager.ELSE:
-				adjustLineIndentValue(results,token.beginLine, -1);
-				results.put(token.beginLine+1, +1);
+				if (token.beginLine != tokens.get(i-1).beginLine) {
+					adjustLineIndentValue(results,token.beginLine, -1);
+					adjustLineIndentValue(results,token.beginLine+1 , +1);
+				}
 				break;
 			case VhdlParserCoreTokenManager.END:
 				if(i<tokens.size()-1 && tokens.get(i+1).kind==VhdlParserCoreTokenManager.CASE) {
 					adjustLineIndentValue(results,token.beginLine, -2);
 					if(incase>0) incase--;
 				} else {
-					if (token.beginLine == thenLine) {
-						adjustLineIndentValue(results, token.beginLine + 1, -1); // undo the adjustment of then
+					if (token.beginLine == tokens.get(i-1).beginLine) {
+						// end is not the first token on this line
+						adjustLineIndentValue(results, token.beginLine + 1, -1);
 					} else {
 						adjustLineIndentValue(results, token.beginLine, -1);
 					}
@@ -257,66 +310,14 @@ public class VhdlFormatAction extends AbstractAction {
 				break;
 			case VhdlParserCoreTokenManager.PROCEDURE:
 			case VhdlParserCoreTokenManager.FUNCTION:
-				adjustLineIndentValue(results,tokens.get(i).beginLine, 0);
-				int openParan=skipTo("(", tokens, i+1);
-				int closeParan=skipToCloseParan(tokens, openParan+1);
-				int isToken=skipTo("is", tokens, i+1);
-				// skip if there are no parameters
-				if( closeParan>isToken){
-					adjustLineIndentValue(results,tokens.get(isToken).beginLine+1, +1);
-					i=isToken;
-					break;
-				}
-				//did we find what we were looking for?
-				if(openParan==tokens.size() || closeParan==tokens.size()){
-					break;
-				}
-				//if the open and close parentheses are on different lines
-				if(tokens.get(closeParan).beginLine > tokens.get(openParan).beginLine ){					
-					adjustLineIndentValue(results,tokens.get(openParan).beginLine+1, +1);
-					//move the line with close parenthesis only if it is the only token on that line
-					if(tokens.get(closeParan-1).beginLine != tokens.get(closeParan).beginLine){
-						adjustLineIndentValue(results,tokens.get(closeParan).beginLine, -1);
-					}
-					else{
-						//otherwise, just adjust the following line
-						adjustLineIndentValue(results,tokens.get(closeParan).beginLine+1, -1);
-					}
-				}
-				i=closeParan;
-				break;
-				
 			case VhdlParserCoreTokenManager.PORT:
 			case VhdlParserCoreTokenManager.GENERIC:
 			case VhdlParserCoreTokenManager.SIGNAL:
 			case VhdlParserCoreTokenManager.CONSTANT:
 			case VhdlParserCoreTokenManager.VARIABLE:
 				adjustLineIndentValue(results,tokens.get(i).beginLine, 0);
-				int openParan1=skipTo("(", tokens, i+1);
-				int closeParan1=skipToCloseParan(tokens, openParan1+1);
-			
-				// skip if there are no parameters
-				int semicolon=skipTo(";", tokens, i+1);
-				
-				//did we find what we were looking for?
-				if(openParan1>=semicolon || closeParan1 >= tokens.size()) {
-					break;
-				}
-
-				//if the open and close parentheses are on different lines
-				if(tokens.get(closeParan1).beginLine > tokens.get(openParan1).beginLine ){					
-					adjustLineIndentValue(results,tokens.get(openParan1).beginLine+1, +1);
-					//move the line with close parenthesis only if it is the only token on that line
-					if(tokens.get(closeParan1-1).beginLine != tokens.get(closeParan1).beginLine){
-						adjustLineIndentValue(results,tokens.get(closeParan1).beginLine, -1);
-					}
-					else{
-						//otherwise, just adjust the following line
-						adjustLineIndentValue(results,tokens.get(closeParan1).beginLine+1, -1);
-					}
-				}
-			//	i=closeParan1;
-				break;				
+				// code has been moved to "("
+				break;
 			case VhdlParserCoreTokenManager.WHEN:
 				if(incase>0) {
 					adjustLineIndentValue(results,token.beginLine, -1);
@@ -396,13 +397,13 @@ public class VhdlFormatAction extends AbstractAction {
 
 		}
 		if (m_AlignOnColon) {
-			align(lines, ":");
+			align(lines, ":", lineIndentation);
 		}
 		if (m_AlignOnArrowRight) {
-			align(lines, "=>");
+			align(lines, "=>", lineIndentation);
 		}
 		if (m_AlignOnArrowLeft) {
-			align(lines, "<=");
+			align(lines, "<=", lineIndentation);
 		}
 
 		//reassemble the lines
@@ -598,7 +599,7 @@ public class VhdlFormatAction extends AbstractAction {
 	 *            regex
 	 * @return Converted text
 	 */
-	private void align(String[] lines, String regex) {
+	private void align(String[] lines, String regex, HashMap<Integer,Integer> lineIndentation) {
 
 		for (int lineNum = 0; lineNum < lines.length; lineNum++) {
 
@@ -608,11 +609,15 @@ public class VhdlFormatAction extends AbstractAction {
 			int startLine = lineNum;
 			int stopLine = lineNum;
 			int maxIndexassign = 0;
-			while (index != -1) {
+			while (index != -1 && stopLine+1 < lines.length) {
 				if (index > maxIndexassign)
 					maxIndexassign = index;
 				stopLine++;
 				index = indexOfAlignSymbol(lines, regex, stopLine);
+				if(lineIndentation.containsKey(stopLine+1)) {
+					int indentValue=lineIndentation.get(stopLine+1);
+					if(indentValue!=0) break;
+				}
 			}
 			for (int LineNum2 = startLine; LineNum2 < stopLine; LineNum2++) {
 				index = indexOfAlignSymbol(lines, regex, LineNum2);
@@ -657,6 +662,15 @@ public class VhdlFormatAction extends AbstractAction {
 		if(indexAssign==-1) { // thought it contained regex????
 			return -1;
 		}
+		int index1 = lines[lineNum].indexOf("--");
+		if(index1>=0 && index1<indexAssign) return -1;
+		int index2 = lines[lineNum].indexOf("=>");
+		if(index2>=0 && index2<indexAssign) return -1;
+		int index3 = lines[lineNum].indexOf("<=");
+		if(index3>=0 && index3<indexAssign) return -1;
+		int index4 = lines[lineNum].indexOf(":");
+		if(index4>=0 && index4<indexAssign) return -1;
+		
 		String substring1 = lines[lineNum].substring(0, indexAssign);
 		if (substring1.trim().length() == 0)
 			return -1;
