@@ -184,6 +184,7 @@ TOKEN [IGNORE_CASE] :
   | <PROCEDURAL:    "procedural">
   | <PROCEDURE:     "procedure">
   | <PROCESS:       "process">
+  | <PROTECTED:     "protected">
   | <PURE:          "pure">
   | <QUANTITY:      "quantity">
   | <RANGE:         "range">
@@ -253,7 +254,7 @@ TOKEN :
   | <basic_identifier: <letter> ( ("_")? <letter_or_digit> )*>
   | <bit_string_literal: <base_specifier> "\"" <bit_value> "\"">
   | <#bit_value: <extended_digit> ( ("_")? <extended_digit>)*>
-  | <character_literal:  "'" <graphic_character> "'">
+  | <character_literal:  "'" (<graphic_character>|"\"") "'">
   | <decimal_literal: <integer> ( "." <integer>)? ( <exponent> )?>
   | <#exponent: ("E" ("+")? <integer>) | ("E" "-" <integer>)>
   | <extended_identifier: "\\" <graphic_character> ( <graphic_character> )* "\\">
@@ -726,10 +727,10 @@ void choice() :
 {}
 {
   /** Dirty Solution */
-    LOOKAHEAD( simple_expression()  ("=>" | "|" | ";" | ",") )
-    simple_expression()
-  | LOOKAHEAD( discrete_range()  ("=>" | "|" | ";" | ",") )
+    LOOKAHEAD( discrete_range()  ("=>" | "|" | ";" | ",") )
     discrete_range()
+  | LOOKAHEAD( simple_expression()  ("=>" | "|" | ";" | ",") )
+    simple_expression()
   | element_simple_name()
   | <OTHERS>
 }
@@ -2108,6 +2109,75 @@ void process_statement_part() :
   ( sequential_statement() )*
 }
 
+
+/*
+    VHDL 2002: protected types:
+*/
+
+void protected_type_body() #void :
+{}
+{
+  <PROTECTED> <BODY>
+    protected_type_body_declarative_part()
+  <END> <PROTECTED> <BODY> [ simple_name() ]
+}
+
+void protected_type_body_declarative_item() #void :
+{}
+{
+    LOOKAHEAD(subprogram_declaration())
+    subprogram_declaration()
+    | subprogram_body()
+    | type_declaration() 
+    | subtype_declaration() 
+    | constant_declaration() 
+    | variable_declaration() 
+    | file_declaration() 
+    | alias_declaration() 
+    | LOOKAHEAD(attribute_declaration())
+    attribute_declaration() 
+    | attribute_specification() 
+    | use_clause() 
+    | LOOKAHEAD(group_template_declaration())
+    group_template_declaration()
+    | group_declaration() 
+}
+
+void protected_type_body_declarative_part() #void :
+{}
+{ 
+  (protected_type_body_declarative_item())+
+}
+
+void protected_type_declaration() #void :
+{}
+{
+  <PROTECTED>
+    protected_type_declarative_part()
+  <END> <PROTECTED> [ simple_name() ]
+}
+
+void protected_type_declarative_item() #void :
+{}
+{
+    subprogram_declaration()
+    | attribute_declaration()
+    | use_clause()
+}
+
+void protected_type_declarative_part() #void :
+{}
+{ 
+  (protected_type_declarative_item())+
+}
+
+void protected_type_definition() #void :
+{}
+{
+    LOOKAHEAD(protected_type_body()) protected_type_body()
+    | protected_type_declaration()
+}
+
 void qualified_expression() :
 {}
 {
@@ -2661,6 +2731,7 @@ void type_definition() #void :
   | composite_type_definition()
   | access_type_definition()
   | file_type_definition()
+  | protected_type_definition()
 }
 
 
