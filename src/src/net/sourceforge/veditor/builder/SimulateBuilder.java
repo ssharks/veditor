@@ -133,7 +133,7 @@ public class SimulateBuilder extends IncrementalProjectBuilder
 		
 		buildConfigs=nature.getCommands();
 		
-		VerilogPlugin.clearProblemMarker(project);
+		VerilogPlugin.deleteExternalMarkers(project);
 		ArrayList<String> keyList=new ArrayList<String>();
 		keyList.addAll(buildConfigs.keySet());
 		Collections.sort(keyList);
