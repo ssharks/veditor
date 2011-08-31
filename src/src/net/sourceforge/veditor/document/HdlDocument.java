@@ -113,7 +113,7 @@ abstract public class HdlDocument extends Document
 			m_NeedToRefresh=false;
 			getOutlineContainer(false).clear();
 			IParser parser = createParser(get());
-			VerilogPlugin.clearProblemMarker(getFile());
+			VerilogPlugin.deleteMarkers(getFile());
 			try{
 				parser.parse();
 			}
