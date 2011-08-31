@@ -26,6 +26,7 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Region;
+import org.eclipse.jface.text.TextUtilities;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
 import org.eclipse.jface.text.contentassist.IContextInformation;
@@ -181,11 +182,12 @@ abstract public class HdlCompletionProcessor implements IContentAssistProcessor
 		//walk backwards to find the beginning of the word we are replacing
 		int beginning= offset;
 
-		String indentationstring = VerilogPlugin.getIndentationString();
-		
 		if (viewer.getDocument() instanceof HdlDocument) {
 			HdlDocument doc = (HdlDocument) viewer.getDocument();
-				
+			
+			String indentationstring = VerilogPlugin.getIndentationString();
+			String eol = TextUtilities.getDefaultLineDelimiter(doc);
+			
 			while (beginning > 0) {
 				try{
 					char ch= doc.getChar(beginning - 1);
@@ -220,6 +222,8 @@ abstract public class HdlCompletionProcessor implements IContentAssistProcessor
 				Template template= templates[i];
 				String pattern = template.getPattern();
 				pattern = pattern.replace("\t", indentationstring);
+				pattern = pattern.replace("\r", "");
+				pattern = pattern.replace("\n", eol);
 				template.setPattern(pattern);
 				
 				try {
