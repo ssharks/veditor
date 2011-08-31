@@ -89,10 +89,6 @@ end component ${name};
 	name="testbench">library ieee;
 use ieee.std_logic_1164.all;
 use ieee.std_logic_arith.all;
-library pck_fio_library;
-use pck_fio_library.pck_fio.all;
-library sim_library;
-use sim_library.SimClocks.all;
 library work;
 
 entity ${testbench} is
@@ -159,7 +155,7 @@ end architecture Test;
 	enabled="true"
 	name="conv_std_logic_vector"
     id="net.sourceforge.veditor.templates.vhdl.conv_std_logic_vector"
->conv_std_logic_vector($cursor},${size});</template>
+>conv_std_logic_vector(${cursor},${size});</template>
 
 
 <template
@@ -366,34 +362,14 @@ end block;
 	name="NewFile"
 >--------------------------------------------------------------------------------
 -- Entity: ${modulename}
---------------------------------------------------------------------------------
--- Copyright ... ${year}
--- Filename          : ${modulename}.vhd
--- Creation date     : ${year}-${month}-${day}
--- Author(s)         : ${user}
--- Version           : 1.00
--- Description       : &lt;short description&gt;
---------------------------------------------------------------------------------
--- File History:
--- Date         Version  Author   Comment
--- ${year}-${month}-${day}   1.00     ${user}     Creation of File
+-- Date:${year}-${month}-${day}  
+-- Author: ${user}     
+--
+-- Description ${cursor}
 --------------------------------------------------------------------------------
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.std_logic_unsigned.all;
-
-package ${modulename}PCK is
-
-	component ${modulename}
-	port  (
-		clk : in std_logic
-	);
-	end component;
-
-end package;
-
-
---------------------------------------------------------------------------------
 
 
 library ieee;
