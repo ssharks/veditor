@@ -23,7 +23,7 @@ public class ClearErrorMarkersAction extends AbstractAction {
 	public void run() {
 		IFile file=getEditor().getHdlDocument().getFile();
 			
-		VerilogPlugin.clearProblemMarker(file);
+		VerilogPlugin.deleteMarkers(file);
 	}
 	
 	
