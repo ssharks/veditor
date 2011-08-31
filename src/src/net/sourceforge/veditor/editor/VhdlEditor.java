@@ -17,6 +17,7 @@ import org.eclipse.jface.text.DocumentCommand;
 import org.eclipse.jface.text.IAutoEditStrategy;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextViewerExtension2;
+import org.eclipse.jface.text.TextUtilities;
 import org.eclipse.jface.text.source.DefaultCharacterPairMatcher;
 import org.eclipse.jface.text.source.ISourceViewerExtension2;
 import org.eclipse.jface.text.source.MatchingCharacterPainter;
@@ -72,8 +73,8 @@ public class VhdlEditor extends HdlEditor
 
 		public void customizeDocumentCommand(IDocument document,
 				DocumentCommand command) {
-			if(command.text.startsWith("\n") || command.text.startsWith("\r")){				
-				command.text="\n" + 
+			if(command.text.startsWith("\n") || command.text.startsWith("\r")){
+				command.text= TextUtilities.getDefaultLineDelimiter(document) + 
 				getLineIndent(command.offset)+
 				REPLACE_COMMENT;
 			}
