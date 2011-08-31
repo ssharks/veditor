@@ -40,6 +40,7 @@ import org.eclipse.swt.graphics.RGB;
 import org.eclipse.ui.console.ConsolePlugin;
 import org.eclipse.ui.console.IConsole;
 import org.eclipse.ui.console.IConsoleManager;
+import org.eclipse.ui.console.IPatternMatchListener;
 import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.console.MessageConsoleStream;
 import org.eclipse.ui.editors.text.templates.ContributionContextTypeRegistry;
@@ -53,7 +54,8 @@ public class VerilogPlugin extends AbstractUIPlugin
 {
 	private static final String CONSOLE_NAME = "veditor";
 	private static VerilogPlugin plugin;
-	private static final String MARKER_TYPE = "org.eclipse.core.resources.problemmarker";	
+	private static final String INTERNALMARKER_TYPE = "org.eclipse.core.resources.problemmarker";
+	private static final String EXTERNALMARKER_TYPE = "net.sourceforge.veditor.builderproblemmarker";
 	private static final String AUTO_TASK_MARKER = "net.sourceforge.veditor.autotaskmarker";
 	private static final String OUTLINE_DATABASE_ID = "OutlineDatabase";
 	private static final String COLLAPSIBLE_PROPERTY_ID = "collapsible";
@@ -68,7 +70,7 @@ public class VerilogPlugin extends AbstractUIPlugin
 		super();
 		plugin = this;		
 		templateStore=null;
-		contextTypeRegistry=null;		
+		contextTypeRegistry=null;
 	}
 
 	/**
@@ -271,6 +273,15 @@ public class VerilogPlugin extends AbstractUIPlugin
 		man.addConsoles(new IConsole[]{newConsole});
 		return newConsole;
 	}
+	
+	public static void removePatternMatchListener(IPatternMatchListener list) {
+		findConsole(CONSOLE_NAME).removePatternMatchListener(list);
+	}
+	
+	public static void addPatternMatchListener(IPatternMatchListener list) {
+		findConsole(CONSOLE_NAME).addPatternMatchListener(list);
+	}
+	
 
 	public static void setErrorMarker(IResource file, int lineNumber, String msg)
 	{
@@ -286,8 +297,8 @@ public class VerilogPlugin extends AbstractUIPlugin
 	public static void setInfoMarker(IResource file, int lineNumber, String msg)
 	{
 		setProblemMarker(file, IMarker.SEVERITY_INFO, lineNumber, msg);
-
 	}
+
 	/**
 	 * Creates a task marker
 	 * @param file The resource that needs the task added
@@ -365,7 +376,22 @@ public class VerilogPlugin extends AbstractUIPlugin
 	{
 		try
 		{
-			IMarker marker = file.createMarker(MARKER_TYPE);
+			IMarker marker = file.createMarker(INTERNALMARKER_TYPE);
+			marker.setAttribute(IMarker.SEVERITY, level);
+			marker.setAttribute(IMarker.LINE_NUMBER, lineNumber);
+			marker.setAttribute(IMarker.MESSAGE, msg);
+		}
+		catch (CoreException e)
+		{
+		}
+	}
+
+	public static void setExternalProblemMarker(IResource file, int level,
+			int lineNumber, String msg)
+	{
+		try
+		{
+			IMarker marker = file.createMarker(EXTERNALMARKER_TYPE);
 			marker.setAttribute(IMarker.SEVERITY, level);
 			marker.setAttribute(IMarker.LINE_NUMBER, lineNumber);
 			marker.setAttribute(IMarker.MESSAGE, msg);
@@ -375,20 +401,19 @@ public class VerilogPlugin extends AbstractUIPlugin
 		}
 	}
 	
-	public static void clearProblemMarker(IResource file)
-	{
-		try
-		{
-			IMarker[] markers = file.findMarkers(MARKER_TYPE, true,
-					IResource.DEPTH_INFINITE);
-			for (int i = 0; i < markers.length; i++)
-				markers[i].delete();
-		}
-		catch (CoreException e)
-		{
+	public static void deleteMarkers(IResource project) {
+		try {
+			project.deleteMarkers(INTERNALMARKER_TYPE, true, IResource.DEPTH_INFINITE);
+		} catch (CoreException e) {
 		}
 	}
-	
+
+	public static void deleteExternalMarkers(IResource project) {
+		try {
+			project.deleteMarkers(EXTERNALMARKER_TYPE, true, IResource.DEPTH_INFINITE);
+		} catch (CoreException e) {
+		}
+	}
 	/**
 	 * Returns this plug-in's template store.
 	 * 
@@ -472,13 +497,6 @@ public class VerilogPlugin extends AbstractUIPlugin
 			results+=lines[nLine]+"\n";
 		}
 		return results;
-	}
-
-	public static void deleteMarkers(IResource project) {
-		try {
-			project.deleteMarkers(VerilogPlugin.MARKER_TYPE, true, IResource.DEPTH_INFINITE);
-		} catch (CoreException e) {
-		}
 	}
 
 	public static String getIndentationString() {
