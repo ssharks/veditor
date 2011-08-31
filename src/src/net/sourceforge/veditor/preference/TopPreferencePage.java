@@ -17,6 +17,10 @@ import org.eclipse.ui.IWorkbench;
  */
 public class TopPreferencePage extends AbstractSimplePreferencePage
 {
+	public static final String SCAN_ENABLE = "ScanProject.Enable";
+	public static final String CONTENT_ASSIST_MODULE_PARAM = "ContentAssist.ModuleParameter";
+	public static final String MAX_PARSE_LINES = "ScanProject.MaxFileLines";
+	public static final String MAX_PARSE_TIME  = "ScanProject.MaxScanTime";
 
 	public TopPreferencePage()
 	{
@@ -24,9 +28,11 @@ public class TopPreferencePage extends AbstractSimplePreferencePage
 
 	protected void createFieldEditors()
 	{
-		addBooleanField("ContentAssist.ModuleParameter",
+		addBooleanField(CONTENT_ASSIST_MODULE_PARAM,
 				"Generate module parameter with instantiation(Verilog-2001)");
-		addBooleanField("ScanProject.Enable", "Enable Scan Project");
+		addBooleanField(SCAN_ENABLE, "Enable Scan Project");
+		addStringField(MAX_PARSE_TIME,"Max amount time spent scanning files (mS)");
+		addStringField(MAX_PARSE_LINES,"Maximum number of lines in a file to scan");
 		addBooleanField("Outline.Sort", "Sort in Outline/Hierarchy");
 		addBooleanField("Outline.FilterSignals", "Filter Signals in Outline");
 		addBooleanField("Outline.FilterPorts", "Filter Ports in Outline");
@@ -34,6 +40,7 @@ public class TopPreferencePage extends AbstractSimplePreferencePage
 		addStringField("Compile.command", "Compile command");
 		addStringField("Synthesize.command", "Synthesize command");
 		addStringField("Compile.Folder", "Compile folder");
+		
 	}
 
 	public void init(IWorkbench workbench)
