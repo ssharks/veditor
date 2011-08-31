@@ -15,12 +15,14 @@ import net.sourceforge.veditor.editor.completionProposals.CompletionProposal;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.TextUtilities;
 
 public abstract  class InstanceCompletionProposal extends	CompletionProposal
 {
 	protected IProject proj;
 	protected String name;
 	protected String indentString;
+	protected String eol;
 	
 	/**
 	 * Class constructor 
@@ -39,6 +41,7 @@ public abstract  class InstanceCompletionProposal extends	CompletionProposal
 		this.proj = doc.getProject();
 		this.name = name;
 		this.indentString = doc.getIndentString(offset);
+		this.eol = TextUtilities.getDefaultLineDelimiter(doc);
 	}
 
 	/* (non-Javadoc)
