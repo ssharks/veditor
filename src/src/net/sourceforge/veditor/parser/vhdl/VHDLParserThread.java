@@ -5,7 +5,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 
+import net.sourceforge.veditor.VerilogPlugin;
 import net.sourceforge.veditor.parser.HdlParserException;
+import net.sourceforge.veditor.preference.TopPreferencePage;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
@@ -24,7 +26,7 @@ public class VHDLParserThread extends VhdlParserCore implements Runnable {
 	
 	public void run() {
 		boolean ignorefile = false;
-		int filesize=0;
+		int file_lines=0;
 		{
 			InputStreamReader reader;
 			try {
@@ -37,8 +39,9 @@ public class VHDLParserThread extends VhdlParserCore implements Runnable {
 						if(line==null) {
 							break;
 						}
-						filesize+=line.length();
-						if(line.contains("-- turn off superfluous VHDL processor warnings")) {
+						file_lines++;
+						if(line.contains("-- turn off superfluous VHDL processor warnings") ||
+						   line.contains("-- Skip Parsing")) {
 							ignorefile=true;
 						}
 					}
@@ -50,7 +53,17 @@ public class VHDLParserThread extends VhdlParserCore implements Runnable {
 			}
 		}
 		
-		if(!ignorefile && filesize < 500000) {
+		
+		int nMaxFileLines;
+		try{
+			String s = VerilogPlugin.getPreferenceString(TopPreferencePage.MAX_PARSE_LINES);
+			nMaxFileLines = Integer.parseInt(s);			
+		}catch (NumberFormatException e) {
+			nMaxFileLines =50000;
+		}
+		
+		
+		if(!ignorefile && file_lines < nMaxFileLines) {
 			try {
 				result=design_file();
 			}
