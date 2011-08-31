@@ -13,6 +13,8 @@ package net.sourceforge.veditor.preference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import net.sourceforge.veditor.builder.ErrorParser.ParseErrorString;
+
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -140,21 +142,16 @@ public class PatternBuilderDialog extends Dialog {
     */
    private class CheckListener extends SelectionAdapter {
 		public void widgetSelected(SelectionEvent e) {
-			Pattern pattern = Pattern.compile(m_Pattern.getText());
-			Matcher matcher = pattern.matcher(m_Sample.getText());
-			if (matcher.matches()) {
-				int groupCount=matcher.groupCount();
-				if(groupCount>2){
-					m_File.setText( matcher.group(groupCount-2));					
-				}
-				if(groupCount>1){
-					m_Line.setText( matcher.group(groupCount-1));					
-				}
-				if(groupCount>0){
-					m_Message.setText( matcher.group(groupCount));					
-				}
+			ParseErrorString parser = new ParseErrorString(m_Pattern.getText());
+			boolean success = parser.parse(m_Sample.getText());
 				
+			if (success) {
+				m_File.setText(parser.filename);
+				m_Line.setText(""+parser.linenr);
+				m_Message.setText(parser.message);
 			} else {
+				m_File.setText("");
+				m_Line.setText("");
 				m_Message.setText("Pattern does not match anything in the sample!!");
 			}
 
