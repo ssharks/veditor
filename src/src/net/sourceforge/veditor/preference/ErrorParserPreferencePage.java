@@ -30,7 +30,6 @@ import org.eclipse.swt.widgets.Text;
 
 public class ErrorParserPreferencePage extends AbstractPreferencePage
 {
-	private static final int NUM_OF_DEFAULT_ERROR_PARSERS = VerilogPreferenceInitializer.NUM_OF_DEFAULT_ERROR_PARSERS;
 
 	private java.util.List<ErrorParser> parserList;
 	private List compilerList;
@@ -111,8 +110,7 @@ public class ErrorParserPreferencePage extends AbstractPreferencePage
 			public void widgetSelected(SelectionEvent e)
 			{
 				int idx = compilerList.getSelectionIndex();
-				if (idx >= NUM_OF_DEFAULT_ERROR_PARSERS
-						&& idx < parserList.size())
+				if (idx < parserList.size() && ((ErrorParser)parserList.get(idx)).isEditable())
 				{
 					parserList.remove(idx);
 					updateSelection();
@@ -204,7 +202,7 @@ public class ErrorParserPreferencePage extends AbstractPreferencePage
 		if (0 <= idx && idx < parserList.size())
 		{
 			compilerList.select(idx);
-			boolean removable = (idx >= NUM_OF_DEFAULT_ERROR_PARSERS);
+			boolean removable = ((ErrorParser)parserList.get(idx)).isEditable();
 			removeButton.setEnabled(removable);
 		
 			updateTextField(idx);
@@ -219,7 +217,7 @@ public class ErrorParserPreferencePage extends AbstractPreferencePage
 	
 	private void updateTextField(int idx)
 	{
-		if (idx >= 0)
+		if (idx >= 0 && idx < parserList.size())
 		{
 			ErrorParser parser = (ErrorParser)parserList.get(idx);
 			errText.setText(parser.getErrorRegex());
