@@ -132,7 +132,7 @@ public class VhdlParser implements IParser
 			if(designFile!=null) {
 				updateOutline(designFile);
 				parseLineComment();
-				VerilogPlugin.clearProblemMarker(m_File);
+				VerilogPlugin.deleteMarkers(m_File);
 				SemanticWarnings warn = new SemanticWarnings(m_File);
 				warn.check(designFile);
 				updateMarkers();
@@ -300,7 +300,8 @@ public class VhdlParser implements IParser
 
 	private void addComment(int line, String comment, boolean onlycomment)
 	{
-		m_OutlineContainer.addComment(line, comment, onlycomment);
+		if(m_OutlineContainer!=null)
+			m_OutlineContainer.addComment(line, comment, onlycomment);
 	}
 	/**
 	 * This function keeps track of contiguous comment blocks and 
