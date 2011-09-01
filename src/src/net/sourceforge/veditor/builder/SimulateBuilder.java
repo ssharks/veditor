@@ -36,7 +36,7 @@ public class SimulateBuilder extends IncrementalProjectBuilder
 		IContainer folder;
 		boolean bInterrupted=false;
 		
-		VerilogPlugin.clearProblemMarker(project);
+		VerilogPlugin.deleteExternalMarkers(project);
 		ArrayList<String> keyList=new ArrayList<String>();
 		keyList.addAll(buildConfigs.keySet());
 		Collections.sort(keyList);
@@ -61,10 +61,12 @@ public class SimulateBuilder extends IncrementalProjectBuilder
 				folder = project.getFolder(buildConfig.getWorkFolder());
 			}
 			
-			VerilogPlugin.deleteMarkers(project);
+			VerilogPlugin.deleteExternalMarkers(project);
 			
 			//print a banner
 			VerilogPlugin.clear();		
+			ErrorParser.installParser(buildConfig.getParser(),project);
+			
 			VerilogPlugin.println("----------------------------------------");
 			VerilogPlugin.println("veditor using \"" + buildConfig.getName() + 
 					"\" in \"" 
@@ -86,15 +88,6 @@ public class SimulateBuilder extends IncrementalProjectBuilder
 					break;
 				}
 			}
-			//parse the errors
-			ErrorParser parser = ErrorParser.getParser(buildConfig.getParser());
-			if (parser != null){
-				parser.parse(folder, launcher.getMessage());
-			}
-			else{
-				VerilogPlugin.println(
-						"** Warning: veditor did not find parser:" + buildConfig.getParser());
-			}
 			//if the user killed the launcher
 			if(bInterrupted){
 				break;
@@ -108,7 +101,7 @@ public class SimulateBuilder extends IncrementalProjectBuilder
 	}
 	
 	/**
-	 * Performs the clean oprations
+	 * Performs the clean operations
 	 */
  	protected void clean(IProgressMonitor monitor) throws CoreException
 	{
