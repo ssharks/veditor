@@ -36,6 +36,7 @@ import net.sourceforge.veditor.parser.HdlParserException;
 import net.sourceforge.veditor.parser.OutlineContainer;
 import net.sourceforge.veditor.parser.OutlineElement;
 import net.sourceforge.veditor.parser.OutlineContainer.Collapsible;
+import net.sourceforge.veditor.preference.PreferenceStrings;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -74,6 +75,9 @@ import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.eclipse.ui.texteditor.TextOperationAction;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
+import org.eclipse.core.runtime.preferences.IEclipsePreferences;
+import org.eclipse.core.runtime.preferences.IEclipsePreferences.PreferenceChangeEvent;
+import org.eclipse.core.runtime.preferences.InstanceScope;
 
 
 /**
@@ -105,6 +109,8 @@ abstract public class HdlEditor extends TextEditor
 		HdlTextAttribute.init();	
 		m_bInitialShowing=true;
 		m_CollapsibleElements=new HashMap<Collapsible,ProjectionAnnotation>();
+		
+		
 		
 	}	
 	
@@ -441,10 +447,30 @@ abstract public class HdlEditor extends TextEditor
 	protected void initializeEditor()
 	{
 		super.initializeEditor();
+		// install a change lister that gets called when the user
+		// changes one of this plugin's preferences
+		IEclipsePreferences.IPreferenceChangeListener fPropertyChangeListener;	    
+		fPropertyChangeListener= new IEclipsePreferences.IPreferenceChangeListener() {	    
+
+            @Override
+            public void preferenceChange(PreferenceChangeEvent arg0) {
+                if(arg0.getKey().equals(PreferenceStrings.INDENT_TYPE)){ 
+                   if(arg0.getNewValue().equals(PreferenceStrings.INDENT_TAB)){                  
+                       uninstallTabsToSpacesConverter();
+                   }
+                   else{                      
+                       installTabsToSpacesConverter();
+                   }                       
+                 }                  
+                if(arg0.getKey().equals(PreferenceStrings.INDENT_SIZE)){
+                    uninstallTabsToSpacesConverter();
+                    installTabsToSpacesConverter();
+                }
+            }
+	    };
 	    
-//		for content assist?
-//		setEditorContextMenuId("#EditorContext");
-//		setRulerContextMenuId("#RulerContext");
+	    IEclipsePreferences peference = new InstanceScope().getNode(VerilogPlugin.ID);	    
+	    peference.addPreferenceChangeListener(fPropertyChangeListener);
 	}
 
 	protected void editorContextMenuAboutToShow(IMenuManager menu)
@@ -787,6 +813,19 @@ abstract public class HdlEditor extends TextEditor
 		}
 		return indent.toString();
 	}
+	
+	@Override
+	protected boolean isTabsToSpacesConversionEnabled(){
+	    boolean bUseSpaceForTab = true;           
+                
+        String indent = VerilogPlugin.getPreferenceString(PreferenceStrings.INDENT_TYPE);
+        
+        if (indent.equals(PreferenceStrings.INDENT_TAB))
+            bUseSpaceForTab=false;
+        return bUseSpaceForTab;
+	}
+	
+	
 }
 
 
