@@ -382,7 +382,7 @@ public class OutlineDatabase {
 	private void scanFile(IFile file) {
 		
 		try {
-			InputStreamReader reader = new InputStreamReader(file.getContents());
+			ParserReader reader = new ParserReader(file.getContents());
 			IParser parser=null;
 			if (file.getName().endsWith(".v")){
 				parser = ParserFactory.createVerilogParser(reader, m_Project,
