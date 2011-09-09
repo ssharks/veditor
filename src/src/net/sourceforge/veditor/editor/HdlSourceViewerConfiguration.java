@@ -11,9 +11,11 @@
 
 package net.sourceforge.veditor.editor;
 
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Vector;
 
+import net.sourceforge.veditor.VerilogPlugin;
 import net.sourceforge.veditor.document.HdlDocument;
 import net.sourceforge.veditor.document.VhdlDocument;
 import net.sourceforge.veditor.editor.scanner.HdlCommentScanner;
@@ -54,12 +56,11 @@ abstract public class HdlSourceViewerConfiguration extends
 		SourceViewerConfiguration
 {
 	private HdlScanner scanner;
-	private ColorManager colorManager;
-
-	public static HdlSourceViewerConfiguration createForVerilog(
-			ColorManager colorManager)
+	private HdlEditor m_Editor;
+	
+	public static HdlSourceViewerConfiguration createForVerilog(HdlEditor editor)
 	{
-		return new HdlSourceViewerConfiguration(colorManager)
+		return new HdlSourceViewerConfiguration(editor)
 		{
 			public HdlScanner createScanner()
 			{
@@ -71,10 +72,9 @@ abstract public class HdlSourceViewerConfiguration extends
 			}
 		};
 	}
-	public static HdlSourceViewerConfiguration createForVhdl(
-			ColorManager colorManager)
+	public static HdlSourceViewerConfiguration createForVhdl(HdlEditor editor)
 	{
-		return new HdlSourceViewerConfiguration(colorManager)
+		return new HdlSourceViewerConfiguration(editor)
 		{
 			public HdlScanner createScanner()
 			{
@@ -87,17 +87,17 @@ abstract public class HdlSourceViewerConfiguration extends
 		};
 	}
 	
-	public HdlSourceViewerConfiguration(ColorManager colorManager)
+	public HdlSourceViewerConfiguration(HdlEditor editor)
 	{
-		this.colorManager = colorManager;
+		m_Editor = editor;
 	}
 
 	abstract HdlScanner createScanner();
 	abstract HdlCompletionProcessor createCompletionProcessor();
-	
+
 	public ColorManager getColorManager()
 	{
-		return colorManager;
+		return m_Editor.getColorManager();
 	}
 
 	public String[] getConfiguredContentTypes(ISourceViewer sourceViewer)
@@ -116,7 +116,7 @@ abstract public class HdlSourceViewerConfiguration extends
 		{
 			scanner = createScanner();
 			scanner.setDefaultReturnToken(new Token(
-					HdlTextAttribute.DEFAULT.getTextAttribute(colorManager)));
+					HdlTextAttribute.DEFAULT.getTextAttribute(m_Editor.getColorManager())));
 		}
 		return scanner;
 	}
@@ -148,8 +148,8 @@ abstract public class HdlSourceViewerConfiguration extends
 	
 	private void addCommentScanner(PresentationReconciler reconciler ,HdlTextAttribute attr,String contentType){	
 
-	    Token defaultToken=new Token(attr.getTextAttribute(colorManager));
-	    HdlCommentScanner commentScanner=new HdlCommentScanner(colorManager,defaultToken);        
+	    Token defaultToken=new Token(attr.getTextAttribute(m_Editor.getColorManager()));
+	    HdlCommentScanner commentScanner=new HdlCommentScanner(m_Editor.getColorManager(),defaultToken);        
 	    DefaultDamagerRepairer dr = new DefaultDamagerRepairer(commentScanner);
         reconciler.setDamager(dr, contentType);
         reconciler.setRepairer(dr, contentType);
@@ -161,7 +161,7 @@ abstract public class HdlSourceViewerConfiguration extends
 	{
 		NonRuleBasedDamagerRepairer ndr;
 		ndr = new NonRuleBasedDamagerRepairer(attr
-				.getTextAttribute(colorManager));
+				.getTextAttribute(m_Editor.getColorManager()));
 		reconciler.setDamager(ndr, partition);
 		reconciler.setRepairer(ndr, partition);
 	}
@@ -206,7 +206,7 @@ abstract public class HdlSourceViewerConfiguration extends
 			lineNumber++;
 
 	
-			Iterator i = model.getAnnotationIterator();;
+			Iterator i= model.getAnnotationIterator();;
 			String messages = null;
 
 			while(i.hasNext())
@@ -399,6 +399,62 @@ abstract public class HdlSourceViewerConfiguration extends
 		}
 		return null;
 	}
+	
+	
+	public int getTabWidth(ISourceViewer sourceViewer){
+	    int nSize;
+	    String size = VerilogPlugin.getPreferenceString("Style.indentSize");
+	    try{
+	        nSize = Integer.parseInt(size);
+	    }
+	    catch(NumberFormatException e){
+	        nSize = 4;
+	    }
+	    
+	    return nSize;
+	}
+	   
+	protected String[] getIndentPrefixesForTab(int tabWidth){	    
+	    return super.getIndentPrefixesForTab(tabWidth);
+	}
+	
+    public String[] getIndentPrefixes(ISourceViewer sourceViewer,
+            String contentType) {
+/*        String[] indentPrefixes = new String[2];
+        int tabWidth = getTabWidth(sourceViewer);
+        
+        if(m_Editor.isTabsToSpacesConversionEnabled()){
+            char[] spaceChars= new char[tabWidth];          
+            Arrays.fill(spaceChars, ' ');
+            indentPrefixes[0]= new String(spaceChars);
+        }
+        else{
+            indentPrefixes[0]="\t";
+        }
+        
+        indentPrefixes[1]="";*/
+        
+        String[] indentPrefixes = getIndentPrefixesForTab(getTabWidth(sourceViewer));
+        boolean bUseSpaceForTab;               
+        
+        if (indentPrefixes == null)
+            return null;
+                
+        
+        bUseSpaceForTab=m_Editor.isTabsToSpacesConversionEnabled();
+      
+        int length = indentPrefixes.length;
+        
+        if (length > 2 && bUseSpaceForTab) {
+
+            // Swap first with second last
+            String first = indentPrefixes[0];
+            indentPrefixes[0] = indentPrefixes[length - 2];
+            indentPrefixes[length - 2] = first;
+        }
+
+        return indentPrefixes;
+    }
 }
 
 
