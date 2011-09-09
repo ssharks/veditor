@@ -75,7 +75,7 @@ public class TemplatePreferencePage extends org.eclipse.ui.texteditor.templates.
 			if(template.getContextTypeId().contains("vhdl"))
 			{
 				getViewer().unconfigure();
-				SourceViewerConfiguration configuration= HdlSourceViewerConfiguration.createForVhdl(new ColorManager());
+				SourceViewerConfiguration configuration= HdlSourceViewerConfiguration.createForVhdl(new VerilogEditor());
 				getViewer().configure(configuration);
 				
 				
@@ -83,7 +83,7 @@ public class TemplatePreferencePage extends org.eclipse.ui.texteditor.templates.
 			else if(template.getContextTypeId().contains("verilog"))
 			{
 				getViewer().unconfigure();
-				SourceViewerConfiguration configuration= HdlSourceViewerConfiguration.createForVerilog(new ColorManager());
+				SourceViewerConfiguration configuration= HdlSourceViewerConfiguration.createForVerilog(new VhdlEditor());
 				getViewer().configure(configuration);
 			}
 			else
