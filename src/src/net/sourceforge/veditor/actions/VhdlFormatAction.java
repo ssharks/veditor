@@ -15,11 +15,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import net.sourceforge.veditor.VerilogPlugin;
+import net.sourceforge.veditor.editor.scanner.HdlScanner;
 import net.sourceforge.veditor.parser.vhdl.SimpleCharStream;
 import net.sourceforge.veditor.parser.vhdl.Token;
 import net.sourceforge.veditor.parser.vhdl.VhdlParserCoreTokenManager;
-import net.sourceforge.veditor.preference.VhdlCodeStylePreferencePage;
-import net.sourceforge.veditor.editor.scanner.HdlScanner;
+import net.sourceforge.veditor.preference.PreferenceStrings;
 
 import org.eclipse.jface.text.TextUtilities;
 import org.eclipse.swt.custom.StyledText;
@@ -84,12 +84,12 @@ public class VhdlFormatAction extends AbstractAction {
 			m_IndentSize= Integer.parseInt(size);			
 		}
 		
-		m_PadOperators=VerilogPlugin.getPreferenceBoolean(VhdlCodeStylePreferencePage.PAD_OPERATORS);
-		m_IndentLibrary=VerilogPlugin.getPreferenceBoolean(VhdlCodeStylePreferencePage.INDENT_LIBRARY);
-		m_KeywordsLowercase = VerilogPlugin.getPreferenceBoolean(VhdlCodeStylePreferencePage.KEYWORDS_LOWERCASE);
-		m_AlignOnColon = VerilogPlugin.getPreferenceBoolean(VhdlCodeStylePreferencePage.ALIGNONCOLON);
-		m_AlignOnArrowRight = VerilogPlugin	.getPreferenceBoolean(VhdlCodeStylePreferencePage.ALIGNONARROWRIGHT);
-		m_AlignOnArrowLeft = VerilogPlugin	.getPreferenceBoolean(VhdlCodeStylePreferencePage.ALIGNONARROWLEFT);
+		m_PadOperators=VerilogPlugin.getPreferenceBoolean(PreferenceStrings.PAD_OPERATORS);
+		m_IndentLibrary=VerilogPlugin.getPreferenceBoolean(PreferenceStrings.INDENT_LIBRARY);
+		m_KeywordsLowercase = VerilogPlugin.getPreferenceBoolean(PreferenceStrings.KEYWORDS_LOWERCASE);
+		m_AlignOnColon = VerilogPlugin.getPreferenceBoolean(PreferenceStrings.ALIGNONCOLON);
+		m_AlignOnArrowRight = VerilogPlugin	.getPreferenceBoolean(PreferenceStrings.ALIGNONARROWRIGHT);
+		m_AlignOnArrowLeft = VerilogPlugin	.getPreferenceBoolean(PreferenceStrings.ALIGNONARROWLEFT);
 		m_eol = TextUtilities.getDefaultLineDelimiter(getViewer().getDocument());
 	}
 	
