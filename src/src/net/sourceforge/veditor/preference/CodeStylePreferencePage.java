@@ -14,35 +14,36 @@ import org.eclipse.jface.preference.RadioGroupFieldEditor;
 import org.eclipse.swt.widgets.Composite;
 
 public class CodeStylePreferencePage extends AbstractSimplePreferencePage
-{
+{   
 	RadioGroupFieldEditor indentEditor;
-	RadioGroupFieldEditor indentSizeEditor;
+	RadioGroupFieldEditor indentSizeEditor;	
 
 	protected void createFieldEditors()
 	{
 		Composite parent = getFieldEditorParent();
 
 		indentEditor = new IndentFieldEditor(
-					"Style.indent", "Indent character", 2,
+		        PreferenceStrings.INDENT_TYPE, "Indent character", 2,
 					new String[][]{
-							{"Tab", "Tab"},
-							{"Space", "Space"}
+							{"Tab",   PreferenceStrings.INDENT_TAB },
+							{"Space", PreferenceStrings.INDENT_SPACE}
 					},
 					parent);
 		addField(indentEditor);
 		
 		indentSizeEditor = new RadioGroupFieldEditor(
-				"Style.indentSize", "Indent size", 3,
+		        PreferenceStrings.INDENT_SIZE, "Indent size", 4,
 				new String[][]{
-						{"2", "2"},
-						{"4", "4"},
-						{"8", "8"}
+						{"2", PreferenceStrings.INDENT_SIZE_2},
+						{"3", PreferenceStrings.INDENT_SIZE_3},
+						{"4", PreferenceStrings.INDENT_SIZE_4},
+						{"8", PreferenceStrings.INDENT_SIZE_8}
 				},
 				parent);
 		addField(indentSizeEditor);
 		
-		String indent = getPreferenceStore().getString("Style.indent");
-		indentSizeEditor.setEnabled(indent.equals("Space"), parent);
+		String indent = getPreferenceStore().getString(PreferenceStrings.INDENT_TYPE);
+		indentSizeEditor.setEnabled(indent.equals(PreferenceStrings.INDENT_SPACE), parent);
 	}
 	
 	class IndentFieldEditor extends RadioGroupFieldEditor
@@ -57,7 +58,7 @@ public class CodeStylePreferencePage extends AbstractSimplePreferencePage
 				Object newValue)
 		{
 			super.fireValueChanged(property, oldValue, newValue);
-			boolean sizeValid = newValue.equals("Space");
+			boolean sizeValid = newValue.equals(PreferenceStrings.INDENT_SPACE);
 			indentSizeEditor.setEnabled(sizeValid, getFieldEditorParent());
 		}
     }
