@@ -20,7 +20,7 @@ public class VerilogEditor extends HdlEditor
 		super();
 		setDocumentProvider(new VerilogDocumentProvider());
 		setSourceViewerConfiguration(HdlSourceViewerConfiguration
-				.createForVerilog(getColorManager()));
+				.createForVerilog(this));
 		OutlineLabelProvider = new VerilogOutlineLabelProvider();
 		TreeContentProvider  = new VerilogHierarchyProvider();
 	}
