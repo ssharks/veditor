@@ -17,29 +17,24 @@ import org.eclipse.ui.IWorkbench;
  */
 public class TopPreferencePage extends AbstractSimplePreferencePage
 {
-	public static final String SCAN_ENABLE = "ScanProject.Enable";
-	public static final String CONTENT_ASSIST_MODULE_PARAM = "ContentAssist.ModuleParameter";
-	public static final String MAX_PARSE_LINES = "ScanProject.MaxFileLines";
-	public static final String MAX_PARSE_TIME  = "ScanProject.MaxScanTime";
-
 	public TopPreferencePage()
 	{
 	}
 
 	protected void createFieldEditors()
 	{
-		addBooleanField(CONTENT_ASSIST_MODULE_PARAM,
+		addBooleanField(PreferenceStrings.CONTENT_ASSIST_MODULE_PARAM,
 				"Generate module parameter with instantiation(Verilog-2001)");
-		addBooleanField(SCAN_ENABLE, "Enable Scan Project");
-		addStringField(MAX_PARSE_TIME,"Max amount time spent scanning files (mS)");
-		addStringField(MAX_PARSE_LINES,"Maximum number of lines in a file to scan");
-		addBooleanField("Outline.Sort", "Sort in Outline/Hierarchy");
-		addBooleanField("Outline.FilterSignals", "Filter Signals in Outline");
-		addBooleanField("Outline.FilterPorts", "Filter Ports in Outline");
-		addBooleanField("Compile.SaveBeforeCompile","Save File Before Compile");
-		addStringField("Compile.command", "Compile command");
-		addStringField("Synthesize.command", "Synthesize command");
-		addStringField("Compile.Folder", "Compile folder");
+		addBooleanField(PreferenceStrings.SCAN_ENABLE, "Enable Scan Project");
+		addStringField(PreferenceStrings.MAX_PARSE_TIME,"Max amount time spent scanning files (mS)");
+		addStringField(PreferenceStrings.MAX_PARSE_LINES,"Maximum number of lines in a file to scan");
+		addBooleanField(PreferenceStrings.SORT_OUTLINE, "Sort in Outline/Hierarchy");
+		addBooleanField(PreferenceStrings.FILTER_SINGALS_IN_OUTLINE, "Filter Signals in Outline");
+		addBooleanField(PreferenceStrings.FILTER_PORTS_IN_OUTLINE, "Filter Ports in Outline");
+		addBooleanField(PreferenceStrings.SAVE_BEFORE_COMPILE,"Save File Before Compile");
+		addStringField(PreferenceStrings.COMPILE_COMMAND, "Compile command");
+		addStringField(PreferenceStrings.SYNTH_COMMAND, "Synthesize command");
+		addStringField(PreferenceStrings.COMPILE_FOLDER, "Compile folder");
 		
 	}
 
