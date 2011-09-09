@@ -23,6 +23,7 @@ import net.sourceforge.veditor.parser.OutlineContainer;
 import net.sourceforge.veditor.parser.OutlineDatabase;
 import net.sourceforge.veditor.parser.OutlineElementFactory;
 import net.sourceforge.veditor.parser.OutlineContainer.Collapsible;
+import net.sourceforge.veditor.parser.ParserReader;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
@@ -35,13 +36,13 @@ import org.eclipse.core.resources.IProject;
 public class VerilogParser extends VerilogParserCore implements IParser
 {
 	private IFile m_File;
-	private Reader m_Reader;
+	private ParserReader m_Reader;
 	private static OutlineElementFactory m_OutlineElementFactory = new VerilogOutlineElementFactory();
 	private OutlineContainer m_OutlineContainer;
 	private int m_Context;
 	private Pattern[] taskTokenPattern;
 
-	public VerilogParser(Reader reader, IProject project, IFile file) {
+	public VerilogParser(ParserReader reader, IProject project, IFile file) {
 		super(reader);
 		m_Context = IParser.OUT_OF_MODULE;
 		m_Reader = reader;
