@@ -3,11 +3,11 @@ package net.sourceforge.veditor.parser.vhdl;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.Reader;
 
 import net.sourceforge.veditor.VerilogPlugin;
 import net.sourceforge.veditor.parser.HdlParserException;
-import net.sourceforge.veditor.preference.TopPreferencePage;
+import net.sourceforge.veditor.parser.ParserReader;
+import net.sourceforge.veditor.preference.PreferenceStrings;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
@@ -17,7 +17,7 @@ public class VHDLParserThread extends VhdlParserCore implements Runnable {
 	private ASTdesign_file result;
 	private HdlParserException hdlParserException;
 	
-	public VHDLParserThread(Reader reader, IFile file) {
+	public VHDLParserThread(ParserReader reader, IFile file) {
 		super(reader);
 		m_File = file;
 		result = null;
@@ -56,7 +56,7 @@ public class VHDLParserThread extends VhdlParserCore implements Runnable {
 		
 		int nMaxFileLines;
 		try{
-			String s = VerilogPlugin.getPreferenceString(TopPreferencePage.MAX_PARSE_LINES);
+			String s = VerilogPlugin.getPreferenceString(PreferenceStrings.MAX_PARSE_LINES);
 			nMaxFileLines = Integer.parseInt(s);			
 		}catch (NumberFormatException e) {
 			nMaxFileLines =50000;
