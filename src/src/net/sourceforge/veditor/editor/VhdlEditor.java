@@ -46,7 +46,7 @@ public class VhdlEditor extends HdlEditor
 		fParentMatcher = new DefaultCharacterPairMatcher(chars);
 		setDocumentProvider(new VhdlDocumentProvider());
 		setSourceViewerConfiguration(HdlSourceViewerConfiguration
-				.createForVhdl(getColorManager()));
+				.createForVhdl(this));
 		OutlineLabelProvider = new VhdlOutlineLabelProvider();
 		TreeContentProvider  = new VhdlHierarchyProvider();
 	}
