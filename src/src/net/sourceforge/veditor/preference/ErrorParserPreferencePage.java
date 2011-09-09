@@ -10,7 +10,6 @@
  *******************************************************************************/
 package net.sourceforge.veditor.preference;
 
-import net.sourceforge.veditor.VerilogPreferenceInitializer;
 import net.sourceforge.veditor.builder.ErrorParser;
 import org.eclipse.jface.dialogs.IInputValidator;
 import org.eclipse.jface.dialogs.InputDialog;
