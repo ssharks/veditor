@@ -3437,7 +3437,7 @@ JAVACODE void error_skipto(int kind, String message)
   do 
   {
     t = getNextToken();
-  } while ((t.kind != kind));
+  } while ((t.kind != kind) && t.next != null);
 }
 
 
