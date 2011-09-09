@@ -25,8 +25,9 @@ import net.sourceforge.veditor.parser.OutlineContainer;
 import net.sourceforge.veditor.parser.OutlineDatabase;
 import net.sourceforge.veditor.parser.OutlineElementFactory;
 import net.sourceforge.veditor.parser.OutlineContainer.Collapsible;
+import net.sourceforge.veditor.parser.ParserReader;
 import net.sourceforge.veditor.parser.vhdl.VhdlParserCore;
-import net.sourceforge.veditor.preference.TopPreferencePage;
+import net.sourceforge.veditor.preference.PreferenceStrings;
 import net.sourceforge.veditor.semanticwarnings.SemanticWarnings;
 
 import org.eclipse.core.resources.IFile;
@@ -41,7 +42,7 @@ import org.eclipse.core.runtime.CoreException;
 public class VhdlParser implements IParser
 {
 	private IFile m_File;
-	private Reader m_Reader;
+	private ParserReader m_Reader;
 	private static OutlineElementFactory m_OutlineElementFactory=new VhdlOutlineElementFactory();
 	//Minimum number of comment lines before they are collapsible
 	private final int COMMENT_LINE_GROUP=5;
@@ -56,7 +57,7 @@ public class VhdlParser implements IParser
 	private VHDLParserThread parser;
 
 
-	public VhdlParser(Reader reader, IProject project, IFile file)
+	public VhdlParser(ParserReader reader, IProject project, IFile file)
 	{
 		m_Reader = reader;
 		m_File = file;	
@@ -97,7 +98,7 @@ public class VhdlParser implements IParser
 	 */	
 	public void parse() throws HdlParserException
 	{
-		String  sTime_out=VerilogPlugin.getPreferenceString(TopPreferencePage.MAX_PARSE_TIME);
+		String  sTime_out=VerilogPlugin.getPreferenceString(PreferenceStrings.MAX_PARSE_TIME);
 		int nTimeout;
 		try{
 			Integer time_out = Integer.parseInt(sTime_out);
@@ -117,8 +118,7 @@ public class VhdlParser implements IParser
 			parsethread.join(nTimeout);
 			if(parsethread.isAlive()) {
 				VerilogPlugin.println("VHDL Parser is taking too long parsing "+m_File.getName()+" . I'm killing it\n");
-				parsethread.stop();
-				parsethread.join(nTimeout);
+				m_Reader.stop();
 				
 			}
 		} catch (InterruptedException e) {
