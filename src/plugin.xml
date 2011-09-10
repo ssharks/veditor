@@ -109,7 +109,7 @@
 
    <extension
          point="org.eclipse.core.runtime.preferences">
-      <initializer class="net.sourceforge.veditor.VerilogPreferenceInitializer"/>
+      <initializer class="net.sourceforge.veditor.preference.PreferenceInitializer"/>
    </extension>
    
    <extension
