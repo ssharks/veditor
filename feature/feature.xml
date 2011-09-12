@@ -2,7 +2,7 @@
 <feature
       id="veditorfeature"
       label="VEditor"
-      version="0.6.2.4"
+      version="1.0.0"
       provider-name="VEditor Development Team">
 
    <description url="http://veditor.sourceforge.net">
