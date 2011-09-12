@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
-   <description url="http://veditor.sourceforge.net/update">
+   <description name="VEditor Update Site" url="http://veditor.sourceforge.net/update">
       VEditor Update Site
    </description>
-   <feature url="features/veditorfeature_0.6.2.4.jar" id="veditorfeature" version="0.6.2.4"/>
+   <feature url="features/veditorfeature_1.0.0.jar" id="veditorfeature" version="1.0.0">
+      <category name="VEditor"/>
+   </feature>
+   <category-def name="VEditor" label="VEditor Plugin"/>
 </site>
