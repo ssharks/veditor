@@ -90,8 +90,7 @@ abstract public class HdlEditor extends TextEditor
 	protected IBaseLabelProvider OutlineLabelProvider;
 	protected ITreeContentProvider TreeContentProvider;
 	protected static HdlEditor current;
-	protected ProjectionSupport m_ProjectionSupport;
-	protected ProjectionAnnotationModel m_AnnotationModel;
+	protected ProjectionSupport m_ProjectionSupport;	
 	protected HashMap<Collapsible,ProjectionAnnotation> m_CollapsibleElements;
 	protected boolean m_bInitialShowing;
 	
@@ -215,11 +214,11 @@ abstract public class HdlEditor extends TextEditor
 	}
 	
 	public void expandAll(){
-		m_AnnotationModel.expandAll(0, getHdlDocument().getLength());
+		getAnnotation().expandAll(0, getHdlDocument().getLength());
 	}
 	
 	public void collapseAll(){
-		m_AnnotationModel.collapseAll(0, getHdlDocument().getLength());
+		getAnnotation().collapseAll(0, getHdlDocument().getLength());
 	}
 	/**
 	 * update outline and module hierarchy page
@@ -576,9 +575,7 @@ abstract public class HdlEditor extends TextEditor
 	    m_ProjectionSupport.install();
 
 	    //turn projection mode on
-	    viewer.doOperation(ProjectionViewer.TOGGLE);
-
-	    m_AnnotationModel = viewer.getProjectionAnnotationModel();
+	    viewer.doOperation(ProjectionViewer.TOGGLE);	    
 	}
 	
 	protected ISourceViewer createSourceViewer(Composite parent,
@@ -687,7 +684,7 @@ abstract public class HdlEditor extends TextEditor
 		for(Collapsible collapsible:m_CollapsibleElements.keySet().toArray(new Collapsible[0])){
 			String key=String.format("%d",collapsible.hashCode());
 			if(collapsedItems.contains(key)){
-				m_AnnotationModel.collapse(m_CollapsibleElements.get(collapsible));
+				getAnnotation().collapse(m_CollapsibleElements.get(collapsible));
 			}
 		}		
 	}
@@ -701,19 +698,19 @@ abstract public class HdlEditor extends TextEditor
 				// an existing element
 				ProjectionAnnotation annotation = m_CollapsibleElements
 						.get(collapsible);
-				Position oldPosition = m_AnnotationModel
+				Position oldPosition = getAnnotation()
 						.getPosition(annotation);
 				Position newPosition = getElementPosition(collapsible);
 				// did the position change?
 				if (oldPosition == null || !oldPosition.equals(newPosition)) {
-					m_AnnotationModel.modifyAnnotationPosition(annotation,
+					getAnnotation().modifyAnnotationPosition(annotation,
 							newPosition);
 				}
 			} else {
 				// if a new element was found
 				ProjectionAnnotation annotation = new ProjectionAnnotation();
 				Position position = getElementPosition(collapsible);
-				m_AnnotationModel.addAnnotation(annotation, position);
+				getAnnotation().addAnnotation(annotation, position);
 				// add it to the list of known collapsible
 				m_CollapsibleElements.put(collapsible, annotation);
 			}
@@ -734,7 +731,7 @@ abstract public class HdlEditor extends TextEditor
 				}
 			}
 			if (!bFound) {				
-				m_AnnotationModel.removeAnnotation(annotation);
+				getAnnotation().removeAnnotation(annotation);
 				deletedItems.add(collapsible);
 			} 
 		}
@@ -825,6 +822,14 @@ abstract public class HdlEditor extends TextEditor
         return bUseSpaceForTab;
 	}
 	
+	/**
+	 * Gets a reference to the documents current annotation model
+	 * @return Reference to the documents current annotation model
+	 */
+	protected ProjectionAnnotationModel getAnnotation(){
+	    ProjectionViewer viewer =(ProjectionViewer)getSourceViewer();
+	    return viewer.getProjectionAnnotationModel();
+	}
 	
 }
 
