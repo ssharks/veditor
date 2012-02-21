@@ -191,11 +191,91 @@ public class VhdlCompletionProcessor extends HdlCompletionProcessor {
 					}
 				}
 			}
+			
+			outer : for (int i = 0; i < elements.length; i++) {
+				if(elements[i] instanceof EntityDeclElement) {
+					IComparableCompletionProposal prop = createComponentDecl(doc,(VhdlOutlineElement)elements[i],offset,length);
+					// Avoid duplicate proposals
+					for (IComparableCompletionProposal m : matchList) {
+						if (prop.getDisplayString().equals(m.getDisplayString())) {
+							continue outer;
+						}
+					}
+					matchList.add(prop);
+				}
+			}
 		}
 
 		return matchList;
 	}
 	
+	private IComparableCompletionProposal createComponentDecl(HdlDocument doc,
+			VhdlOutlineElement mod, int offset, int length) {
+		String modname = mod.toString();
+		String results = String.format(
+				"\tcomponent %s\n${generics}${ports}\tend component;\n",
+				modname);
+
+		OutlineElement[] ports = mod.getChildren();
+
+		boolean first = true;
+		String genericStr = "\t\tgeneric (";
+		for (int i = 0; i < ports.length; i++) {
+			if (!(ports[i] instanceof GenericElement))
+				continue;
+			String port = ports[i].getName();
+			String type = ports[i].getType(); // = port#in#std_logic
+			String[] typesplit = type.split("#");
+			if (typesplit.length != 2)
+				continue;
+			if (typesplit[0].compareToIgnoreCase("generic") != 0)
+				continue;
+			String nl = ";\n\t\t\t";
+			if (first) {
+				nl = "\n\t\t\t";
+				first = false;
+			}
+			genericStr += nl + port + " : " + typesplit[1];
+		}
+		genericStr += "\n\t\t);\n";
+		if (first) {
+			genericStr = "";
+		}
+
+		first = true;
+		String portStr = "\t\tport (";
+		for (int i = 0; i < ports.length; i++) {
+			if (!(ports[i] instanceof VhdlPortElement))
+				continue;
+			String port = ports[i].getName();
+			String type = ports[i].getType(); // = port#in#std_logic
+			String[] typesplit = type.split("#");
+			if (typesplit.length != 3)
+				continue;
+			if (typesplit[0].compareToIgnoreCase("port") != 0)
+				continue;
+			String nl = ";\n\t\t\t";
+			if (first) {
+				nl = "\n\t\t\t";
+				first = false;
+			}
+			portStr += nl + port + " : " + typesplit[1] + " " + typesplit[2];
+		}
+		portStr += "\n\t\t);\n";
+		if (first) {
+			portStr = "";
+		}
+
+		results = results.replace("${generics}", genericStr);
+		results = results.replace("${ports}", portStr);
+
+		String indentationstring = VerilogPlugin.getIndentationString();
+		results = results.replace("\t", indentationstring);
+
+		return getCompletionProposal(results, offset, length, results.length(),
+				modname + " (cmp decl) ");
+	}
+
 	public OutlineElement searchRecordDefinition(HdlDocument doc,
 			int offset, String recordname, OutlineElement  element) {
 		
