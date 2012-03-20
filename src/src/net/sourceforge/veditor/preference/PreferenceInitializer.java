@@ -13,8 +13,8 @@ package net.sourceforge.veditor.preference;
 import net.sourceforge.veditor.VerilogPlugin;
 
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
+import org.eclipse.core.runtime.preferences.ConfigurationScope;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
-import org.eclipse.core.runtime.preferences.InstanceScope;
 
 public class PreferenceInitializer extends AbstractPreferenceInitializer
 {
@@ -39,11 +39,9 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer
 	 */
 	
 	public void initializeDefaultPreferences()
-	{
-	    IEclipsePreferences preferences = new InstanceScope().getNode(VerilogPlugin.ID);
-		//Preferences preferences = VerilogPlugin.getPlugin()
-		//		.getPluginPreferences();
-
+	{	
+	    IEclipsePreferences preferences = ConfigurationScope.INSTANCE.getNode(VerilogPlugin.ID);
+	
 		setDefaultAttr(preferences, PreferenceStrings.DOXGEN_COMMENT, "64,64,128");
 		setDefaultAttr(preferences, PreferenceStrings.SINGLE_LINE_COMMENT, "00,128,128");
 		setDefaultAttr(preferences, PreferenceStrings.MULTI_LINE_COMMENT, "00,128,128");
