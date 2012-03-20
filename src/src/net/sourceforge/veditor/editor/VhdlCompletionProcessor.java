@@ -201,7 +201,10 @@ public class VhdlCompletionProcessor extends HdlCompletionProcessor {
 							continue outer;
 						}
 					}
-					matchList.add(prop);
+					String name = elements[i].getName();
+					if(isMatch(replace,name)){
+						matchList.add(prop);
+					}
 				}
 			}
 		}
