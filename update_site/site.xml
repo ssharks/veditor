@@ -3,7 +3,7 @@
    <description name="VEditor Update Site" url="http://veditor.sourceforge.net/update">
       VEditor Update Site
    </description>
-   <feature url="features/veditorfeature_1.0.0.jar" id="veditorfeature" version="1.0.0">
+   <feature url="features/veditorfeature_1.1.1.jar" id="veditorfeature" version="1.1.1">
       <category name="VEditor"/>
    </feature>
    <category-def name="VEditor" label="VEditor Plugin"/>
