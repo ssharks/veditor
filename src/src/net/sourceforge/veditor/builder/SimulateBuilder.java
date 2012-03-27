@@ -65,7 +65,7 @@ public class SimulateBuilder extends IncrementalProjectBuilder
 			
 			//print a banner
 			VerilogPlugin.clear();		
-			ErrorParser.installParser(buildConfig.getParser(),project);
+			ErrorParser.installParser(buildConfig,project);
 			
 			VerilogPlugin.println("----------------------------------------");
 			VerilogPlugin.println("veditor using \"" + buildConfig.getName() + 

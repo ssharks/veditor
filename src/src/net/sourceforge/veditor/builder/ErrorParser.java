@@ -29,6 +29,7 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.debug.ui.console.FileLink;
 import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.swt.custom.Bullet;
 import org.eclipse.ui.console.IPatternMatchListener;
 import org.eclipse.ui.console.PatternMatchEvent;
 import org.eclipse.ui.console.TextConsole;
@@ -125,14 +126,16 @@ public class ErrorParser
 		return list;
 	}
 		
-	public static void installParser(String compiler, IProject proj)
+	public static void installParser(BuildConfig buildconfig, IProject proj)
 		{
+		String compiler = buildconfig.getParser();
 		ErrorParser[] parsers = getParsers();
 		for (ErrorParser parse:parsers)
 			{
 			if (parse.getCompilerName().equals(compiler))
 			{
 				parse.project = proj;
+				parse.buildConfig=buildconfig;
 			}
 		}
 		
@@ -195,6 +198,7 @@ public class ErrorParser
 	}
 
 	private IProject project;
+	private BuildConfig buildConfig;
 	private String compilerName;
 	private String errRegex;
 	private String warnRegex;
@@ -281,14 +285,16 @@ public class ErrorParser
 		}
 	}
 
-	private IFile getFileRecursive(IContainer cont, String filename) {
+	private IFile getFileRecursive(IContainer cont, IPath path) {
 		try {
 			for(IResource res: cont.members()) {
 				if(res instanceof IContainer) {
-					IFile result = getFileRecursive((IContainer)res,filename);
+					IFile result = getFileRecursive((IContainer)res,path);
 					if(result!=null) return result;
-				} else if(res instanceof IFile) {
-					if(((IFile)res).getName().equals(filename)) return (IFile)res;
+				} else if(res instanceof IFile) {					
+					IPath res_path = ((IFile)res).getLocation();					
+					if(res_path.equals(path)) 
+						return (IFile)res;
 		}
 		}
 		} catch (CoreException e) {
@@ -296,34 +302,13 @@ public class ErrorParser
 		return null;
 	}
 	
+	
 	private IResource getFile(String filename)
 	{
-		IPath projPath = project.getLocation();
-		IPath filePath = new Path(filename);
-		int count = projPath.segmentCount();
-		if (count < filePath.segmentCount())
-		{
-			for(int i = 0; i < count; i++)
-			{
-				if (!projPath.segment(i).equals(filePath.segment(i)))
-				{
-					return project.findMember(filename);
-				}
-			}
-			StringBuffer refPath = new StringBuffer();
-			for(int i = count; i < filePath.segmentCount(); i++)
-			{
-				refPath.append('/');
-				refPath.append(filePath.segment(i));
-			}
-			return project.findMember(refPath.toString());
-		}
-		else
-		{
-			IResource member = project.findMember(filename);
-			if(member!=null) return member;
-			return getFileRecursive(project,filename);
-		}
+		IPath projectPath = project.getLocation().append(buildConfig.getWorkFolder());
+		projectPath = projectPath.append(filename);	
+		IResource test = getFileRecursive(project,projectPath);
+		return test;
 	}
 	
 	public static class ParseErrorString {
