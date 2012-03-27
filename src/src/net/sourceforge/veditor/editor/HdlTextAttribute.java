@@ -12,6 +12,7 @@
 package net.sourceforge.veditor.editor;
 
 import net.sourceforge.veditor.VerilogPlugin;
+import net.sourceforge.veditor.preference.PreferenceStrings;
 
 import org.eclipse.jface.resource.StringConverter;
 import org.eclipse.jface.text.TextAttribute;
@@ -46,15 +47,16 @@ public final class HdlTextAttribute
 	
 	public static void init()
 	{
-		readColor(SINGLE_LINE_COMMENT, "SingleLineComment");
-		readColor(MULTI_LINE_COMMENT, "MultiLineComment");
-		readColor(DOXYGEN_COMMENT, "DoxygenComment");
-		readColor(STRING, "String");
-		readColor(DEFAULT, "Default");
-		readColor(DIRECTIVE, "Directive");
-		readColor(KEY_WORD, "KeyWord");
-		readColor(TYPES, "Types");
-		readColor(AUTOTASKS, "AutoTasks");
+		readColor(SINGLE_LINE_COMMENT, PreferenceStrings.SINGLE_LINE_COMMENT);
+		readColor(MULTI_LINE_COMMENT, PreferenceStrings.MULTI_LINE_COMMENT);
+		readColor(DOXYGEN_COMMENT, PreferenceStrings.DOXGEN_COMMENT);
+		readColor(STRING, PreferenceStrings.STRING);
+		readColor(DEFAULT, PreferenceStrings.DEFAULT);
+		readColor(DIRECTIVE, PreferenceStrings.DIRECTIVE);
+		readColor(KEY_WORD, PreferenceStrings.KEYWORD);
+		readColor(TYPES, PreferenceStrings.TYPES);
+		readColor(AUTOTASKS, PreferenceStrings.AUTO_TASKS);		
+		String test=VerilogPlugin.getPreferenceString("Color.DoxygenComment");
 	}
 
 	private static void readColor(HdlTextAttribute target, String key)
