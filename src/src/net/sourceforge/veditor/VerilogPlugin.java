@@ -141,8 +141,13 @@ public class VerilogPlugin extends AbstractUIPlugin
 	 * Returns the string from the plugin preferences
 	 */
 	public static String getPreferenceString(String key)
-	{
-		return getStore().getString(key);
+	{		
+		if ( getStore().contains(key) ){
+			return getStore().getString(key);
+		}
+		else{
+			return getStore().getDefaultString(key);
+		}
 	}
 
 	/**
@@ -150,7 +155,12 @@ public class VerilogPlugin extends AbstractUIPlugin
 	 */
 	public static boolean getPreferenceBoolean(String key)
 	{
-		return getStore().getBoolean(key);
+		if ( getStore().contains(key) ){
+			return getStore().getBoolean(key);
+		}
+		else{
+			return getStore().getBoolean(key);
+		}
 	}
 	
 	/**
