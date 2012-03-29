@@ -11,6 +11,8 @@
 
 package net.sourceforge.veditor.editor;
 
+import  org.eclipse.jface.resource.DataFormatException;
+
 import net.sourceforge.veditor.VerilogPlugin;
 import net.sourceforge.veditor.preference.PreferenceStrings;
 
@@ -56,7 +58,6 @@ public final class HdlTextAttribute
 		readColor(KEY_WORD, PreferenceStrings.KEYWORD);
 		readColor(TYPES, PreferenceStrings.TYPES);
 		readColor(AUTOTASKS, PreferenceStrings.AUTO_TASKS);		
-		String test=VerilogPlugin.getPreferenceString("Color.DoxygenComment");
 	}
 
 	private static void readColor(HdlTextAttribute target, String key)
@@ -77,6 +78,10 @@ public final class HdlTextAttribute
 		}
 		catch (NumberFormatException ex)
 		{
+		}
+		catch ( DataFormatException   e)
+		{
+			VerilogPlugin.println("Bad Color read from file. "+e.toString());
 		}
 	}
 }
