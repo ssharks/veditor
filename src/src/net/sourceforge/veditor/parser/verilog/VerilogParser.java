@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2004, 2006 KOBAYASHI Tadashi and others.
+ * Copyright (c) 2004, 2012 KOBAYASHI Tadashi and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -13,6 +13,7 @@ package net.sourceforge.veditor.parser.verilog;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.util.Iterator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -35,12 +36,20 @@ import org.eclipse.core.resources.IProject;
  */
 public class VerilogParser extends VerilogParserCore implements IParser
 {
+	private static final String DUPLICATE_PARAM = "Duplicate parameter %s";
+	private static final String DUPLICATE_SIGNAL = "Duplicate signal %s";
+	private static final String CANNOT_RESOLVED = "%s cannot be resolved to a signal or parameter";
+	private static final String NOT_ASSIGNED_AND_USED = "The signal %s is not assigned and used";
+	private static final String NOT_USED = "The value of %s is not used";
+	private static final String NOT_ASSIGNED = "The signal %s is not assigned";
+	
 	private IFile m_File;
 	private ParserReader m_Reader;
 	private static OutlineElementFactory m_OutlineElementFactory = new VerilogOutlineElementFactory();
 	private OutlineContainer m_OutlineContainer;
 	private int m_Context;
 	private Pattern[] taskTokenPattern;
+	private VariableStore variableStore;
 
 	public VerilogParser(ParserReader reader, IProject project, IFile file) {
 		super(reader);
@@ -69,15 +78,83 @@ public class VerilogParser extends VerilogParserCore implements IParser
 	}
 	
 	// called by VerilogParserCore
-	protected void beginOutlineElement(int begin, int col, String name, String type) {
+	protected void beginOutlineElement(Token begin, String name, String type) {
 		if (type.equals("module#")) {
 			m_Context = IParser.IN_MODULE;
+			variableStore = new VariableStore();
 		}
 		if (m_OutlineContainer != null) {
-			m_OutlineContainer.beginElement(name, type, begin, col, m_File,
+			m_OutlineContainer.beginElement(name, type, begin.beginLine, begin.beginColumn, m_File,
 					m_OutlineElementFactory);
 		}
 	}
+
+	protected void endOutlineElement(Token end, String name, String type) {
+		if (type.equals("module#")) {
+			m_Context = IParser.OUT_OF_MODULE;
+			checkVariables();
+		}
+		if (m_OutlineContainer != null) {
+			int line = end.endLine;
+			m_OutlineContainer.endElement(name, type, end.endLine,
+					end.endColumn, m_File);
+			String[] types = type.split("#");
+			String bitRange = null;
+			if (types[0].equals("parameter") || types[0].equals("localparam")) {
+				bitRange = (types.length > 2) ? types[2] : "";
+				int value = (types.length > 3) ? Integer.parseInt(types[3]) : 0;
+				if (bitRange.equals(""))
+					bitRange = "[31:0]";
+				if (variableStore.addSymbol(name, line, type, bitRange, value) == false) {
+					warning(end.endLine, String.format(DUPLICATE_PARAM, name));
+				}
+			} else {
+				if (types[0].equals("variable"))
+					bitRange = (types.length > 2) ? types[2] : "";
+				else if (types[0].equals("port"))
+					bitRange = (types.length > 3) ? types[3] : "";
+				if (bitRange != null) {
+					if (variableStore.addSymbol(name, line, type, bitRange) == false) {
+						// c-style port declaration can add reg or wire modifiers.
+						if (types[0].equals("variable")) {
+							VariableStore.Symbol ref = variableStore.findSymbol(name);
+							if (ref.getType().contains("cstyle")) {
+								ref.addModifier(types[1]);
+								return;
+							}
+						}
+						warning(end.endLine, String.format(DUPLICATE_SIGNAL, name));
+					}
+				}
+			}
+		}
+	}
+	
+	private void checkVariables() {
+		Iterator<VariableStore.Symbol> iter = variableStore.iterator();
+		while (iter.hasNext()) {
+			VariableStore.Symbol sym = iter.next();
+			boolean notUsed = false;
+			boolean notAssigned = false;
+			if (sym.isUsed() == false && sym.containsType("output") == false) {
+				notUsed = true;
+			}
+			if (sym.isAssignd() == false && sym.containsType("input") == false) {
+				notAssigned = true;
+			}
+			if (notUsed || notAssigned) {
+				int line = sym.getLine();
+				String name = sym.getName();
+				if (notUsed && notAssigned)
+					warning(line, String.format(NOT_ASSIGNED_AND_USED, name));
+				else if (notUsed)
+					warning(line, String.format(NOT_USED, name));
+				else
+					warning(line, String.format(NOT_ASSIGNED, name));
+			}
+		}
+	}
+
 	protected void addCollapsible(int startLine, int endLine) {
 		if (m_OutlineContainer != null) {
 			Collapsible c = m_OutlineContainer.new Collapsible(startLine,
@@ -85,14 +162,7 @@ public class VerilogParser extends VerilogParserCore implements IParser
 			m_OutlineContainer.addCollapsibleRegion(c);
 		}
 	}
-	protected void endOutlineElement(int end, int col, String name, String type) {
-		if (type.equals("module#")) {
-			m_Context = IParser.OUT_OF_MODULE;
-		}
-		if (m_OutlineContainer != null) {
-			m_OutlineContainer.endElement(name, type, end, col, m_File);
-		}
-	}	
+
 	protected void beginStatement() {
 		m_Context = IParser.IN_STATEMENT;
 	}
@@ -100,9 +170,77 @@ public class VerilogParser extends VerilogParserCore implements IParser
 	protected void endStatement() {
 		m_Context = IParser.IN_MODULE;
 	}
+	
+	protected Expression variableReference(Identifier ident) {
+		if (m_OutlineContainer != null) {
+			String name = ident.image;
+			if (name.contains("."))
+				return new Expression();
+			int line = ident.beginLine;
+			VariableStore.Symbol sym = variableStore.addUsedSymbol(name);
+			if (sym == null) {
+				warning(line, String.format(CANNOT_RESOLVED, name));
+			} else {
+				int width = ident.getWidth();
+				if (width == 0)
+					width = sym.getWidth(); // doesn't have bit range
+				if (sym.isParameter()) {
+					return new Expression(width, sym.getValue());
+				} else {
+					Expression exp = new Expression(width);
+					exp.addReference(ident);
+					return exp;
+				}
+			}
+		}
+		return new Expression();
+	}
+
+	protected Expression functionReference(Identifier ident) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	protected void variableAssignment(Identifier ident) {
+		if (m_OutlineContainer != null) {
+			String name = ident.image;
+			int line = ident.beginLine;
+			VariableStore.Symbol sym = variableStore.addAssignedSymbol(name);
+			if (sym == null) {
+				warning(line, String.format(CANNOT_RESOLVED, name));
+			}
+		}
+	}
+
+	protected void taskReference(Identifier ident) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	protected void variableConnection(Expression arg, String module, String port) {
+		if (m_OutlineContainer != null) {
+			Identifier[] idents = arg.getReferences();
+			if (idents != null) {
+				for (Identifier ident : idents) {
+					variableStore.addAssignedSymbol(ident.image);
+				}
+			}
+		}
+	}
+
+	private void warning(int line, String message) {
+		VerilogPlugin.setWarningMarker(m_File, line, message);
+	}
 
 	public int getContext() {
 		return m_Context;
+	}
+	
+	private void close() {
+		try {
+			m_Reader.close();
+		} catch (IOException e) {
+		}
 	}
 
 	public void parse() throws HdlParserException
@@ -112,10 +250,12 @@ public class VerilogParser extends VerilogParserCore implements IParser
 		} catch (IOException e) {			
 		}
 		
+		if (m_OutlineContainer != null)
+			VerilogPlugin.deleteMarkers(m_File);
 		try
 		{
 			//start by looking for modules
-			modules();
+			verilogText();
 		}
 		catch(ParseException e){
 
@@ -124,6 +264,7 @@ public class VerilogParser extends VerilogParserCore implements IParser
 				VerilogPlugin.setErrorMarker(m_File, e.currentToken.beginLine,
 						e.getMessage());
 			}
+			close();
 
 			//convert the exception to a generic one
 			throw new HdlParserException(e);
@@ -132,6 +273,7 @@ public class VerilogParser extends VerilogParserCore implements IParser
 		if (m_OutlineContainer != null) {
 			parseLineComment();
 		}
+		close();
 	}
 	 
 	/**

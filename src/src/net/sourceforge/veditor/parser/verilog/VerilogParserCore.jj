@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2004, 2006 KOBAYASHI Tadashi and others.
+ * Copyright (c) 2004, 2012 KOBAYASHI Tadashi and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -22,9 +22,24 @@ public abstract class VerilogParserCore
 {
 	protected abstract void beginStatement();
 	protected abstract void endStatement();
-	protected abstract void beginOutlineElement(int begin,int col,String name,String type);
-	protected abstract void endOutlineElement(int end,int col,String name,String type);
+	protected abstract void beginOutlineElement(Token begin, String name, String type);
+	protected abstract void endOutlineElement(Token end, String name, String type);
 	protected abstract void addCollapsible(int startLine,int endLine);
+
+	protected void beginOutlineElement(Token begin, String type) {
+		beginOutlineElement(begin, begin.image, type);
+	}
+
+	protected void endOutlineElement(Token end, String type) {
+		endOutlineElement(end, end.image, type);
+	}
+
+	protected abstract Expression variableReference(Identifier ident);
+	protected abstract Expression functionReference(Identifier ident);
+
+	protected abstract void variableAssignment(Identifier ident);
+	protected abstract void taskReference(Identifier ident);
+	protected abstract void variableConnection(Expression arg, String module, String port);
 }
 
 PARSER_END(VerilogParserCore)
@@ -60,25 +75,10 @@ MORE :
 <IN_PROPERTY>
 SKIP :
 {
-	<PROPERTY: "*)"> : DEFAULT
+	<PROPERTY_COMMENT: "*)"> : DEFAULT
 }
 
 <IN_PROPERTY>
-MORE :
-{
-	< ~[] >
-}
-
-//
-// ignore from `else to `endif
-//
-<IN_ELSE_BLOCK>
-SKIP :
-{
-	<ENDIF: "`endif" > : DEFAULT
-}
-
-<IN_ELSE_BLOCK>
 MORE :
 {
 	< ~[] >
@@ -92,268 +92,503 @@ SKIP :
 SPECIAL_TOKEN :
 {
 	<SINGLE_LINE_COMMENT: "//" (~["\n"])* >
-|	<DEFINE:	"`define" (~["\n"])* >
-|	<UNDEF:		"`undef" (~["\n"])* >
-|	<DIFDEF:	"`ifdef" (~["\n"])* >
-|	<DIF:		"`if" (~["\n"])* >
-|	<DELSE:		"`else" (~["\n"])* >	: IN_ELSE_BLOCK
-|	<DENDIF:	"`endif" (~["\n"])* >
-|	<TIMESCALE:	"`timescale" (~["\n"])* >
-|	<INCLUDE:	"`include" (~["\n"])* >
 }
 
 TOKEN :
 {
-	<MODULE:	"module">
+	<MODULE: "module">
 |	<ENDMODULE: "endmodule">
-|	<BEGIN: 	"begin">
-|	<END:		"end">
-|	<FORK:		"fork">
-|	<JOIN:		"join">
-|	<SPECIFY:	"specify">
+|	<BEGIN: "begin">
+|	<END: "end">
+|	<FORK: "fork">
+|	<JOIN: "join">
+|	<SPECIFY: "specify">
 |	<ENDSPECIFY:"endspecify">
-|	<IF:		"if">
-|	<ELSE:		"else">
-|	<WHILE:		"while">
-|	<FOR:		"for">
-|	<FOREVER:	"forever">
-|	<REPEAT:	"repeat">
-|	<WAIT:		"wait">
-|	<CASE:		"case">
-|	<CASEX:		"casex">
-|	<DEFAULT_LABEL:	"default">
-|	<ENDCASE:	"endcase">
-|	<FUNCTION:	"function">
+|	<IF: "if">
+|	<ELSE: "else">
+|	<WHILE: "while">
+|	<FOR: "for">
+|	<FOREVER: "forever">
+|	<REPEAT: "repeat">
+|	<WAIT: "wait">
+|	<CASE: ("case" | "casex" | "casez") >
+|	<DEFAULT_LABEL: "default">
+|	<ENDCASE: "endcase">
+|	<FUNCTION: "function">
 |	<ENDFUNCTION: "endfunction">
-|	<TASK:		"task">
-|	<ENDTASK:	"endtask">
-|	<GENERATE:	"generate">
-|	<ENDGENERATE:	"endgenerate">
-|	<INPUT:		"input">
-|	<OUTPUT:	"output">
-|	<INOUT: 	"inout">
-|	<INTEGER:	"integer">
-|	<WIRE:		"wire">
-|	<REG:		"reg">
-|	<EVENT:		"event">
-|	<GENVAR:	"genvar">
-|	<REAL:		"real">
-|	<PARAMETER:	"parameter"> 
-|	<LOCALPARAM:	"localparam">
-|	<SIGNED:	"signed">
-|	<STMT_HEAD: (
-		"time" |
-		"assign" | "defparam" | "tri0" | "tri1" | "pullup" | "pulldown" |
-		"buf"
-	)>
-|   <PRIM_1IN_XOUT      : ( "and" | "or" | "xor" | "nand" | "nor" | "xnor")>
-|   <PRIM_1OUT_XIN      : ( "buf" | "not" )>
+|	<TASK: "task">
+|	<ENDTASK: "endtask">
+|	<GENERATE: "generate">
+|	<ENDGENERATE: "endgenerate">
+|	<INPUT: "input">
+|	<OUTPUT: "output">
+|	<INOUT: "inout">
+|	<INTEGER: "integer">
+|	<REG: "reg">
+|  < WIRE: "wire" >
+|	<EVENT: "event">
+|	<GENVAR: "genvar">
+|	<REAL: "real">
+|	<PARAMETER: "parameter"> 
+|	<LOCALPARAM: "localparam">
+|	<SIGNED: "signed">
+|	<PROPERTY: "property" >
+|	<ENDPROPERTY: "endproperty" >
+|	<ASSERT: "assert" | "cover">
+|  <ASSIGN: "assign" >
+|  <DEASSIGN: "deassign" >
+|  <FORCE : "force" >
+|  <RELEASE: "release" >
+|  < TIME: "time" >
+|  < REALTIME: "realtime" >
+|  < DEFPARAM: "defparam" >
+|  < OR: "or" >
+|  < DISABLE: "disable" >
+|   <ALWAYS: "always" >
+|   <INITIAL: "initial" >
+|  < EDGE: ( "posedge" | "negedge" ) >
+|  < SUPPLY : ( "supply0" | "supply1" ) >
+|  < NET_TYPE: ( "tri" | "tri1" | "wand" | "triand" | "tri0" | "wor" | "trior" ) >
+|  < STRENGTH: ("strong0" | "strong1" | "pull0" | "pull1" | "weak0" | "weak1" |"highz0" | "highz1" ) >
+|   <PRIM_1IN_XOUT: ( "and" | "xor" | "nand" | "nor" | "xnor")>
+|   <PRIM_1OUT_XIN: ( "buf" | "not" )>
 |   <PRIM_1OUT_1IN_1CNTL: ( "bufif0" | "bufif1" | "notif0" | "notif1" | "pmos" | "nmos" | "rpmos" | "rnmos")>
-|   <PRIM_1OUT          : ( "pullup" | "pulldown")>
+|   <PRIM_1OUT: ( "pullup" | "pulldown")>
 |   <PRIM_1OUT_1IN_NC_PC: ("cmos" | "rcmos" )>
-|   <PRIM_BI            : ("tran" |  "rtran" | "tranif0" | "rtranif0" | "rtranif1")>
-|   <BLOCK_HEAD         : ( "always" | "initial" )>
-|   <ESCAPE:    "\\">
-|	<LPAREN:	"(" >
-|	<RPAREN:	")" >
-|	<LBRACE: 	"{" >
-|	<RBRACE: 	"}" >
-|	<LBRACKET:	"[" >
-|	<RBRACKET:	"]" >
-|	<EOS:		";" >
-|	<PARA:		"#" >
-|	<AT:		"@" >
-|	<BQ:		"`" >
-|	<DOLLAR:	"$" >
-|	<COMMA:		"," >
-|	<COLON:		":" >
-|	<EQUAL:		"=" >
-|	<STAR:		"*" >
-|	<STRING: "\"" (~["\""])+ "\"">
-|	<IDENT: 	([ "a"-"z", "A"-"Z", "0"-"9", "_", ".", "'", "?"])+>
-|	<SPC_CHAR:	~[ " ", "\t" ] >
-|	<OTHER:		"[.]" >
+|   <PRIM_BI: ("tran" |  "rtran" | "tranif0" | "rtranif0" | "rtranif1")>
+|	<LPAREN: "(" >
+|	<RPAREN: ")" >
+|	<LBRACE: "{" >
+|	<RBRACE: "}" >
+|	<LBRACKET: "[" >
+|	<RBRACKET: "]" >
+|	<EOS: ";" >
+|	<PARA: "#" >
+|	<AT: "@" >
+|	<DOLLAR: "$" >
+|	<COMMA: "," >
+|  < DOT: "." >
+//|	<OTHER: "[.]" >
 }
 
-void modules() :
+TOKEN :
 {
-	Token name ;
-	Token end ;
+  < AGN: "=" >
+| < GT: ">" >
+| < LT: "<" >
+| < BANG: "!" >
+| < TILDE: "~" >
+| < HOOK: "?" >
+| < COLON: ":" >
+| < PCOLON: "+:" >
+| < MCOLON: "-:" >
+| < EQ: "==" >
+| < LE: "<=" >
+| < GE: ">=" >
+| < NE: "!=" >
+| < SC_OR: "||" >
+| < SC_AND: "&&" >
+| < PLUS: "+" >
+| < MINUS: "-" >
+| < STAR: "*" >
+| < SLASH: "/" >
+| < BIT_AND: "&" >
+| < BIT_OR: "|" >
+| < XOR: "^" >
+| < REM: "%" >
+| < LSHIFT: "<<" >
+| < RSHIFT: ">>" >
+| < NEG_AND: "~&" >
+| < NEG_OR: "~|" >
+| < NEG_XOR: "~^" >
+| < XOR_NEG: "^~" >
+| < EQ_C: "===" >
+| < NE_C: "!==" >
+| < POWER: "**" >
+| < ALSHIFT: "<<<" >
+| < ARSHIFT: ">>>" >
+}
+
+TOKEN :
+{
+  < IDENT :
+  	 // No matching macro means simple identifier
+     ("`")? < LETTER > (< LETTER > | ["0"-"9"] )*
+   | < BACKSLASH > (~[ " " ])+
+     >
+| < SYSTEM_IDENT:
+     "$" < LETTER > (< LETTER > | ["0"-"9"])*
+     >
+| < #LETTER : [ "a"-"z", "A"-"Z", "_" ] >
+| < #BACKSLASH : "\\" >
+}
+
+TOKEN :
+{
+  < INTEGER_LITERAL :
+    < NUMBER_LITERAL >
+  | < DECIMAL_LITERAL >
+  | < HEX_LITERAL >
+  | < OCTAL_LITERAL >
+  | < BINARY_LITERAL >
+    >
+| < #NUMBER_LITERAL : ([ "0"-"9" ])+ >
+| < #DECIMAL_LITERAL : ([ "0"-"9" ])* "'" [ "d", "D" ] ([" ", "\t"])* ([ "0"-"9", "_", "x", "X", "z", "Z", "?"])* >
+| < #HEX_LITERAL : ([ "0"-"9" ])* "'" [ "h", "H" ] ([" ", "\t"])* ([ "0"-"9", "a"-"f", "A"-"F", "_", "x", "X", "z", "Z", "?" ])+ >
+| < #OCTAL_LITERAL : ([ "0"-"9" ])* "'" [ "o", "O" ] ([" ", "\t"])* ([ "0"-"7", "_", "x", "X", "z", "Z", "?" ])* >
+| < #BINARY_LITERAL : ([ "0"-"9" ])* "'" [ "b", "B" ] ([" ", "\t"])* ([ "0"-"1", "_", "x", "X", "z", "Z", "?" ])* >
+| < REAL_LITERAL :
+    ([ "0"-"9" ])+ "." ([ "0"-"9" ])*
+  | ([ "0"-"9" ])+ ( "." ([ "0"-"9" ])*)? [ "e", "E" ] ([ "+", "-" ])? ([ "0"-"9" ])+ >
+| < STRING_LITERAL:
+      "\""
+      (   (~["\"","\n","\r"])
+        | ("\\"
+            ( ["n","t","b","r","f","\\","'","\""]
+            | ["0"-"7"] ( ["0"-"7"] )?
+            | ["0"-"3"] ["0"-"7"] ["0"-"7"]
+            )
+          )
+      )*
+      "\""  >
+}
+
+void verilogText() :
+{}
+{
+	( moduleDecl() )*
+}
+
+void moduleDecl() :
+{
+	Identifier name;
+	Token end;
 }
 {
-	(
-		<MODULE> name = identifier()
-		{			
-			beginOutlineElement(name.beginLine,name.beginColumn, name.image,"module#");
-		}
-		[
-			"#" "(" [ parameterArg() ("," parameterArg() )* ] ")"
-		]
-		[
-			"(" [ argument() ( "," argument() )* ] ")"
-		]
-		<EOS>
-		moduleBody()
-		end = <ENDMODULE>
-		{		
-			endOutlineElement(end.endLine,end.endColumn, name.image,"module#");
-		}
-	)*
+	< MODULE > name = identifier()
+	{
+		beginOutlineElement(name, name.image, "module#");
+	}
+	[ "#" "(" [ parameterArg() ( "," parameterArg() )* ] ")"  ]
+	[ "(" [ argument() ( "," argument() )* ] ")" ]
+	";"
+	( moduleItem() )*
+	end = < ENDMODULE >
+	{
+	    endOutlineElement(end, name. image, "module#");
+	}
 }
 
 void parameterArg() :
 {
 	Token name,value;
+	String mod, range;
 }
 { 
-	<PARAMETER>
-	[   <REAL>
-	  |	<INTEGER>
-	  |	"[" skipTo(RBRACKET)
-	]
+	<PARAMETER> mod = parameterModifier() range = bitRange()
+	parameterAssign("parameter", mod, range)
+}
+
+String parameterModifier() :
+{
+	String ret = " ";
+}
+{
+	(
+		("real" | "integer" | "signed" )
+		{
+			ret += token.image + " ";
+		}
+	)*
+	{
+		return ret;
+	}
+}
+
+
+void parameterAssign(String type, String mod, String range) :
+{
+	Identifier name;
+	Expression value;
+}
+{
 	name = identifier()
 	"="
-	value = skipToOr(COMMA,RPAREN)
+	value = constantExpression()
 	{
-		beginOutlineElement(name.beginLine,name.beginColumn,name.image,"parameter#"+value.image);
-		endOutlineElement( name.endLine,name.endColumn,name.image,"parameter#"+value.image);
+		String types = type + "#" + mod + "#" + range + "#" + value.toString();
+		beginOutlineElement(name, types);
+		endOutlineElement(name, types);
 	}
 }
 
 void argument() :
 {
-	Token direction, name;
+	Token direction;
+	Identifier name;
 	String modifier="";
 	String range;
 }
 {
 		// C++ style argument
 		( direction=<INPUT>  | direction=<OUTPUT>  | direction=<INOUT> )
-		[ modifier = variableModifier() ]
+		modifier = variableModifier()
 		range = bitRange()
 		name = identifier()
 		{
-			String type = "port#" + direction.image + "#" + modifier + "#" + range;
-			beginOutlineElement(
-				name.beginLine, name.beginColumn, name.image, type);
-			endOutlineElement(name.endLine, name.endColumn, name.image, type);
+			String types = "port#" + direction.image + "#" + modifier + "#" + range;
+			beginOutlineElement(name, types);
+			endOutlineElement(name, types);
 		}
-		skipToOr(COMMA,RPAREN)
+		[ "=" expression() { variableAssignment(name);} ]
 	|
 		// C style argument, portDecl will add it to OutlineContainer
 		identifier()
 }
 
-
-String bitRange() :
+void moduleItem() :
+{}
 {
-	String range = "";
-	Token msb, lsb;
-}
-{
-	[
-		"[" msb = skipTo(COLON) lsb = skipTo(RBRACKET)
-		{
-			range = "[" + msb.image + ":" + lsb.image + "]";
-		}
-	]
-	{
-		return range;
-	}
+	moduleOrGenerateItem()
+| 	portDecl()
+|	<SPECIFY> {beginStatement();} skipTo( ENDSPECIFY ) {endStatement();}
+|	generate()
+|	<PROPERTY> skipTo(ENDPROPERTY)
 }
 
-void portDecl():
+void moduleOrGenerateItem() :
+{}
 {
-	Token direction,name;
-	String modifier="";
+	variableDecl()
+|	parameterDecl()
+|	taskDecl()
+|	functionDecl()
+| <DEFPARAM> {beginStatement();} skipTo( EOS ) {endStatement();}
+|  assign()
+|  primitiveInstance()
+|  LOOKAHEAD(3) moduleInstance()
+|	initialAlways() // initial and always
+|	<ASSERT>  skipTo(EOS)
+|	identifier() ":" <ASSERT>  skipTo(EOS)
+| 	";"
+}
+
+void portDecl() :
+{
+	Token direction;
+	String modifier;
 	String range;
 }
 {
 	( direction=<INPUT>  | direction=<OUTPUT>  | direction=<INOUT> )
-	[ modifier=variableModifier() ]
+	modifier = variableModifier()
+	{ beginStatement(); }
 	range = bitRange()
-	name = skipTo(EOS)
+	portDeclSingle(direction, modifier, range)
+	("," portDeclSingle(direction, modifier, range))* ";"
+	{ endStatement(); }
+}
+
+String variableModifier() :
+{
+	String ret = "";
+}
+{
+	(
+		( "real" | "realtime" | "integer" | "wire" | "reg" | "signed" | "time" )
+		{
+			ret += token.image + " ";
+		}
+	)*
 	{
-		beginStatement();
-		breakupMulti(name,name,"port#"+direction.image+"#"+modifier+"#"+range);
-		endStatement();
+		return ret;
 	}
 }
- 
 
-
-void primitiveInstance():
+void portDeclSingle(Token direction, String modifier, String range) :
 {
+	Identifier name;
 }
 {
-	
-	(     <PRIM_1IN_XOUT>      
+	name = identifier()
+	{
+		String type = "port#" + direction.image + "#" + modifier + "#" + range + "#cstyle";
+		beginOutlineElement(name, type);
+		endOutlineElement(name, type);
+	}
+	 [ "=" expression() { variableAssignment(name);} ]
+}
+ 
+void primitiveInstance():
+{
+	String prim;
+}
+{
+	(     <PRIM_1IN_XOUT> | "or"
       	| <PRIM_1OUT_XIN>      
 		| <PRIM_1OUT_1IN_1CNTL>
 		| <PRIM_1OUT>
 		| <PRIM_1OUT_1IN_NC_PC>
 		| <PRIM_BI>
-	)      
-	{
-		skipTo(EOS);
-	}
+	) { prim = token.image;}
+	[ LOOKAHEAD(2) strength() ] [ delay3() ]
+	[ identifier() bitRange() ] "(" portConnect(prim) ")"
+	( "," identifier() bitRange() "(" portConnect(prim) ")" )*
+	";"
 }
 
-void moduleBody() :
+void moduleInstance():
 {
-	Token	module, inst, iend ;
-}
-{
-	(  	    portDecl()
-		|   variableDecl()
-		|	parameterDecl()
-		|	<STMT_HEAD> {beginStatement();} skipTo( EOS ) {endStatement();}
-		|	blockDecl()
-		|	<SPECIFY> {beginStatement();} skipTo( ENDSPECIFY ) {endStatement();}
-		|	functionDecl()
-		|	taskDecl()
-		|	generate()
-		|   moduleInst()
-		|   primitiveInstance()
-	)*
-}
-
-void moduleInst():
-{
-	Token	module, inst, iend ;
+	Identifier module, inst;
+	Token iend ;
 }
 { 
 	module = identifier() 
 	{ beginStatement(); }
 	
 	(   //module instantiation
-		(   [ "#" ( identifier() | <LPAREN> skipParen() <RPAREN> ) ]	
-			inst = identifier() 
-		    <LPAREN> skipParen() <RPAREN> 
-		    iend = <EOS>
+		(   [ "#" ( identifier() | number() | "(" parameterConnect() ")" ) ]
+			inst = identifier()
+			[ "(" [ portConnect(module.image) ] ")" ]
+		    iend = ";"
 		    {			
-				beginOutlineElement(module.beginLine,module.beginColumn,inst.image,"instance#"+module.image);
-				endOutlineElement( iend.endLine,iend.endColumn,inst.image,"instance#"+module.image);
-				addCollapsible(module.beginLine,iend.endLine);
-				endStatement();
+				beginOutlineElement(module, inst.image, "instance#"+module.image);
+				endOutlineElement(iend, inst.image, "instance#"+module.image);
+				addCollapsible(module.beginLine, iend.endLine);
 		     }
 		 )
 	 |   //user defined primitive	 
-		 (  <LPAREN> skipParen() <RPAREN>
-		 	iend = <EOS>
-		 	{
-		 	 endStatement();
-		 	} 
+		 (  "(" portConnect(module.image) ")"
+		 	iend = ";"
 		 )
+	)
+	{ endStatement(); }
+}
+
+void parameterConnect() :
+{}
+{
+	"." identifier() "(" constantExpression() ")" ( "," "." identifier() "(" constantExpression() ")" )*
+|	constantExpression() ( "," constantExpression() )*	
+}
+
+void portConnect(String module) :
+{
+	int count = 0;
+}
+{
+	count = portConnectSingle(module, count)
+	( "," count = portConnectSingle(module, count) )*
+}
+
+int portConnectSingle(String module, int count) :
+{
+	Identifier port;
+	Expression arg = null;
+}
+{
+	"." port = identifier() "(" [ arg = expression() ] ")"
+	{
+		if (arg != null) {
+			variableConnection(arg, module, port.image);
+		}
+		return count + 1;
+	}
+|	arg = expression()
+	{
+		variableConnection(arg, module, Integer.toString(count));
+		return count + 1;
+	}
+}
+
+void assign() :
+{}
+{
+	"assign" [ strength() ] [ delay3() ]
+	lvalue() "=" expression()
+	( "," lvalue() "=" expression())*
+	";"
+}
+
+void variableDecl():
+{
+	Token variable;
+	String type;
+	String range;
+}
+{
+	type = variableType()
+	{ beginStatement(); }
+	[ strength() ]
+	[ "signed" 	{ type += " signed";}	]
+	range = bitRange()
+	[ delay3() ]
+	variableDeclSingle(type, range) ( "," variableDeclSingle(type, range) )* ";"
+	{ endStatement(); }
+}
+
+String variableType() :
+{
+	String type;
+}
+{
+	 type = netType()
+	 {
+	 	return type;
+	}
+|	( "reg" | "real" | "integer" | "event" |"genvar" | "time" | "realtime" )
+	{
+		return token.image;
+	}
+}
+
+void variableDeclSingle(String mod, String range) :
+{
+	Identifier variable;
+}
+{
+	variable = identifier()
+	{
+		String type = "variable#"+mod+"#"+range;
+		beginOutlineElement(variable, type);
+		endOutlineElement(variable, type);
+	}
+	("[" constantExpression() ":" constantExpression() "]")*
+	[ "=" expression() { variableAssignment(variable); } ]
+}
+
+void delay3() :
+{}
+{
+	"#"
+	(
+		LOOKAHEAD(3)
+		delayValue()
+	| 	"(" minTypMaxExpresstion() [ "," minTypMaxExpresstion() ["," minTypMaxExpresstion() ] ] ")"
 	)
 }
 
-void blockDecl():
+void parameterDecl():
+{
+	String type;
+	String mod, range;
+}
+{ 
+	(
+		<PARAMETER>  {type = "parameter";}
+	|	<LOCALPARAM> {type = "localparam";}
+	)
+	mod = parameterModifier()
+	range = bitRange()
+	parameterAssign(type, mod, range) ( "," parameterAssign(type, mod, range) )* ";"
+}
+
+void initialAlways():
 {
 	Token start;
 }
 {
-	start=<BLOCK_HEAD> 
+	( start = <INITIAL> | start = <ALWAYS> )
 	{
 		beginStatement();
 	} 
@@ -363,315 +598,685 @@ void blockDecl():
 		addCollapsible(start.beginLine,token.endLine);
 	}
 }
-void variableDecl():
-{
-	Token variable;
-	String mod="";
-	String range;
-}
-{
-	( mod = variableModifier() )
-	range = bitRange()
-	variable = identifier() ( "[" skipTo(RBRACKET) )*
-	{
-		beginOutlineElement(variable.beginLine,variable.beginColumn,variable.image,"variable#"+mod+"#"+range);
-		endOutlineElement( variable.endLine,variable.endColumn,variable.image,"variable#"+mod+"#"+range);
-	}
-	(
-		","
-		variable = identifier() ( "[" skipTo(RBRACKET) )*
-		{
-			beginOutlineElement(variable.beginLine,variable.beginColumn,variable.image,"variable#"+mod+"#"+range);
-			endOutlineElement( variable.endLine,variable.endColumn,variable.image,"variable#"+mod+"#"+range);
-		}
-	)*
-	(
-		";"
-	|	"=" skipTo( EOS )
-	)
-
-}
-
-
-String variableModifier() :
-{
-	String value = null;
-}
-{
-	(
-			"real"
-		|	"integer"
-		|	"event"
-		|	"genvar"
-		|	"signed"
-		|	"wire"	["signed" { value = "wire signed"; } ]
-		|	"reg"	["signed" { value = "reg signed"; } ]
-	)
-	{
-		if (value == null)
-			return token.image;
-		else
-			return value;
-	}
-}
-
-
-Token identifier() :
-{
-	Token token ;
-}
-{
-	[ "`" ]
-    (<ESCAPE> {token = skipToSpace();}	| token = <IDENT> | token = <STRING>)		
-	{return token;}	
-}
-
-
-void parameterDecl():
-{
-	String type;
-}
-{ 
-	(
-		<PARAMETER>  {type = "parameter";}
-	|	<LOCALPARAM> {type = "localparam";}
-	)
-	[   <REAL>
-	  |	<INTEGER>
-	  |	"[" skipTo(RBRACKET)
-	]
-	parameterDeclBody(type)
-	(
-		","
-		parameterDeclBody(type)
-	)*
-	";"
-}
-
-void parameterDeclBody(String type) :
-{
-	Token name,value;
-}
-{
-	name = identifier()
-	"="
-	value = skipToOr(COMMA,EOS)
-	{		
-		beginOutlineElement(name.beginLine,name.beginColumn,name.image,type+"#"+value.image);
-		endOutlineElement( name.endLine,name.endColumn,name.image,type+"#"+value.image);
-	}
-}
- 
-
-void delay() :
-{
-}
-{
-	( "@" | "#" ) ( "(" skipParen() ")" | identifier() | "*" )
-}
 
 void statement() :
 {
 	Token end;
 }
 {
-	( delay() )*
-	(	";"
-	|	":" identifier()
-	|	variableDecl()
-	|	<STMT_HEAD> skipTo( EOS )
-	|	ifStatement()
-	|	block()
-	|	"$" skipTo( EOS )
-	|	"{" skipTo( EOS )
-	|	identifier() skipTo( EOS )
-	|	caseStatement()
-	|	whileStatement()
-	|	forStatement()
-	|	foreverStatement()
-	|	repeatStatement()
-	|	waitStatement()
+ 	assignOrTaskEnable()
+| 	proceduralContinuousAssignment()
+|  proceduralTimingControlStatement()
+|	ifStatement()
+|	caseStatement()
+|	whileStatement()
+|	forStatement()
+|	foreverStatement()
+|	repeatStatement()
+|	waitStatement()
+| 	"disable" identifier() ";"
+|  "->" identifier() ";"
+|	block()
+|  ";"
+}
+
+void assignOrTaskEnable() :
+{
+	Identifier ident;
+}
+{
+	ident = complexIdentifier()
+	(
+		("="  | "<=") [delayOrEventControl() ] expression() ";"
+		{
+			variableAssignment(ident);
+		}
+	| 	[ "(" expression() ("," expression())* ")"] ";"
+		{
+			taskReference(ident);
+		}
+	)
+|	lvalueConcatenation() ("="  | "<=") [delayOrEventControl() ] expression() ";"
+|	<SYSTEM_IDENT> [ "(" expression() ("," expression())* ")"] ";"
+}
+
+void delayOrEventControl() :
+{}
+{
+	delayContol() | eventContol()
+}
+
+void delayContol() :
+{}
+{
+	"#" ( delayValue() | "(" minTypMaxExpresstion() ")" )
+}
+
+void delayValue() :
+{}
+{
+	number() | identifier()
+}
+
+void eventContol() :
+{}
+{
+ 	"@"
+	(	identifier()
+	|	 "*"
+	|	"(" (eventExpression() | "*" ) ")"
 	)
 }
 
+void eventExpression():
+{}
+{
+	( expression() | < EDGE > expression() )
+	( ("," | "or") ( expression() | < EDGE > expression() ) )*
+	// 'repeat' '(' expression ')' event_control -> ignored
+}
+
+void proceduralContinuousAssignment() :
+{}
+{
+	"assign" lvalue() "=" expression() ";"
+|	"deassign" lvalue() ";"
+|	"force"  lvalue() "=" expression() ";"
+|	"release" lvalue() ";"
+}
+
+void proceduralTimingControlStatement() :
+{}
+{
+	delayOrEventControl() statement()
+}
+
+void ifStatement() :
+{}
+{
+	<IF> "(" expression() ")" statement()
+	[ LOOKAHEAD(1) <ELSE> statement() ]
+}
+
+void caseStatement() :
+{}
+{
+	<CASE>"(" expression() ")"
+	(
+		expression() ("," expression())* ":" statement()
+	| 	"default" [":"] statement()
+	)+
+	<ENDCASE>
+}
+
+void whileStatement() :
+{}
+{
+	<WHILE> "(" expression() ")" statement()
+}
+
+void forStatement() :
+{}
+{
+	<FOR> "("
+	lvalue() "=" expression() ";"
+	expression() ";"
+	lvalue() "=" expression() ")"
+	statement()
+}
+
+void foreverStatement() :
+{}
+{
+	<FOREVER> statement()
+}
+
+void repeatStatement() :
+{}
+{
+	<REPEAT> "(" expression() ")" statement()
+}
+
+void waitStatement() :
+{}
+{
+	<WAIT> "(" expression() ")" statement()
+}
 
 void block() :
-{
-	Token start,end;
-}
+{}
 {
 	( <BEGIN> | <FORK> )
+	[ ":" identifier() ( blockItem() )* ]
 	( statement() )*
 	(<END> | <JOIN> )
-	
-	
 }
 
-void functionDecl():
+void blockItem():
+{}
 {
+	parameterDecl()	
+| 	variableDecl()
 }
+  
+void functionDecl():
+{}
 {
 	<FUNCTION> {beginStatement();} function() {endStatement();}
 }
 
 void taskDecl():
-{
-}
+{}
 {
 	<TASK> {beginStatement();} task() {endStatement();}
 }
 
 void function() :
 {
-	Token name, end ;
+	Identifier name;
+	Token end ;
 }
 {
-	[ variableModifier() ]
-	[ "[" skipParen() "]" ]
-	name = identifier()
+	variableModifier() bitRange() name = identifier()
 	{
-		beginOutlineElement(name.beginLine,name.beginColumn,name.image,"function#");
+		beginOutlineElement(name, name.image, "function#");
 	}
 	end = skipTo( ENDFUNCTION )
 	{		
-		endOutlineElement(end.endLine,end.endColumn,name.image,"function#");
-		addCollapsible(name.beginLine,end.endLine);				
+		endOutlineElement(end, name.image, "function#");
+		addCollapsible(name.beginLine, end.endLine);				
 	}
 }
 
 void task() :
 {
-	Token name, end ;
+	Identifier name;
+	Token end ;
 }
 {
 	name = identifier()
 	{
-		beginOutlineElement(name.beginLine,name.beginColumn,name.image,"task#");
+		beginOutlineElement(name, name.image, "task#");
 	}
 	end = skipTo( ENDTASK )
 	{	
-		endOutlineElement(end.endLine,end.endColumn,name.image,"task#");
-		addCollapsible(name.beginLine,end.endLine);
+		endOutlineElement(end, name.image, "task#");
+		addCollapsible(name.beginLine, end.endLine);
 	}
 }
 
 void generate() :
-{
-}
+{}
 {
 	<GENERATE>
-	(generateStatement())*
+	( generateItem() )*
 	<ENDGENERATE>
 }
 
-void generateStatement() : 
+void generateItem() :
+{}
 {
-}
-{	
-	(
-		   variableDecl()
-		|  generateForStatement()
-	    |  generateIfStatement()
-	    |  generateCaseStatement()
-		|  <STMT_HEAD> skipTo( EOS )
-	    |  blockDecl() 
-	    |  functionDecl()
-		|  taskDecl()
-		|  generate()
-		|  <BEGIN> [ ":" identifier() ] (generateStatement())* <END>
-	    |  moduleInst()
-	)
-	
-}
-
-void ifStatement() :
-{
-}
-{
-	<IF> "(" skipParen() ")" statement()
-	[ LOOKAHEAD(1) <ELSE> statement() ]
-}
-
-void caseStatement() :
-{
-}
-{
-	(<CASE>|<CASEX>) "(" skipParen() ")"
-	(
-			identifier() ( "," identifier() )* ":" statement()
-		|	("{") identifier() ( "," identifier() )* ("}")
-			( (",")  ("{") identifier() ( "," identifier() )* ("}") )*  ":" statement()
-		|	"default" [ LOOKAHEAD(2) ":" ] statement()
-	)*
-	<ENDCASE>
-}
-
-void whileStatement() :
-{
-}
-{
-	<WHILE> "(" skipParen() ")" statement()
-}
-
-void forStatement() :
-{
-}
-{
-	<FOR> "(" skipParen() ")" statement()
-}
-
-void foreverStatement() :
-{
-}
-{
-	<FOREVER> statement()
-}
-
-void repeatStatement() :
-{
-}
-{
-	<REPEAT> "(" skipParen() ")" statement()
-}
-
-void waitStatement() :
-{
-}
-{
-	<WAIT> "(" skipParen() ")" statement()
-}
-
-void generateForStatement() :
-{
-}
-{
-	<FOR> "(" skipParen() ")"
-	generateStatement()
+	moduleOrGenerateItem()
+|  generateIfStatement()
+|  generateCaseStatement()
+|  generateForStatement()
+|  <BEGIN> [ ":" identifier() ] ( generateItem() )* <END>
 }
 
 void generateIfStatement() :
+{}
 {
+	<IF> "(" constantExpression() ")" generateItem()
+	[ LOOKAHEAD(1) <ELSE> generateItem() ]
 }
-{
-	<IF> "(" skipParen() ")"
-	generateStatement()
-	[ LOOKAHEAD(1) <ELSE>
-		generateStatement()
-	]
-}
+
 void generateCaseStatement() :
+{}
 {
-}
-{
-	(<CASE>|<CASEX>) "(" skipParen() ")"
+	<CASE> "(" constantExpression() ")"
 	(
-			identifier() ( "," identifier() )* ":" generateStatement()
-		|	("{") identifier() ( "," identifier() )* ("}")
-			( (",")  ("{") identifier() ( "," identifier() )* ("}") )*  ":" generateStatement()
-		|	"default" [ LOOKAHEAD(2) ":" ] generateStatement()
-	)*
+		constantExpression() ("," constantExpression())* ":" generateItem()
+	| 	"default" ":" generateItem()
+	)+
 	<ENDCASE>
 }
+
+void generateForStatement() :
+{}
+{
+	<FOR> "("
+	lvalue() "=" expression() ";"
+	expression() ";"
+	lvalue() "=" expression() ")"
+	generateItem()
+}
+
+
+String netType() :
+{}
+{
+	( "wire" | < NET_TYPE > | < SUPPLY > )
+	{
+		return token.image;
+	}
+}
+
+void strength() :
+{}
+{
+	"(" ( < STRENGTH > | < SUPPLY > ) ["," ( < STRENGTH > | < SUPPLY > ) ]")"
+}
+
+void lvalue() :
+{
+	Identifier ident;
+}
+{
+	ident = complexIdentifier()
+	{
+		variableAssignment(ident);
+	}
+|	lvalueConcatenation()
+}
+
+void lvalueConcatenation() :
+{}
+{
+	"{" lvalue() ( "," lvalue() )* "}"
+}
+
+Identifier identifier() :
+{
+	Token token;
+}
+{
+	token = < IDENT >
+	{
+		return new Identifier(token);
+	}
+}
+
+Expression constantExpression() :
+{
+	Expression ret;
+}
+{
+	ret = expression()
+	{
+		return ret;
+	}
+}
+    
+Expression expression() :
+{
+	Expression ret, exp1, exp2;
+}
+{
+	ret = logicalOrExpresstion()
+	[
+		LOOKAHEAD(2) "?" exp1 = expression() ":" exp2 = expression()
+		{
+			if (ret.isValid())
+				ret = (ret.intValue() != 0) ? exp1 : exp2;
+			else {
+				ret = new Expression(exp1.getWidth());
+			}
+		}
+	]
+	{
+	 	return ret;
+	}
+}
+
+Expression logicalOrExpresstion() :
+{
+	Expression ret, exp;
+	Token op;
+}
+{
+	ret = logicalAndExpresstion()
+	( op = "||" exp = logicalAndExpresstion() { ret = ret.operate(op.image, exp); } )*
+	{
+		return ret;
+	}
+}
+
+Expression logicalAndExpresstion() :
+{
+	Expression ret, exp;
+	Token op;
+}
+{
+	ret = bitOrExpresstion()
+	( op = "&&" exp = bitOrExpresstion() { ret = ret.operate(op.image, exp); } )*
+	{
+		return ret;
+	}
+}
+
+Expression bitOrExpresstion() :
+{
+	Expression ret, exp;
+	Token op;
+}
+{
+	ret = bitAndExpresstion()
+	( op = "|" exp = bitAndExpresstion() { ret = ret.operate(op.image, exp); } )*
+	{
+		return ret;
+	}
+}
+
+Expression bitAndExpresstion() :
+{
+	Expression ret, exp;
+	Token op;
+}
+{
+	ret = equalityExpression()
+	(
+		(op = "&" | op = "^" | op = "~^" | op = "^~")
+		exp = equalityExpression() { ret = ret.operate(op.image, exp); }
+	)*
+	{
+		return ret;
+	}
+}
+
+Expression equalityExpression() :
+{
+	Expression ret, exp;
+	Token op;
+}
+{
+	ret = relationalExpression()
+	(
+		(op = "==" | op = "===" | op = "!=" | op = "!==")
+		exp = relationalExpression() { ret = ret.operate(op.image, exp); }
+	)*
+	{
+		return ret;
+	}
+}
+
+Expression relationalExpression() :
+{
+	Expression ret, exp;
+	Token op;
+}
+{
+	ret = shiftExpression()
+	(
+		(op = "<" | op = "<=" | op = ">" | op = ">=")
+		exp = shiftExpression() { ret = ret.operate(op.image, exp); }
+	)*
+	{
+		return ret;
+	}
+}
+
+Expression shiftExpression() :
+{
+	Expression ret, exp;
+	Token op;
+}
+{
+	ret = addExpression()
+	(
+		(op = "<<" | op = ">>" | op = "<<<" | op = ">>>")
+		exp = addExpression() { ret = ret.operate(op.image, exp); }
+	)*
+	{
+		return ret;
+	}
+}
+
+Expression addExpression() :
+{
+	Expression ret, exp;
+	Token op;
+}
+{
+	ret = multiplyExpression()
+	(
+		(op = "+" | op = "-" )
+		exp = multiplyExpression() { ret = ret.operate(op.image, exp); }
+	)*
+	{
+		return ret;
+	}
+}
+
+Expression multiplyExpression() :
+{
+	Expression ret, exp;
+	Token op;
+}
+{
+	ret = unaryExpression()
+	(
+		(op = "*" | op = "/" | op = "%" | op = "**")
+		exp = unaryExpression() { ret = ret.operate(op.image, exp); }
+	)*
+	{
+		return ret;
+	}
+}
+
+Expression unaryExpression() :
+{
+	Expression ret, exp;
+	String op = null;
+}
+{
+	[ op = unaryOperator() ]
+	ret = primary()
+	{
+		if (op != null)
+			return ret.operate(op);
+		else
+			return ret;
+	}
+}
+
+Expression primary() :
+{
+	Expression ret;
+	Identifier ident;
+	boolean isFunc = false;
+}
+{
+	(
+		ret = number()
+	|  ident = complexIdentifier() [ functionArgs() {isFunc = true; }]
+		{
+			if (isFunc) {
+				ret = functionReference(ident);
+			} else {
+				ret = variableReference(ident);
+			}
+		}
+	|	< SYSTEM_IDENT > (<SYSTEM_IDENT >)* [ LOOKAHEAD(2) functionArgs()]
+		{
+			ret = new Expression();
+		}
+	|	ret = concatenation()
+	|	"(" ret = minTypMaxExpresstion() ")"
+	)
+	{
+	 	if (ret == null)
+	 		return new Expression();
+		else
+			return ret;
+	}
+}
+
+Identifier complexIdentifier() :
+{
+	Identifier ident, concat;
+	int width;
+}
+{
+	ident = identifier() width = bitOrAry()
+	{
+		ident.setWidth(width);
+	}
+	(
+		"." concat = identifier() width = bitOrAry()
+		{
+			ident.endLine = concat.endLine;
+			ident.endColumn = concat.endColumn;
+			ident.image += "." + concat.image;
+			ident.setWidth(width);
+		}
+	)*
+	{
+		return ident;
+	}
+}
+
+Expression minTypMaxExpresstion() :
+{
+	Expression exp;
+}
+{
+	exp = expression()
+	[
+		":" expression()
+		":" expression()
+	]
+	{
+		return exp;
+	}
+}
+
+int bitOrAry() :
+{
+	int width = 0;
+	Expression msb, lsb;
+	Token token;
+}
+{
+  	(
+		"[" msb = expression() { width = 1;}
+		[
+			( token = ":" | token = "+:" | token = "-:" ) lsb = expression()
+			{
+				if (token.image.equals(":")) {
+					if (msb.isValid() && lsb.isValid())
+						width = msb.intValue() - lsb.intValue();
+					else
+						width = 0;
+				} else {
+					if (lsb.isValid())
+						width = lsb.intValue();
+					else
+						width = 0;
+				}
+			}
+		]
+		"]"
+	)*
+	{
+		return width;
+	}
+}
+
+String bitRange() :
+{
+	Expression msb, lsb;
+}
+{
+	[
+		"[" msb = expression()  ":" lsb = expression() "]" 
+		{
+			if (msb.isValid() && lsb.isValid())
+				return "[" + msb.intValue() + ":" + lsb.intValue() + "]";
+			else
+				return "";
+		}
+	]
+	{
+		return "";
+	}
+}
+
+String unaryOperator() :
+{}
+{
+	( "~" | "+" |  "-" |  "!" |  "&" |  "~&" | "|" |  "~|" |  "^" |  "~^" |  "^~" )
+	{
+		return token.image;
+	}
+}
+
+Expression concatenation() :
+{
+	int width;
+	int value;
+	boolean valid;
+	Expression exp;
+	Expression refs = new Expression();
+}
+{
+	"{" exp = expression()
+	{
+		width = exp.getWidth();
+		value = exp.intValue();
+		valid = exp.isValid();
+		refs.addReference(exp);
+	}
+	[
+		( "," exp = expression()
+		{
+			width += exp.getWidth();
+			value = (value << width) | exp.intValue();
+			valid = valid && exp.isValid();
+			refs.addReference(exp);
+		}
+		)+
+	|	"{" exp = expression() "}"
+		{
+			width = valid ? value : 0;
+			value = exp.intValue();
+			valid = exp.isValid();
+			refs = exp;
+		}
+	]
+	"}"
+	{
+		Expression ret = new Expression(width);
+		if (valid)
+			ret.setValue(value);
+		ret.addReference(refs);
+		return ret;
+	}
+}
+
+void functionArgs():
+{}
+{
+	"(" expression() ( "," expression() )* ")"
+}
+
+Expression number() :
+{
+	Expression ret = new Expression();
+}
+{
+	(
+	 < INTEGER_LITERAL >
+	 {
+		ret.parseLiteral(token.image);
+	}
+	|  < REAL_LITERAL >
+	|  < STRING_LITERAL >
+	)
+	{
+		return ret;
+	}	
+}
+
 
 JAVACODE
 void unexpectedEof(Token token)
@@ -704,120 +1309,5 @@ Token skipTo(int skip)
 	}
 	token.image = image.toString();
 	return token ;
-}
-
-
-JAVACODE
-Token skipToSpace()
-{
-    Token current = token;
-    Token token ;
-    int lastColumn=-1;
-    StringBuffer image = new StringBuffer();
-
-    for(;;) 
-    { 
-    	    token = getToken(1);
-            
-            if (token.kind == EOF)
-                    unexpectedEof(current);
-            //if there was a break
-            if (token.beginColumn != lastColumn+1 && lastColumn!=-1)
-            {
-                    break ;
-            }
-            lastColumn=token.endColumn;
-
-            image.append(token.image);
-            getNextToken();
-    }
-    token.image = image.toString();
-    return token ;
-}
-
-JAVACODE
-Token skipToOr(int skip1, int skip2)
-{
-	Token current = token;
-	Token token ;
-	StringBuffer image = new StringBuffer();
-
-	int nesting = 1 ;
-	for(;;)
-	{
-		token = getToken(1);
-		if (token.kind == EOF)
-			unexpectedEof(current);
-		if (nesting <= 1 && (token.kind == skip1 || token.kind == skip2))
-			break ;
-		if (token.kind == LPAREN || token.kind == LBRACKET || token.kind == LBRACE)
-			nesting++;
-		if (token.kind == RPAREN || token.kind == RBRACKET || token.kind == RBRACE)
-			nesting--;
-		image.append(token.image);
-		getNextToken();
-	}
-	token.image = image.toString();
-	return token ;
-}
-
-JAVACODE
-void skipParen()
-{
-	Token current = token;
-	Token token;
-	int nesting = 1 ;
-	for(;;)
-	{
-		token = getToken(1);
-		if (token.kind == EOF)
-			unexpectedEof(current);
-		if (token.kind == LPAREN || token.kind == LBRACKET)
-			nesting++;
-		if (token.kind == RPAREN || token.kind == RBRACKET)
-		{
-			nesting--;
-			if ( nesting == 0 )
-				break;
-		}
-		getNextToken();
-	}
-}
-
-JAVACODE
-void skipToEndcase()
-{
-	Token current = token;
-	Token token ;
-	int nesting = 1 ;
-	for(;;)
-	{
-		token = getToken( 1 );
-		if ( token.kind == EOF )
-			unexpectedEof(current);
-		if ( token.kind == CASE )
-			nesting++;
-		if ( token.kind == ENDCASE )
-		{
-			nesting--;
-			if ( nesting == 0 )
-			{
-				getNextToken();
-				break;
-			}
-		}
-		getNextToken();
-	}
-}
-
-JAVACODE
-void breakupMulti(Token start,Token end,String type)
-{
-	String names[]=start.image.split(",");
-	
-	for( String name : names){
-		beginOutlineElement(start.beginLine,start.beginColumn,name,type);
-		endOutlineElement(end.endLine,end.endColumn,name,type);
-	}
 }
 
