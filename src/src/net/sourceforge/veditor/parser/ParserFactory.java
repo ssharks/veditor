@@ -11,6 +11,7 @@
 package net.sourceforge.veditor.parser;
 
 import net.sourceforge.veditor.parser.verilog.VerilogParser;
+import net.sourceforge.veditor.parser.verilog.VerilogParserReader;
 import net.sourceforge.veditor.parser.vhdl.VhdlParser;
 
 import org.eclipse.core.resources.IFile;
@@ -27,8 +28,8 @@ abstract public class ParserFactory
 	}
 		
 	public static IParser createVerilogParser(String text, IProject project, IFile file)
-	{   
-	    ParserReader reader=new ParserReader(text);
+	{
+		VerilogParserReader reader = new VerilogParserReader(text, file);
 		return new VerilogParser(reader, project, file);
 	}
 

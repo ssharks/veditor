@@ -17,6 +17,7 @@ import java.util.Vector;
 
 import net.sourceforge.veditor.VerilogPlugin;
 import net.sourceforge.veditor.parser.verilog.VerilogOutlineElementFactory.VerilogInstanceElement;
+import net.sourceforge.veditor.parser.verilog.VerilogParserReader;
 import net.sourceforge.veditor.semanticwarnings.SemanticWarnings;
 
 import org.eclipse.core.resources.IContainer;
@@ -83,7 +84,7 @@ public class OutlineDatabase {
 	 * @param exactly if true, find only exactly equal
 	 * @return List of elements matching the given name. list.length = 0 if not found
 	 */
-	public OutlineElement[] findTopLevelElements(String name, boolean exactly) {
+	synchronized public OutlineElement[] findTopLevelElements(String name, boolean exactly) {
 		ArrayList<OutlineElement> list = new ArrayList<OutlineElement>();
 		Iterator<OutlineContainer> iter = m_HierarchyDatabase.values()
 				.iterator();
@@ -379,16 +380,17 @@ public class OutlineDatabase {
 	 *            file to be scanned
 	 */
 	private void scanFile(IFile file) {
-		
 		try {
-			ParserReader reader = new ParserReader(file.getContents());
 			IParser parser=null;
 			if (file.getName().endsWith(".v")){
+				// VerilogParserReader handles verilog compiler directive
+				ParserReader reader = new VerilogParserReader(file.getContents(), file);
 				parser = ParserFactory.createVerilogParser(reader, m_Project,
-						file);				
+						file);
 			} else 	if (file.getName().endsWith(".vhd")){
+				ParserReader reader = new ParserReader(file.getContents());
 				parser = ParserFactory.createVhdlParser(reader, m_Project, file);
-			}			
+			}
 			//do we have parser
 			if(parser!= null){
 				parser.parse();				

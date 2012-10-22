@@ -7,6 +7,7 @@
  *
  * Contributors:
  *    Ali Ghorashi - initial API and implementation
+ *    KOBAYASHI Tadashi - add initialize method used from VerilogParserReader
  *******************************************************************************/
 package net.sourceforge.veditor.parser;
 
@@ -30,16 +31,24 @@ public class ParserReader extends Reader {
     protected boolean bStopReading;
     protected Reader reader;
     
+    public ParserReader() {
+    	bStopReading=false;
+    }
+
     public ParserReader(InputStream in) {
         reader =new InputStreamReader(in);
         bStopReading=false;
     }   
     
     public ParserReader(String text) {
-        reader =new StringReader(text);
-        bStopReading=false;
+    	initialize(text);
     } 
     
+    public void initialize(String text) {
+    	reader =new StringReader(text);
+        bStopReading=false;
+    }
+
     @Override
     public void close() throws IOException {
       reader.close();        
