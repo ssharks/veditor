@@ -139,6 +139,8 @@ public class VerilogOutlineElementFactory extends OutlineElementFactory {
 			}
 			m_LongName = String.format("%s :", name);
 			for (int i = 1; i < m_TypeParts.length; i++) {
+				if (i >= 4)
+					break; // remove last "cstyle"
 				m_LongName += String.format(" %s", m_TypeParts[i]);
 			}
 		}
@@ -147,7 +149,8 @@ public class VerilogOutlineElementFactory extends OutlineElementFactory {
 		public VerilogParameterElement(String name,String type,int startLine,int startCol,int endLine,int endCol,IFile file,boolean bVisible){
 			super(name,type,startLine,startCol,endLine,endCol,file,bVisible);
 			m_ImageName="$nl$/icons/P.gif";
-			m_LongName = String.format("%s : %s %s", name, m_TypeParts[0], GetValue());
+			String value = GetValue();
+			m_LongName = String.format("%s : %s %s", name, m_TypeParts[0], value);
 		}
 		
 		public boolean isLocal() {
@@ -155,8 +158,8 @@ public class VerilogOutlineElementFactory extends OutlineElementFactory {
 		}
 		
 		public String GetValue(){
-			if(m_TypeParts.length > 1)
-				return m_TypeParts[1];			
+			if(m_TypeParts.length > 3)
+				return m_TypeParts[3];			
 			else
 				return "";
 		}
