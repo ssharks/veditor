@@ -107,12 +107,12 @@ public class Expression {
 		int width;
 		if (idx < 0) {
 			width = 32;
-			setValue(Integer.parseInt(image));
+			setValue(parseInt(image, 10));
 		} else {
 			if (idx == 0)
 				width = 32;
 			else
-				width = Integer.parseInt(image.substring(0, idx));
+				width = parseInt(image.substring(0, idx), 10);
 			char rx = image.charAt(idx + 1);
 			int radix = 10;
 			switch (rx) {
@@ -130,12 +130,17 @@ public class Expression {
 				break;
 			}
 			try {
-				setValue(Integer.parseInt(image.substring(idx + 2), radix));
+				setValue(parseInt(image.substring(idx + 2), radix));
 			} catch (NumberFormatException e) {
 				valid = false;
 			}
 		}
 		setWidth(width);
+	}
+
+	private static int parseInt(String str, int radix) {
+		str = str.replace("_", ""); // Verilog allows "_" in integer literal
+		return Integer.parseInt(str, radix);
 	}
 
 	public String toString() {
