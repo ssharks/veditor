@@ -13,8 +13,6 @@ package net.sourceforge.veditor.preference;
 import net.sourceforge.veditor.VerilogPlugin;
 
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
-import org.eclipse.core.runtime.preferences.ConfigurationScope;
-import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jface.preference.IPreferenceStore;
 
 public class PreferenceInitializer extends AbstractPreferenceInitializer
@@ -41,7 +39,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer
 	
 	public void initializeDefaultPreferences()
 	{	
-	    //IEclipsePreferences preferences = ConfigurationScope.INSTANCE.getNode(VerilogPlugin.ID);
+		//IEclipsePreferences preferences = ConfigurationScope.INSTANCE.getNode(VerilogPlugin.ID);
 		IPreferenceStore preferences = VerilogPlugin.getStore();
 	
 		setDefaultAttr(preferences, PreferenceStrings.DOXGEN_COMMENT, "64,64,128");
@@ -54,26 +52,26 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer
 		setDefaultAttr(preferences, PreferenceStrings.TYPES, "64,64,255");
 		setDefaultAttr(preferences, PreferenceStrings.AUTO_TASKS, "127,159,191",true,true);
 
-		preferences.setValue(PreferenceStrings.MODULE_PARAMETERS, false);
-		preferences.setValue(PreferenceStrings.ENABLE_SCAN_PROJECT, true);
-		preferences.setValue(PreferenceStrings.MAX_PARSE_LINES, "50000");
-		preferences.setValue(PreferenceStrings.MAX_PARSE_TIME, "2000");
-		preferences.setValue(PreferenceStrings.SORT_OUTLINE, false);
-		preferences.setValue(PreferenceStrings.FILTER_SINGALS_IN_OUTLINE, false);
-		preferences.setValue(PreferenceStrings.FILTER_PORTS_IN_OUTLINE, false);
+		preferences.setDefault(PreferenceStrings.MODULE_PARAMETERS, false);
+		preferences.setDefault(PreferenceStrings.ENABLE_SCAN_PROJECT, true);
+		preferences.setDefault(PreferenceStrings.MAX_PARSE_LINES, "50000");
+		preferences.setDefault(PreferenceStrings.MAX_PARSE_TIME, "2000");
+		preferences.setDefault(PreferenceStrings.SORT_OUTLINE, false);
+		preferences.setDefault(PreferenceStrings.FILTER_SINGALS_IN_OUTLINE, false);
+		preferences.setDefault(PreferenceStrings.FILTER_PORTS_IN_OUTLINE, false);
 		
-		preferences.setValue(PreferenceStrings.SAVE_BEFORE_COMPILE,true);
-		preferences.setValue(PreferenceStrings.COMPILE_COMMAND, "vcom %p%f");
-		preferences.setValue(PreferenceStrings.SYNTH_COMMAND, "vcom -check_synthesis %p%f");
-		preferences.setValue(PreferenceStrings.COMPILE_FOLDER, "simulation");
+		preferences.setDefault(PreferenceStrings.SAVE_BEFORE_COMPILE,true);
+		preferences.setDefault(PreferenceStrings.COMPILE_COMMAND, "vcom %p%f");
+		preferences.setDefault(PreferenceStrings.SYNTH_COMMAND, "vcom -check_synthesis %p%f");
+		preferences.setDefault(PreferenceStrings.COMPILE_FOLDER, "simulation");
 		
-		preferences.setValue(PreferenceStrings.ERROR_PARSER, "1\n");
+		preferences.setDefault(PreferenceStrings.ERROR_PARSER, "1\n");
 		
-		preferences.setValue(PreferenceStrings.INDENT_TYPE,PreferenceStrings.INDENT_SPACE);
-		preferences.setValue(PreferenceStrings.INDENT_SIZE, PreferenceStrings.INDENT_SIZE_4);
-		preferences.setValue(PreferenceStrings.NO_SPACE_IN_BRACKET, true);
-		preferences.setValue(PreferenceStrings.PAD_OPERATORS, true);
-		preferences.setValue(PreferenceStrings.INDENT_LIBRARY, false);
+		preferences.setDefault(PreferenceStrings.INDENT_TYPE,PreferenceStrings.INDENT_SPACE);
+		preferences.setDefault(PreferenceStrings.INDENT_SIZE, PreferenceStrings.INDENT_SIZE_4);
+		preferences.setDefault(PreferenceStrings.NO_SPACE_IN_BRACKET, true);
+		preferences.setDefault(PreferenceStrings.PAD_OPERATORS, true);
+		preferences.setDefault(PreferenceStrings.INDENT_LIBRARY, false);
 		setDefaultStyleSpace(preferences);
 	}
 	
@@ -86,17 +84,17 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer
 	private void setDefaultAttr(IPreferenceStore preferences, String name,
 			String color, boolean bold)
 	{
-		preferences.setValue("Color." + name, color);
-		preferences.setValue("Bold." + name, bold);
-		preferences.setValue("Italic." + name, false);
+		preferences.setDefault("Color." + name, color);
+		preferences.setDefault("Bold." + name, bold);
+		preferences.setDefault("Italic." + name, false);
 	}
 	
 	private void setDefaultAttr(IPreferenceStore preferences, String name,
             String color, boolean bold,boolean italic)
     {
-        preferences.setValue("Color." + name, color);
-        preferences.setValue("Bold." + name, bold);
-        preferences.setValue("Italic." + name, italic);
+        preferences.setDefault("Color." + name, color);
+        preferences.setDefault("Bold." + name, bold);
+        preferences.setDefault("Italic." + name, italic);
     }
 	
 	private void setDefaultStyleSpace(IPreferenceStore preferences)
@@ -127,7 +125,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer
 		for (int i = 0; i < values.length; i++)
 		{
 			boolean flag = ((Boolean)values[i][1]).booleanValue();
-			preferences.setValue(values[i][0].toString(), flag);
+			preferences.setDefault(values[i][0].toString(), flag);
 		}
 	}
 }
