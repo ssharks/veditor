@@ -19,48 +19,77 @@ public class VariableStore {
 	public static class Symbol {
 		private String name;
 		private int line;
-		private String type;
-		private int width;
-		private int value;
-		private boolean assignd;
-		private boolean used;
+		private String[] types;
+		private int width = 1;
+		private int dimemsion = 0;
+		private int value = 0;
+		private boolean assignd = false;
+		private boolean used = false;
 
-		Symbol(String name, int line, String type, int width, int value) {
+		Symbol(String name, int line, String[] types) {
 			this.name = name;
 			this.line = line;
-			this.type = type;
-			this.width = width;
-			this.value = value;
-			this.assignd = false;
-			this.used = false;
-			
-			if (isParameter()) {
-				this.assignd = true;
-			}
+			this.types = types;
 		}
 
 		public String getName() {
 			return name;
 		}
-		
+
 		public int getLine() {
 			return line;
 		}
 
-		public String getType() {
-			return type;
+		public String[] getTypes() {
+			return types;
 		}
 		
 		public boolean isParameter() {
-			return type.startsWith("parameter") || type.startsWith("localparam");
+			return types[0].equals("parameter")
+					|| types[0].equals("localparam");
 		}
 		
+		public boolean isVariable() {
+			return types[0].equals("variable") || types[0].equals("port");
+		}
+		
+		public boolean isTask() {
+			return types[0].equals("task");
+		}
+		
+		public boolean isFunction() {
+			return types[0].equals("function");
+		}
+
 		public boolean containsType(String word) {
-			return type.contains(word);
+			for (int i = 0; i < types.length; i++) {
+				if (types[i].contains(word))
+					return true;
+			}
+			return false;
+		}
+
+		public void setWidth(String bitRange) {
+			String[] bit = bitRange.split("[:\\[\\]]");
+			if (bit.length >= 3) {
+				width = Integer.parseInt(bit[1]) - Integer.parseInt(bit[2]) + 1;
+			}
 		}
 		
 		public int getWidth() {
 			return width;
+		}
+		
+		public void setDimemsion(int dimemsion) {
+			this.dimemsion = dimemsion;
+		}
+
+		public int getDimemsion() {
+			return dimemsion;
+		}
+
+		public void setValue(int value) {
+			this.value = value;
 		}
 
 		public int getValue() {
@@ -84,7 +113,6 @@ public class VariableStore {
 		}
 
 		public void addModifier(String mod) {
-			String[] types = type.split("#");
 			if (types[0].equals("port")) {
 				types[2] = mod + " ";
 			} else {
@@ -99,39 +127,40 @@ public class VariableStore {
 		symbols = new HashMap<String, Symbol>();
 	}
 
-	public boolean addSymbol(String name, int line, String type, String bitRange) {
-		return addSymbol(name, line, type, bitRange, 0);
+	public Symbol addSymbol(String name, int line, String[] types,
+			String bitRange) {
+		return addSymbol(name, line, types, bitRange, 0);
 	}
 
-	public boolean addSymbol(String name, int line, String type, String bitRange,
-			int value) {
+	public Symbol addSymbol(String name, int line, String[] types,
+			String bitRange, int dim) {
 		if (symbols.containsKey(name)) {
-			return false; // redefinition error
+			return null; // redefinition error
 		} else {
-			int width = 1;
-			String[] bit = bitRange.split("[:\\[\\]]");
-			if (bit.length >= 3) {
-				width = Integer.parseInt(bit[1]) - Integer.parseInt(bit[2]);
-			}
-			symbols.put(name, new Symbol(name, line, type, width, value));
-			return true;
+			Symbol sym = new Symbol(name, line, types);
+			sym.setWidth(bitRange);
+			sym.setDimemsion(dim);
+			symbols.put(name, sym);
+			return sym;
 		}
 	}
 
-	public Symbol addAssignedSymbol(String name) {
+	public Symbol addAssignedVariable(String name) {
 		Symbol sym = symbols.get(name);
-		if (sym != null) {
+		if (sym != null && sym.isVariable()) {
 			sym.setAssignd();
+			return sym;
 		}
-		return sym;
+		return null;
 	}
 
-	public Symbol addUsedSymbol(String name) {
+	public Symbol addUsedVariable(String name) {
 		Symbol sym = symbols.get(name);
-		if (sym != null) {
+		if (sym != null && (sym.isParameter() || sym.isVariable())) {
 			sym.setUsed();
+			return sym;
 		}
-		return sym;
+		return null;
 	}
 
 	public Symbol findSymbol(String name) {

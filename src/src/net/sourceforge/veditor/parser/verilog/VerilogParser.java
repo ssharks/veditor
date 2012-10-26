@@ -38,10 +38,17 @@ public class VerilogParser extends VerilogParserCore implements IParser
 {
 	private static final String DUPLICATE_PARAM = "Duplicate parameter %s";
 	private static final String DUPLICATE_SIGNAL = "Duplicate signal %s";
+	private static final String DUPLICATE_TASK = "Duplicate task %s";
+	private static final String DUPLICATE_FUNCTION = "Duplicate function %s";
 	private static final String CANNOT_RESOLVED = "%s cannot be resolved to a signal or parameter";
+	private static final String CANNOT_RESOLVED_TASK = "%s cannot be resolved to a task";
+	private static final String CANNOT_RESOLVED_FUNCTION = "%s cannot be resolved to a function";
 	private static final String NOT_ASSIGNED_AND_USED = "The signal %s is not assigned and used";
 	private static final String NOT_USED = "The value of %s is not used";
+	private static final String NOT_USED_TASK = "The task %s is not used";
+	private static final String NOT_USED_FUNCTION = "The function %s is not used";
 	private static final String NOT_ASSIGNED = "The signal %s is not assigned";
+	private static final String ASSIGN_WIDTH_MISMATCH = "Assignment bit width mismatch: %s";
 	
 	private IFile m_File;
 	private ParserReader m_Reader;
@@ -57,7 +64,7 @@ public class VerilogParser extends VerilogParserCore implements IParser
 		m_Reader = reader;
 		m_File = file;
 		m_OutlineContainer = null;
-		
+
 		// if project == null, the context scanning is running
 		// no update outline and error markers 
 
@@ -84,8 +91,85 @@ public class VerilogParser extends VerilogParserCore implements IParser
 			variableStore = new VariableStore();
 		}
 		if (m_OutlineContainer != null) {
-			m_OutlineContainer.beginElement(name, type, begin.beginLine, begin.beginColumn, m_File,
-					m_OutlineElementFactory);
+			int line = begin.beginLine;
+			m_OutlineContainer.beginElement(name, type, line,
+					begin.beginColumn, m_File, m_OutlineElementFactory);
+			String[] types = type.split("#");
+			if (types[0].equals("parameter") || types[0].equals("localparam")) {
+				String bitRange = (types.length > 2) ? types[2] : "";
+				int value = (types.length > 3) ? Integer.parseInt(types[3]) : 0;
+				if (bitRange.equals(""))
+					bitRange = "[31:0]";
+				VariableStore.Symbol ref;
+				ref = variableStore.addSymbol(name, line, types, bitRange);
+				if (ref == null) {
+					warning(line, DUPLICATE_PARAM, name);
+				} else {
+					ref.setValue(value);
+					ref.setAssignd();
+				}
+			} else if (types[0].equals("task")) {
+				addTask(name, line, types);
+			} else if (types[0].equals("function")) {
+				addFunciton(name, line, types);
+			} else {
+				addVariable(name, line, types);
+			}
+		}
+	}
+
+	private void addTask(String name, int line, String[] types) {
+		VariableStore.Symbol ref = variableStore.findSymbol(name);
+		if (ref == null) {
+			ref = variableStore.addSymbol(name, line, types, "");
+		} else {
+			if (ref.isTask() == false || ref.isAssignd()) {
+				warning(line, DUPLICATE_TASK, name);
+				return;
+			}
+		}
+		ref.setAssignd();
+	}
+
+	private void addFunciton(String name, int line, String[] types) {
+		String bitRange = (types.length > 1) ? types[1] : "";
+		VariableStore.Symbol ref = variableStore.findSymbol(name);
+		if (ref == null) {
+			ref = variableStore.addSymbol(name, line, types, bitRange);
+		} else {
+			if (ref.isFunction() == false || ref.isAssignd()) {
+				warning(line, DUPLICATE_FUNCTION, name);
+				return;
+			}
+			ref.setWidth(bitRange);
+		}
+		ref.setAssignd();
+	}
+
+	private void addVariable(String name, int line, String[] types) {
+		String bitRange = null;
+		int dim = 0;
+		if (types[0].equals("variable")) {
+			if (types[1].contains("integer"))
+				bitRange = "[31:0]";
+			else
+				bitRange = (types.length > 2) ? types[2] : "";
+			dim = (types.length > 3) ? Integer.parseInt(types[3]) : 0;
+		} else if (types[0].equals("port")) {
+			bitRange = (types.length > 3) ? types[3] : "";
+		}
+		if (bitRange != null) {
+			if (variableStore.addSymbol(name, line, types, bitRange, dim) == null) {
+				// c-style port declaration can add reg or wire modifiers.
+				if (types[0].equals("variable")) {
+					VariableStore.Symbol ref = variableStore.findSymbol(name);
+					if (ref.containsType("cstyle")) {
+						ref.addModifier(types[1]);
+						return;
+					}
+				}
+				warning(line, DUPLICATE_SIGNAL, name);
+			}
 		}
 	}
 
@@ -95,38 +179,8 @@ public class VerilogParser extends VerilogParserCore implements IParser
 			checkVariables();
 		}
 		if (m_OutlineContainer != null) {
-			int line = end.endLine;
 			m_OutlineContainer.endElement(name, type, end.endLine,
 					end.endColumn, m_File);
-			String[] types = type.split("#");
-			String bitRange = null;
-			if (types[0].equals("parameter") || types[0].equals("localparam")) {
-				bitRange = (types.length > 2) ? types[2] : "";
-				int value = (types.length > 3) ? Integer.parseInt(types[3]) : 0;
-				if (bitRange.equals(""))
-					bitRange = "[31:0]";
-				if (variableStore.addSymbol(name, line, type, bitRange, value) == false) {
-					warning(end.endLine, String.format(DUPLICATE_PARAM, name));
-				}
-			} else {
-				if (types[0].equals("variable"))
-					bitRange = (types.length > 2) ? types[2] : "";
-				else if (types[0].equals("port"))
-					bitRange = (types.length > 3) ? types[3] : "";
-				if (bitRange != null) {
-					if (variableStore.addSymbol(name, line, type, bitRange) == false) {
-						// c-style port declaration can add reg or wire modifiers.
-						if (types[0].equals("variable")) {
-							VariableStore.Symbol ref = variableStore.findSymbol(name);
-							if (ref.getType().contains("cstyle")) {
-								ref.addModifier(types[1]);
-								return;
-							}
-						}
-						warning(end.endLine, String.format(DUPLICATE_SIGNAL, name));
-					}
-				}
-			}
 		}
 	}
 	
@@ -145,12 +199,22 @@ public class VerilogParser extends VerilogParserCore implements IParser
 			if (notUsed || notAssigned) {
 				int line = sym.getLine();
 				String name = sym.getName();
-				if (notUsed && notAssigned)
-					warning(line, String.format(NOT_ASSIGNED_AND_USED, name));
+				if (sym.isTask()) {
+					if (notUsed)
+						warning(line, NOT_USED_TASK, name);
+					else
+						warning(line, CANNOT_RESOLVED_TASK, name);
+				} else if (sym.isFunction()) {
+					if (notUsed)
+						warning(line, NOT_USED_FUNCTION, name);
+					else
+						warning(line, CANNOT_RESOLVED_FUNCTION, name);
+				} else if (notUsed && notAssigned)
+					warning(line, NOT_ASSIGNED_AND_USED, name);
 				else if (notUsed)
-					warning(line, String.format(NOT_USED, name));
+					warning(line, NOT_USED, name);
 				else
-					warning(line, String.format(NOT_ASSIGNED, name));
+					warning(line, NOT_ASSIGNED, name);
 			}
 		}
 	}
@@ -177,13 +241,17 @@ public class VerilogParser extends VerilogParserCore implements IParser
 			if (name.contains("."))
 				return new Expression();
 			int line = ident.beginLine;
-			VariableStore.Symbol sym = variableStore.addUsedSymbol(name);
+			VariableStore.Symbol sym = variableStore.addUsedVariable(name);
 			if (sym == null) {
-				warning(line, String.format(CANNOT_RESOLVED, name));
+				warning(line, CANNOT_RESOLVED, name);
 			} else {
 				int width = ident.getWidth();
-				if (width == 0)
+				if (width == 0) {
 					width = sym.getWidth(); // doesn't have bit range
+				} else if (width == 1) {
+					if (ident.getDimension() <= sym.getDimemsion())
+						width = sym.getWidth();
+				}
 				if (sym.isParameter()) {
 					return new Expression(width, sym.getValue());
 				} else {
@@ -196,25 +264,57 @@ public class VerilogParser extends VerilogParserCore implements IParser
 		return new Expression();
 	}
 
+	protected void taskReference(Identifier ident) {
+		if (m_OutlineContainer != null) {
+			String name = ident.image;
+			if (name.contains("."))
+				return;
+			int line = ident.beginLine;
+			VariableStore.Symbol sym = variableStore.findSymbol(name);
+			if (sym == null) {
+				String[] types = {"task"};
+				sym = variableStore.addSymbol(name, line, types, "");
+				sym.setUsed();
+			}
+		}
+	}
+
 	protected Expression functionReference(Identifier ident) {
-		// TODO Auto-generated method stub
-		return null;
+		if (m_OutlineContainer != null) {
+			String name = ident.image;
+			if (name.contains("."))
+				return new Expression();
+			int line = ident.beginLine;
+			VariableStore.Symbol sym = variableStore.findSymbol(name);
+			if (sym == null) {
+				String[] types = {"function", ""};
+				sym = variableStore.addSymbol(name, line, types, "");
+				sym.setUsed();
+			} else {
+				int width = ident.getWidth();
+				if (width == 0)
+					width = sym.getWidth(); // doesn't have bit range
+				Expression exp = new Expression(width);
+				exp.addReference(ident);
+				return exp;
+			}
+		}
+		return new Expression();
 	}
 
 	protected void variableAssignment(Identifier ident) {
 		if (m_OutlineContainer != null) {
 			String name = ident.image;
 			int line = ident.beginLine;
-			VariableStore.Symbol sym = variableStore.addAssignedSymbol(name);
+			VariableStore.Symbol sym = variableStore.addAssignedVariable(name);
 			if (sym == null) {
-				warning(line, String.format(CANNOT_RESOLVED, name));
+				warning(line, CANNOT_RESOLVED, name);
+			} else {
+				int width = ident.getWidth();
+				if (width <= 1 && sym.getDimemsion() >= ident.getDimension())
+					ident.setWidth(sym.getWidth());
 			}
 		}
-	}
-
-	protected void taskReference(Identifier ident) {
-		// TODO Auto-generated method stub
-		
 	}
 
 	protected void variableConnection(Expression arg, String module, String port) {
@@ -222,13 +322,29 @@ public class VerilogParser extends VerilogParserCore implements IParser
 			Identifier[] idents = arg.getReferences();
 			if (idents != null) {
 				for (Identifier ident : idents) {
-					variableStore.addAssignedSymbol(ident.image);
+					variableStore.addAssignedVariable(ident.image);
 				}
 			}
 		}
 	}
+	
+	protected void evaluateAssignment(Token asn, int lvalue, Expression exp) {
+		int width = exp.getWidth();
+		if (lvalue == 0 || width == 0)
+			return;
+		// TODO: should depend on preference.
+		// ignore assignment from integer constant 
+		if (width == 32 && exp.isValid())
+			return;
+		if (lvalue != width) {
+			String message = "from " + width + " to " + lvalue;
+			warning(asn.beginLine, ASSIGN_WIDTH_MISMATCH, message);
+		}
+	}
 
-	private void warning(int line, String message) {
+
+	private void warning(int line, String format, String arg) {
+		String message = String.format(format, arg);
 		VerilogPlugin.setWarningMarker(m_File, line, message);
 	}
 

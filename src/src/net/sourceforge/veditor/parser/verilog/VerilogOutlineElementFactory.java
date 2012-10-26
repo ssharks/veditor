@@ -165,15 +165,27 @@ public class VerilogOutlineElementFactory extends OutlineElementFactory {
 		}
 	}
 	public class VerilogSignalElement extends VerilogOutlineElement{		
-		public VerilogSignalElement(String name,String type,int startLine,int startCol,int endLine,int endCol,IFile file,boolean bVisible){
+		public VerilogSignalElement(String name, String type, int startLine, int startCol, int endLine, int endCol, IFile file, boolean bVisible) {
 			super(name, type, startLine, startCol, endLine, endCol, file, bVisible);
 			m_ImageName = "$nl$/icons/signal.gif";
 			m_LongName = String.format("%s :", name);
-			for (int i = 1; i < m_TypeParts.length; i++) {
+			int len = m_TypeParts.length;
+			boolean isVariable = m_TypeParts[0].equals("variable");
+			if (isVariable && len > 3) {
+				len = 3;
+			}
+			for (int i = 1; i < len; i++) {
 				m_LongName += String.format(" %s", m_TypeParts[i]);
 			}
-		}	
+			if (isVariable && m_TypeParts.length >= 3) {
+				int dim = Integer.parseInt(m_TypeParts[3]);
+				for (int i = 0; i < dim; i++) {
+					m_LongName += "[]";
+				}
+			}
+		}
 	}
+
 	public class VerilogWireElement extends VerilogSignalElement{		
 		public VerilogWireElement(String name,String type,int startLine,int startCol,int endLine,int endCol,IFile file,boolean bVisible){
 			super(name,type,startLine,startCol,endLine,endCol,file,bVisible);			

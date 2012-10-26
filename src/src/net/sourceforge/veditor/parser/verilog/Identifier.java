@@ -15,15 +15,26 @@ public class Identifier extends Token {
 	private static final long serialVersionUID = 1L;
 
 	private int width = 0;
+	private int dimension = 0;
 
 	public Identifier(Token ident) {
-		beginLine = ident.beginLine;
-		beginColumn = ident.beginColumn;
-		endLine = ident.endLine;
-		endColumn = ident.endColumn;
-		image = ident.image;
+		copy(ident);
 	}
-	
+
+	public void copy(Token src) {
+		beginLine = src.beginLine;
+		beginColumn = src.beginColumn;
+		endLine = src.endLine;
+		endColumn = src.endColumn;
+		image = src.image;
+	}
+
+	public void copy(Identifier src) {
+		copy((Token) src);
+		width = src.width;
+		dimension = src.dimension;
+	}
+
 	public int getWidth() {
 		return width;
 	}
@@ -32,4 +43,11 @@ public class Identifier extends Token {
 		this.width = width;
 	}
 
+	public int getDimension() {
+		return dimension;
+	}
+
+	public void setDimension(int dimension) {
+		this.dimension = dimension;
+	}
 }

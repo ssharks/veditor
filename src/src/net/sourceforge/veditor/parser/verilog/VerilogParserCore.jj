@@ -36,10 +36,11 @@ public abstract class VerilogParserCore
 
 	protected abstract Expression variableReference(Identifier ident);
 	protected abstract Expression functionReference(Identifier ident);
-
 	protected abstract void variableAssignment(Identifier ident);
 	protected abstract void taskReference(Identifier ident);
 	protected abstract void variableConnection(Expression arg, String module, String port);
+
+	protected abstract void evaluateAssignment(Token asn, int lvalue, Expression exp);
 }
 
 PARSER_END(VerilogParserCore)
@@ -232,7 +233,7 @@ TOKEN :
   | < OCTAL_LITERAL >
   | < BINARY_LITERAL >
     >
-| < #NUMBER_LITERAL : ([ "0"-"9" ])+ >
+| < #NUMBER_LITERAL : ([ "0"-"9", "_" ])+ >
 | < #DECIMAL_LITERAL : ([ "0"-"9" ])* "'" [ "d", "D" ] ([" ", "\t"])* ([ "0"-"9", "_", "x", "X", "z", "Z", "?"])* >
 | < #HEX_LITERAL : ([ "0"-"9" ])* "'" [ "h", "H" ] ([" ", "\t"])* ([ "0"-"9", "a"-"f", "A"-"F", "_", "x", "X", "z", "Z", "?" ])+ >
 | < #OCTAL_LITERAL : ([ "0"-"9" ])* "'" [ "o", "O" ] ([" ", "\t"])* ([ "0"-"7", "_", "x", "X", "z", "Z", "?" ])* >
@@ -328,6 +329,8 @@ void argument() :
 	Identifier name;
 	String modifier="";
 	String range;
+	Token asn;
+	Expression exp;
 }
 {
 		// C++ style argument
@@ -340,7 +343,13 @@ void argument() :
 			beginOutlineElement(name, types);
 			endOutlineElement(name, types);
 		}
-		[ "=" expression() { variableAssignment(name);} ]
+		[
+			asn = "=" exp = expression()
+			{
+				variableAssignment(name);
+				evaluateAssignment(asn, name.getWidth(), exp);
+			}
+		]
 	|
 		// C style argument, portDecl will add it to OutlineContainer
 		identifier()
@@ -408,6 +417,8 @@ String variableModifier() :
 void portDeclSingle(Token direction, String modifier, String range) :
 {
 	Identifier name;
+	Token asn;
+	Expression exp;
 }
 {
 	name = identifier()
@@ -416,7 +427,13 @@ void portDeclSingle(Token direction, String modifier, String range) :
 		beginOutlineElement(name, type);
 		endOutlineElement(name, type);
 	}
-	 [ "=" expression() { variableAssignment(name);} ]
+	[
+		asn = "=" exp = expression()
+		{
+			variableAssignment(name);
+			evaluateAssignment(asn, name.getWidth(), exp);
+		}
+	]
 }
  
 void primitiveInstance():
@@ -502,11 +519,23 @@ int portConnectSingle(String module, int count) :
 }
 
 void assign() :
-{}
+{
+	int width;
+	Token asn;
+	Expression exp;
+}
 {
 	"assign" [ strength() ] [ delay3() ]
-	lvalue() "=" expression()
-	( "," lvalue() "=" expression())*
+	width = lvalue() asn = "=" exp = expression()
+	{
+		evaluateAssignment(asn, width, exp);
+	}
+	(
+		"," width = lvalue() asn = "=" exp = expression()
+		{
+			evaluateAssignment(asn, width, exp);
+		}
+	)*
 	";"
 }
 
@@ -545,16 +574,25 @@ String variableType() :
 void variableDeclSingle(String mod, String range) :
 {
 	Identifier variable;
+	Token asn;
+	Expression exp;
+	int dimension = 0;
 }
 {
 	variable = identifier()
+	("[" constantExpression() ":" constantExpression() "]" { dimension++; })*
 	{
-		String type = "variable#"+mod+"#"+range;
+		String type = "variable#" + mod + "#" + range + "#" + dimension;
 		beginOutlineElement(variable, type);
 		endOutlineElement(variable, type);
 	}
-	("[" constantExpression() ":" constantExpression() "]")*
-	[ "=" expression() { variableAssignment(variable); } ]
+	[
+		asn = "=" exp = expression()
+		{
+			variableAssignment(variable);
+			evaluateAssignment(asn, variable.getWidth(), exp);
+		}
+	]
 }
 
 void delay3() :
@@ -623,20 +661,27 @@ void statement() :
 void assignOrTaskEnable() :
 {
 	Identifier ident;
+	Token asn;
+	Expression exp;
+	int width;
 }
 {
 	ident = complexIdentifier()
 	(
-		("="  | "<=") [delayOrEventControl() ] expression() ";"
+		(asn = "="  | asn = "<=") [delayOrEventControl() ] exp = expression() ";"
 		{
 			variableAssignment(ident);
+			evaluateAssignment(asn, ident.getWidth(), exp);
 		}
 	| 	[ "(" expression() ("," expression())* ")"] ";"
 		{
 			taskReference(ident);
 		}
 	)
-|	lvalueConcatenation() ("="  | "<=") [delayOrEventControl() ] expression() ";"
+|	width = lvalueConcatenation() (asn = "="  | asn = "<=") [delayOrEventControl() ] exp = expression() ";"
+	{
+		evaluateAssignment(asn, width, exp);	
+	}
 |	<SYSTEM_IDENT> [ "(" expression() ("," expression())* ")"] ";"
 }
 
@@ -677,11 +722,21 @@ void eventExpression():
 }
 
 void proceduralContinuousAssignment() :
-{}
 {
-	"assign" lvalue() "=" expression() ";"
+	int width;
+	Token asn;
+	Expression exp;
+}
+{
+	"assign" width = lvalue() asn = "=" exp = expression() ";"
+	{
+		evaluateAssignment(asn, width, exp);
+	}
 |	"deassign" lvalue() ";"
-|	"force"  lvalue() "=" expression() ";"
+|	"force"  width = lvalue() asn = "=" exp = expression() ";"
+	{
+		evaluateAssignment(asn, width, exp);
+	}
 |	"release" lvalue() ";"
 }
 
@@ -773,17 +828,18 @@ void taskDecl():
 
 void function() :
 {
+	String range;
 	Identifier name;
 	Token end ;
 }
 {
-	variableModifier() bitRange() name = identifier()
+	variableModifier() range = bitRange() name = identifier() ";"
 	{
-		beginOutlineElement(name, name.image, "function#");
+		beginOutlineElement(name, name.image, "function#" + range);
 	}
 	end = skipTo( ENDFUNCTION )
 	{		
-		endOutlineElement(end, name.image, "function#");
+		endOutlineElement(end, name.image, "function#" + range);
 		addCollapsible(name.beginLine, end.endLine);				
 	}
 }
@@ -794,7 +850,7 @@ void task() :
 	Token end ;
 }
 {
-	name = identifier()
+	name = identifier() ";"
 	{
 		beginOutlineElement(name, name.image, "task#");
 	}
@@ -867,22 +923,43 @@ void strength() :
 	"(" ( < STRENGTH > | < SUPPLY > ) ["," ( < STRENGTH > | < SUPPLY > ) ]")"
 }
 
-void lvalue() :
+int lvalue() :
 {
+	int width;
 	Identifier ident;
 }
 {
 	ident = complexIdentifier()
 	{
 		variableAssignment(ident);
+		return ident.getWidth();
 	}
-|	lvalueConcatenation()
+|	width = lvalueConcatenation()
+	{
+		return width;
+	}
 }
 
-void lvalueConcatenation() :
-{}
+int lvalueConcatenation() :
 {
-	"{" lvalue() ( "," lvalue() )* "}"
+	int width;
+	int ret;
+}
+{
+	"{" ret = lvalue()
+	(	","
+		width = lvalue()
+		{
+			if (width == 0 || ret == 0)
+				ret = 0;
+			else
+				ret += width;
+		}
+	)*
+	"}"
+	{
+		return ret;
+	}
 }
 
 Identifier identifier() :
@@ -1114,20 +1191,17 @@ Expression primary() :
 Identifier complexIdentifier() :
 {
 	Identifier ident, concat;
-	int width;
 }
 {
-	ident = identifier() width = bitOrAry()
-	{
-		ident.setWidth(width);
-	}
+	ident = identifier() bitOrAry(ident)
 	(
-		"." concat = identifier() width = bitOrAry()
+		"." concat = identifier() bitOrAry(concat)
 		{
 			ident.endLine = concat.endLine;
 			ident.endColumn = concat.endColumn;
 			ident.image += "." + concat.image;
-			ident.setWidth(width);
+			ident.setWidth(concat.getWidth());
+			ident.setDimension(concat.getDimension());
 		}
 	)*
 	{
@@ -1150,21 +1224,22 @@ Expression minTypMaxExpresstion() :
 	}
 }
 
-int bitOrAry() :
+void bitOrAry(Identifier ident) :
 {
 	int width = 0;
+	int dim = 0;
 	Expression msb, lsb;
 	Token token;
 }
 {
   	(
-		"[" msb = expression() { width = 1;}
+		"[" msb = expression() { width = 1;  dim++; }
 		[
 			( token = ":" | token = "+:" | token = "-:" ) lsb = expression()
 			{
 				if (token.image.equals(":")) {
 					if (msb.isValid() && lsb.isValid())
-						width = msb.intValue() - lsb.intValue();
+						width = msb.intValue() - lsb.intValue() + 1;
 					else
 						width = 0;
 				} else {
@@ -1178,7 +1253,8 @@ int bitOrAry() :
 		"]"
 	)*
 	{
-		return width;
+		ident.setWidth(width);
+		ident.setDimension(dim);
 	}
 }
 
@@ -1229,7 +1305,10 @@ Expression concatenation() :
 	[
 		( "," exp = expression()
 		{
-			width += exp.getWidth();
+			if (width == 0 || exp.getWidth() == 0)
+				width = 0;
+			else
+				width += exp.getWidth();
 			value = (value << width) | exp.intValue();
 			valid = valid && exp.isValid();
 			refs.addReference(exp);
