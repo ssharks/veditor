@@ -20,7 +20,11 @@ public class Operator {
 	}
 	
 	public Expression operate(Expression arg) {
-		int width = getWidth1(arg.getWidth());
+		int width;
+		if (image.equals("~") || image.equals("+") || image.equals("-"))
+			width = arg.getWidth();
+		else
+			width = 1;
 		
 		if (arg.isValid()) {
 			int value = getValue1(arg.intValue(), arg.getWidth());
@@ -31,7 +35,24 @@ public class Operator {
 	}
 	
 	public Expression operate(Expression arg1, Expression arg2) {
-		int width = getWidth2(arg1.getWidth(), arg2.getWidth());
+		String opLeft = "/ >> << ** >>> <<<";
+		String op1 = "== != === !== && || < <= > >=";
+		int width1 = arg1.getWidth();
+		int width2 = arg2.getWidth();
+
+		int width = 0;
+		if (image.equals("*"))
+			width = width1 + width2;
+		else if (image.equals("%"))
+			width = width2;
+		else if (opLeft.indexOf(image) >= 0)
+			width = width1;
+		else if (op1.indexOf(image) >= 0)
+			width = 1;
+		else if (width2 == 32 && arg2.isValid())
+			width = width1;
+		else
+			width = (width1 > width2) ? width1 : width2;
 		
 		if (arg1.isValid() && arg2.isValid()) {
 			int value = getValue2(arg1.intValue(), arg2.intValue());
@@ -41,13 +62,6 @@ public class Operator {
 		}
 	}
 
-	private int getWidth1(int width) {
-		if (image.equals("~") || image.equals("+") || image.equals("-"))
-			return width;
-		else
-			return 1;
-	}
-	
 	private int getValue1(int value1, int width1) {
 		if (image.equals("~"))
 			return ~value1;
@@ -86,17 +100,6 @@ public class Operator {
 			return ret ? 0 : 1;
 		}
 		return 0;
-	}
-
-	private int getWidth2(int width1, int width2) {
-		String op32 = "* / % >> << ** >>> <<<";
-		String op1 = "== != === !== && || < <= > >=";
-
-		if (op32.indexOf(image) >= 0)
-			return 32;
-		if (op1.indexOf(image) >= 0)
-			return 1;
-		return (width1 > width2) ? width1 : width2;
 	}
 
 	private int getValue2(int value1, int value2) {
