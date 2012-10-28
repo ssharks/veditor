@@ -15,7 +15,7 @@ import net.sourceforge.veditor.VerilogPlugin;
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.eclipse.jface.preference.IPreferenceStore;
 
-public class PreferenceInitializer extends AbstractPreferenceInitializer
+public class PreferenceInitializer extends AbstractPreferenceInitializer implements PreferenceStrings
 {
 
         
@@ -73,6 +73,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer
 		preferences.setDefault(PreferenceStrings.PAD_OPERATORS, true);
 		preferences.setDefault(PreferenceStrings.INDENT_LIBRARY, false);
 		setDefaultStyleSpace(preferences);
+		setDefaultWarning(preferences);
 	}
 	
 	private void setDefaultAttr(IPreferenceStore preferences, String name,
@@ -125,6 +126,21 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer
 		for (int i = 0; i < values.length; i++)
 		{
 			boolean flag = ((Boolean)values[i][1]).booleanValue();
+			preferences.setDefault(values[i][0].toString(), flag);
+		}
+	}
+	
+	private void setDefaultWarning(IPreferenceStore preferences) {
+		Object values[][] = new Object[][] {
+				{SEMANTIC_WARNING, true },
+				{WARNING_UNRESOLVED, true},
+				{WARNING_NO_USED_ASIGNED, true},
+				{WARNING_BIT_WIDTH, true},
+				{WARNING_INT_CONSTANT, false},
+				{WARNING_BLOCKING_ASSIGNMENT, true},
+				{WARNING_BLOCKING_ASSIGNMENT_IN_ALWAYS, false}};
+		for (int i = 0; i < values.length; i++) {
+			boolean flag = ((Boolean) values[i][1]).booleanValue();
 			preferences.setDefault(values[i][0].toString(), flag);
 		}
 	}

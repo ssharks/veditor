@@ -25,6 +25,7 @@ import net.sourceforge.veditor.parser.OutlineDatabase;
 import net.sourceforge.veditor.parser.OutlineElementFactory;
 import net.sourceforge.veditor.parser.OutlineContainer.Collapsible;
 import net.sourceforge.veditor.parser.ParserReader;
+import net.sourceforge.veditor.preference.PreferenceStrings;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
@@ -34,36 +35,52 @@ import org.eclipse.core.resources.IProject;
  * implementation class of VerilogParserCore<p/>
  * for separating definition from JavaCC code 
  */
-public class VerilogParser extends VerilogParserCore implements IParser
+public class VerilogParser extends VerilogParserCore implements IParser, PreferenceStrings
 {
+	// these are semantic error.
 	private static final String DUPLICATE_PARAM = "Duplicate parameter %s";
 	private static final String DUPLICATE_SIGNAL = "Duplicate signal %s";
 	private static final String DUPLICATE_TASK = "Duplicate task %s";
 	private static final String DUPLICATE_FUNCTION = "Duplicate function %s";
-	private static final String CANNOT_RESOLVED = "%s cannot be resolved to a signal or parameter";
 	private static final String CANNOT_RESOLVED_TASK = "%s cannot be resolved to a task";
 	private static final String CANNOT_RESOLVED_FUNCTION = "%s cannot be resolved to a function";
+	private static final String ASSIGN_WIRE = "The wire %s assign in initial or always block";
+	private static final String ASSIGN_REG = "The reg %s assign in assign statement";
+
+	// these are semantic warning.
+	private static final String CANNOT_RESOLVED_SIGNAL = "%s cannot be resolved to a signal or parameter";
 	private static final String NOT_ASSIGNED_AND_USED = "The signal %s is not assigned and used";
 	private static final String NOT_USED = "The value of %s is not used";
 	private static final String NOT_USED_TASK = "The task %s is not used";
 	private static final String NOT_USED_FUNCTION = "The function %s is not used";
 	private static final String NOT_ASSIGNED = "The signal %s is not assigned";
 	private static final String ASSIGN_WIDTH_MISMATCH = "Assignment bit width mismatch: %s";
+	private static final String BOTH_ASSIGNMENT = "Both blocking and non-blocking assinments in a initial or always block";
+	private static final String BLOCKING_ALWAYS = "Blocking assinments in always block";
+
+	private static final int NO_ASSIGN = 0;
+	private static final int NON_BLOCKING = 1;
+	private static final int BLOCKING = 2;
 	
 	private IFile m_File;
 	private ParserReader m_Reader;
 	private static OutlineElementFactory m_OutlineElementFactory = new VerilogOutlineElementFactory();
 	private OutlineContainer m_OutlineContainer;
 	private int m_Context;
+	private int blockContext;
+	private int blockStatus;
 	private Pattern[] taskTokenPattern;
 	private VariableStore variableStore;
-
+	
+	private Preferences preferences = new Preferences();
+	
 	public VerilogParser(ParserReader reader, IProject project, IFile file) {
 		super(reader);
 		m_Context = IParser.OUT_OF_MODULE;
 		m_Reader = reader;
 		m_File = file;
 		m_OutlineContainer = null;
+		blockContext = STATEMENT; // no check of block or assign statement
 
 		// if project == null, the context scanning is running
 		// no update outline and error markers 
@@ -150,7 +167,7 @@ public class VerilogParser extends VerilogParserCore implements IParser
 		String bitRange = null;
 		int dim = 0;
 		if (types[0].equals("variable")) {
-			if (types[1].contains("integer"))
+			if (types[1].contains("integer") || types[1].contains("genvar"))
 				bitRange = "[31:0]";
 			else
 				bitRange = (types.length > 2) ? types[2] : "";
@@ -200,21 +217,27 @@ public class VerilogParser extends VerilogParserCore implements IParser
 				int line = sym.getLine();
 				String name = sym.getName();
 				if (sym.isTask()) {
-					if (notUsed)
-						warning(line, NOT_USED_TASK, name);
-					else
+					if (notUsed) {
+						if (preferences.noUsed)
+							warning(line, NOT_USED_TASK, name);
+					} else {
 						warning(line, CANNOT_RESOLVED_TASK, name);
+					}
 				} else if (sym.isFunction()) {
-					if (notUsed)
-						warning(line, NOT_USED_FUNCTION, name);
-					else
+					if (notUsed) {
+						if (preferences.noUsed)
+							warning(line, NOT_USED_FUNCTION, name);
+					} else {
 						warning(line, CANNOT_RESOLVED_FUNCTION, name);
-				} else if (notUsed && notAssigned)
-					warning(line, NOT_ASSIGNED_AND_USED, name);
-				else if (notUsed)
-					warning(line, NOT_USED, name);
-				else
-					warning(line, NOT_ASSIGNED, name);
+					}
+				} else if (preferences.noUsed) {
+					if (notUsed && notAssigned)
+						warning(line, NOT_ASSIGNED_AND_USED, name);
+					else if (notUsed)
+						warning(line, NOT_USED, name);
+					else
+						warning(line, NOT_ASSIGNED, name);
+				}
 			}
 		}
 	}
@@ -227,12 +250,15 @@ public class VerilogParser extends VerilogParserCore implements IParser
 		}
 	}
 
-	protected void beginStatement() {
+	protected void begin(int mode) {
 		m_Context = IParser.IN_STATEMENT;
+		blockContext = mode;
+		blockStatus = NO_ASSIGN;
 	}
 
-	protected void endStatement() {
+	protected void end(int mode) {
 		m_Context = IParser.IN_MODULE;
+		blockContext = STATEMENT; // no check of block or assign statement
 	}
 	
 	protected Expression variableReference(Identifier ident) {
@@ -243,7 +269,8 @@ public class VerilogParser extends VerilogParserCore implements IParser
 			int line = ident.beginLine;
 			VariableStore.Symbol sym = variableStore.addUsedVariable(name);
 			if (sym == null) {
-				warning(line, CANNOT_RESOLVED, name);
+				if (preferences.unresolved)
+					warning(line, CANNOT_RESOLVED_SIGNAL, name);
 			} else {
 				int width = ident.getWidth();
 				if (width == 0) {
@@ -307,12 +334,19 @@ public class VerilogParser extends VerilogParserCore implements IParser
 			String name = ident.image;
 			int line = ident.beginLine;
 			VariableStore.Symbol sym = variableStore.addAssignedVariable(name);
-			if (sym == null) {
-				warning(line, CANNOT_RESOLVED, name);
+			if (sym == null || sym.isVariable() == false) {
+				if (preferences.unresolved)
+					warning(line, CANNOT_RESOLVED_SIGNAL, name);
 			} else {
 				int width = ident.getWidth();
 				if (width <= 1 && sym.getDimemsion() >= ident.getDimension())
 					ident.setWidth(sym.getWidth());
+				if (blockContext == ASSIGN_STMT && sym.isReg()) {
+					warning(line, ASSIGN_REG, name);
+				} else if ((blockContext == INITIAL_BLOCK || blockContext == ALWAYS_BLOCK)
+						&& sym.isReg() == false) {
+					warning(line, ASSIGN_WIRE, name);
+				}
 			}
 		}
 	}
@@ -329,23 +363,53 @@ public class VerilogParser extends VerilogParserCore implements IParser
 	}
 	
 	protected void evaluateAssignment(Token asn, int lvalue, Expression exp) {
-		int width = exp.getWidth();
-		if (lvalue == 0 || width == 0)
-			return;
-		// TODO: should depend on preference.
-		// ignore assignment from integer constant 
-		if (width == 32 && exp.isValid())
-			return;
-		if (lvalue != width) {
-			String message = "from " + width + " to " + lvalue;
-			warning(asn.beginLine, ASSIGN_WIDTH_MISMATCH, message);
+		if (m_OutlineContainer != null) {
+			int width = exp.getWidth();
+			if (lvalue == 0 || width == 0)
+				return;
+
+			if (blockContext == INITIAL_BLOCK || blockContext == ALWAYS_BLOCK) {
+				if (preferences.blocking) {
+					if (asn.image.equals("=")) {
+						if (blockStatus == NON_BLOCKING) {
+							warning(asn.beginLine, BOTH_ASSIGNMENT);
+						} else {
+							blockStatus = BLOCKING;
+						}
+					} else {
+						if (blockStatus == BLOCKING) {
+							warning(asn.beginLine, BOTH_ASSIGNMENT);
+						} else {
+							blockStatus = NON_BLOCKING;
+						}
+					}
+				}
+			}
+
+			if (blockContext == ALWAYS_BLOCK) {
+				if (preferences.blockingAlways && asn.image.equals("=")) {
+					warning(asn.beginLine, BLOCKING_ALWAYS);
+				}
+			}
+
+			if (preferences.intConst == false) {
+				if (width == 32 && exp.isValid())
+					return;
+			}
+			if (lvalue != width && preferences.bitWidth) {
+				String message = "from " + width + " to " + lvalue;
+				warning(asn.beginLine, ASSIGN_WIDTH_MISMATCH, message);
+			}
 		}
 	}
-
 
 	private void warning(int line, String format, String arg) {
 		String message = String.format(format, arg);
 		VerilogPlugin.setWarningMarker(m_File, line, message);
+	}
+
+	private void warning(int line, String format) {
+		VerilogPlugin.setWarningMarker(m_File, line, format);
 	}
 
 	public int getContext() {
@@ -366,8 +430,10 @@ public class VerilogParser extends VerilogParserCore implements IParser
 		} catch (IOException e) {			
 		}
 		
-		if (m_OutlineContainer != null)
+		if (m_OutlineContainer != null) {
 			VerilogPlugin.deleteMarkers(m_File);
+			preferences.updatePreferences();
+		}
 		try
 		{
 			//start by looking for modules
@@ -548,6 +614,28 @@ public class VerilogParser extends VerilogParserCore implements IParser
 	}
 	private int prevCommentLine;
 
+	// preferences
+	private static class Preferences {
+		public boolean unresolved;
+		public boolean noUsed;
+		public boolean bitWidth;
+		public boolean intConst;
+		public boolean blocking;
+		public boolean blockingAlways;
+
+		public void updatePreferences() {
+			unresolved = get(WARNING_UNRESOLVED);
+			noUsed = get(WARNING_NO_USED_ASIGNED);
+			bitWidth = get(WARNING_BIT_WIDTH);
+			intConst = get(WARNING_INT_CONSTANT);
+			blocking = get(WARNING_BLOCKING_ASSIGNMENT);
+			blocking = get(WARNING_BLOCKING_ASSIGNMENT_IN_ALWAYS);
+		}
+
+		private boolean get(String key) {
+			return VerilogPlugin.getPreferenceBoolean(key);
+		}
+	}
 }
 
 

@@ -53,12 +53,24 @@ public class VariableStore {
 			return types[0].equals("variable") || types[0].equals("port");
 		}
 		
+		public boolean isPort() {
+			return types[0].equals("port");
+		}
+		
 		public boolean isTask() {
 			return types[0].equals("task");
 		}
 		
 		public boolean isFunction() {
 			return types[0].equals("function");
+		}
+		
+		public boolean isReg() {
+			String modifier = isPort() ? types[2] : types[1];
+			if (modifier.contains("reg") || modifier.contains("integer"))
+				return true;
+			else
+				return false;
 		}
 
 		public boolean containsType(String word) {

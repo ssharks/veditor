@@ -20,26 +20,29 @@ package net.sourceforge.veditor.parser.verilog;
 
 public abstract class VerilogParserCore
 {
-	protected abstract void beginStatement();
-	protected abstract void endStatement();
+	public static final int STATEMENT = 0;
+	public static final int ASSIGN_STMT = 1;
+	public static final int INITIAL_BLOCK = 2;
+	public static final int ALWAYS_BLOCK = 3;
+
+	protected abstract void begin(int mode);
+	protected abstract void end(int mode);
 	protected abstract void beginOutlineElement(Token begin, String name, String type);
 	protected abstract void endOutlineElement(Token end, String name, String type);
-	protected abstract void addCollapsible(int startLine,int endLine);
 
 	protected void beginOutlineElement(Token begin, String type) {
 		beginOutlineElement(begin, begin.image, type);
 	}
-
 	protected void endOutlineElement(Token end, String type) {
 		endOutlineElement(end, end.image, type);
 	}
 
+	protected abstract void addCollapsible(int startLine,int endLine);
 	protected abstract Expression variableReference(Identifier ident);
 	protected abstract Expression functionReference(Identifier ident);
 	protected abstract void variableAssignment(Identifier ident);
 	protected abstract void taskReference(Identifier ident);
 	protected abstract void variableConnection(Expression arg, String module, String port);
-
 	protected abstract void evaluateAssignment(Token asn, int lvalue, Expression exp);
 }
 
@@ -360,7 +363,7 @@ void moduleItem() :
 {
 	moduleOrGenerateItem()
 | 	portDecl()
-|	<SPECIFY> {beginStatement();} skipTo( ENDSPECIFY ) {endStatement();}
+|	<SPECIFY> {begin(STATEMENT);} skipTo( ENDSPECIFY ) {end(STATEMENT);}
 |	generate()
 |	<PROPERTY> skipTo(ENDPROPERTY)
 }
@@ -372,7 +375,7 @@ void moduleOrGenerateItem() :
 |	parameterDecl()
 |	taskDecl()
 |	functionDecl()
-| <DEFPARAM> {beginStatement();} skipTo( EOS ) {endStatement();}
+| <DEFPARAM> {begin(STATEMENT);} skipTo( EOS ) {end(STATEMENT);}
 |  assign()
 |  primitiveInstance()
 |  LOOKAHEAD(3) moduleInstance()
@@ -391,11 +394,11 @@ void portDecl() :
 {
 	( direction=<INPUT>  | direction=<OUTPUT>  | direction=<INOUT> )
 	modifier = variableModifier()
-	{ beginStatement(); }
+	{ begin(STATEMENT); }
 	range = bitRange()
 	portDeclSingle(direction, modifier, range)
 	("," portDeclSingle(direction, modifier, range))* ";"
-	{ endStatement(); }
+	{ end(STATEMENT); }
 }
 
 String variableModifier() :
@@ -461,7 +464,7 @@ void moduleInstance():
 }
 { 
 	module = identifier() 
-	{ beginStatement(); }
+	{ begin(STATEMENT); }
 	
 	(   //module instantiation
 		(   [ "#" ( identifier() | number() | "(" parameterConnect() ")" ) ]
@@ -479,7 +482,7 @@ void moduleInstance():
 		 	iend = ";"
 		 )
 	)
-	{ endStatement(); }
+	{ end(STATEMENT); }
 }
 
 void parameterConnect() :
@@ -525,7 +528,9 @@ void assign() :
 	Expression exp;
 }
 {
-	"assign" [ strength() ] [ delay3() ]
+	"assign"
+	{begin(ASSIGN_STMT); }
+	[ strength() ] [ delay3() ]
 	width = lvalue() asn = "=" exp = expression()
 	{
 		evaluateAssignment(asn, width, exp);
@@ -537,6 +542,7 @@ void assign() :
 		}
 	)*
 	";"
+	{end(ASSIGN_STMT); }
 }
 
 void variableDecl():
@@ -547,13 +553,13 @@ void variableDecl():
 }
 {
 	type = variableType()
-	{ beginStatement(); }
+	{ begin(STATEMENT); }
 	[ strength() ]
 	[ "signed" 	{ type += " signed";}	]
 	range = bitRange()
 	[ delay3() ]
 	variableDeclSingle(type, range) ( "," variableDeclSingle(type, range) )* ";"
-	{ endStatement(); }
+	{ end(STATEMENT); }
 }
 
 String variableType() :
@@ -628,11 +634,17 @@ void initialAlways():
 {
 	( start = <INITIAL> | start = <ALWAYS> )
 	{
-		beginStatement();
+		if (start.image.equals("initial"))
+			begin(INITIAL_BLOCK);
+		else
+			begin(ALWAYS_BLOCK);
 	} 
 	statement() 
 	{
-		endStatement();
+		if (start.image.equals("initial"))
+			end(INITIAL_BLOCK);
+		else
+			end(ALWAYS_BLOCK);
 		addCollapsible(start.beginLine,token.endLine);
 	}
 }
@@ -817,13 +829,13 @@ void blockItem():
 void functionDecl():
 {}
 {
-	<FUNCTION> {beginStatement();} function() {endStatement();}
+	<FUNCTION> {begin(STATEMENT);} function() {end(STATEMENT);}
 }
 
 void taskDecl():
 {}
 {
-	<TASK> {beginStatement();} task() {endStatement();}
+	<TASK> {begin(STATEMENT);} task() {end(STATEMENT);}
 }
 
 void function() :

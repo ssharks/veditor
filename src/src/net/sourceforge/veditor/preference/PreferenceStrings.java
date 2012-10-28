@@ -14,7 +14,7 @@ package net.sourceforge.veditor.preference;
  * @author gho18481
  *
  */
-public class PreferenceStrings {
+public interface PreferenceStrings {
     public static final String INDENT_TYPE = "Style.indent";
     public static final String INDENT_SPACE = "Space";
     public static final String INDENT_TAB = "Tab";
@@ -81,5 +81,11 @@ public class PreferenceStrings {
    public static final String COMPILE_FOLDER="Compile.Folder";
    public static final String ERROR_PARSER="ErrorParser";
     
-    
+	public static final String SEMANTIC_WARNING = "Warning";
+	public static final String WARNING_UNRESOLVED = "Warning.unresolvedSignal";
+	public static final String WARNING_NO_USED_ASIGNED = "Warning.noUsedAsigned";
+	public static final String WARNING_BIT_WIDTH = "Warning.bitWidth";
+	public static final String WARNING_INT_CONSTANT = "Warning.integerConstant";
+	public static final String WARNING_BLOCKING_ASSIGNMENT = "Warning.blockingAssignment";
+	public static final String WARNING_BLOCKING_ASSIGNMENT_IN_ALWAYS = "Warning.blockingAssignmentInAlways";
 }

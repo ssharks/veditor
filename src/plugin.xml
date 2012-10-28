@@ -105,6 +105,24 @@
             class="net.sourceforge.veditor.preference.VhdlCodeStylePreferencePage"
             name="VHDL Code Style">
       </page>
+      <page
+            category="net.sourceforge.veditor.preference.TopPreferencePage"
+            id="net.sourceforge.veditor.preference.WarningPreferencePage"
+            class="net.sourceforge.veditor.preference.WarningPreferencePage"
+            name="Warning">
+      </page>
+      <page
+            category="net.sourceforge.veditor.preference.WarningPreferencePage"
+            id="net.sourceforge.veditor.preference.VerilogWarningPreferencePage"
+            class="net.sourceforge.veditor.preference.VerilogWarningPreferencePage"
+            name="Verilog Warning">
+      </page>
+      <page
+            category="net.sourceforge.veditor.preference.WarningPreferencePage"
+            id="net.sourceforge.veditor.preference.VhdlWarningPreferencePage"
+            class="net.sourceforge.veditor.preference.VhdlWarningPreferencePage"
+            name="VHDL Warning">
+      </page>
    </extension>
 
       <extension
@@ -439,6 +457,53 @@
       <persistent value="true"/>
       <super type="org.eclipse.core.resources.problemmarker"/>
     </extension>
+
+   <extension
+         id="net.sourceforge.veditor.annotations"
+         point="org.eclipse.ui.editors.markerAnnotationSpecification">
+      <specification
+            annotationType="net.sourceforge.veditor.occurrences"
+            label="%OccurrenceAnnotation.label"
+            icon="$nl$/icons/full/obj16/searchm_obj.gif"
+            textPreferenceKey="occurrenceIndication"
+            textPreferenceValue="false"
+            highlightPreferenceKey="occurrenceHighlighting"
+            highlightPreferenceValue="true"
+            contributesToHeader="false"
+            overviewRulerPreferenceKey="occurrenceIndicationInOverviewRuler"
+            overviewRulerPreferenceValue="true"
+            verticalRulerPreferenceKey="occurrenceIndicationInVerticalRuler"
+            verticalRulerPreferenceValue="false"
+            colorPreferenceKey="occurrenceIndicationColor"
+            colorPreferenceValue="212,212,212"
+            presentationLayer="4"
+            showInNextPrevDropdownToolbarActionKey="showOccurrenceInNextPrevDropdownToolbarAction"
+            showInNextPrevDropdownToolbarAction="true"
+            isGoToNextNavigationTargetKey="isOccurrenceGoToNextNavigationTarget"
+            isGoToNextNavigationTarget="false"
+            isGoToPreviousNavigationTargetKey="isOccurrenceGoToPreviousNavigationTarget"
+            isGoToPreviousNavigationTarget="false"
+            textStylePreferenceKey="occurrenceTextStyle"
+            textStylePreferenceValue="NONE">
+      </specification>
+      <specification
+            annotationType="net.sourceforge.veditor.occurrences.write"
+            label="%WriteOccurrenceAnnotation.label"
+            textPreferenceKey="writeOccurrenceIndication"
+            textPreferenceValue="false"
+            highlightPreferenceKey="writeOccurrenceHighlighting"
+            highlightPreferenceValue="true"
+            overviewRulerPreferenceKey="writeOccurrenceIndicationInOverviewRuler"
+            overviewRulerPreferenceValue="true"
+            verticalRulerPreferenceKey="writeOccurrenceIndicationInVerticalRuler"
+            verticalRulerPreferenceValue="false"
+            colorPreferenceKey="writeOccurrenceIndicationColor"
+            colorPreferenceValue="240,216,168"
+            presentationLayer="4"
+            textStylePreferenceKey="writeOccurrenceTextStyle"
+            textStylePreferenceValue="NONE">
+      </specification>
+   </extension>
 
 </plugin>
 
