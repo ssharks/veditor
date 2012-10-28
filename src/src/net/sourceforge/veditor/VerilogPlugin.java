@@ -159,7 +159,7 @@ public class VerilogPlugin extends AbstractUIPlugin
 			return getStore().getBoolean(key);
 		}
 		else{
-			return getStore().getBoolean(key);
+			return getStore().getDefaultBoolean(key);
 		}
 	}
 	
@@ -301,7 +301,8 @@ public class VerilogPlugin extends AbstractUIPlugin
 	public static void setWarningMarker(IResource file, int lineNumber,
 			String msg)
 	{
-		setProblemMarker(file, IMarker.SEVERITY_WARNING, lineNumber, msg);
+		if (getPreferenceBoolean("Warning"))
+			setProblemMarker(file, IMarker.SEVERITY_WARNING, lineNumber, msg);
 	}
 
 	public static void setInfoMarker(IResource file, int lineNumber, String msg)
