@@ -629,7 +629,7 @@ public class VerilogParser extends VerilogParserCore implements IParser, Prefere
 			bitWidth = get(WARNING_BIT_WIDTH);
 			intConst = get(WARNING_INT_CONSTANT);
 			blocking = get(WARNING_BLOCKING_ASSIGNMENT);
-			blocking = get(WARNING_BLOCKING_ASSIGNMENT_IN_ALWAYS);
+			blockingAlways = get(WARNING_BLOCKING_ASSIGNMENT_IN_ALWAYS);
 		}
 
 		private boolean get(String key) {
