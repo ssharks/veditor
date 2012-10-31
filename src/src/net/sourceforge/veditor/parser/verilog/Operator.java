@@ -35,19 +35,20 @@ public class Operator {
 	}
 	
 	public Expression operate(Expression arg1, Expression arg2) {
-		String opLeft = "/ >> << ** >>> <<<";
-		String op1 = "== != === !== && || < <= > >=";
+		String opLeft = " / >> << ** >>> <<< ";
+		String op1 = " == != === !== && || < <= > >= ";
 		int width1 = arg1.getWidth();
 		int width2 = arg2.getWidth();
 
+		String key = " " + image + " ";
 		int width = 0;
 		if (image.equals("*"))
 			width = width1 + width2;
 		else if (image.equals("%"))
 			width = width2;
-		else if (opLeft.indexOf(image) >= 0)
+		else if (opLeft.contains(key))
 			width = width1;
-		else if (op1.indexOf(image) >= 0)
+		else if (op1.contains(key))
 			width = 1;
 		else if (width2 == 32 && arg2.isValid())
 			width = width1;
