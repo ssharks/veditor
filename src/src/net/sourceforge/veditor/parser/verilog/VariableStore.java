@@ -66,7 +66,10 @@ public class VariableStore {
 		}
 		
 		public boolean isReg() {
-			String modifier = isPort() ? types[2] : types[1];
+			int idx = isPort() ? 2 : 1;
+			if (idx >= types.length)
+				return false;
+			String modifier = types[idx];
 			if (modifier.contains("reg") || modifier.contains("integer"))
 				return true;
 			else
