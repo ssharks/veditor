@@ -557,6 +557,8 @@ public class VerilogFormatAction extends AbstractAction {
 			while (pos < src.length())
 			{
 				char c = src.charAt(pos);
+				if (c == '\n' || c == '\r')
+					break;
 				buf.append(c);
 				pos++;
 				if (c == '\"')
