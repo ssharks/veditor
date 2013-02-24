@@ -263,6 +263,9 @@ public class VerilogParserReader extends ParserReader {
 		while (Character.isWhitespace(next)) {
 			if (reader.isEof())
 				return;
+			if (next == '\n' && isInclude == false) {
+				buffer.append('\n'); // for keeping line number
+			}
 			next = reader.read();
 		}
 		reader.pushBack(next);

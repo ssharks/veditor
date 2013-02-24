@@ -22,7 +22,8 @@ public class VariableStore {
 		private String[] types;
 		private int width = 1;
 		private int dimemsion = 0;
-		private int value = 0;
+		private int intValue = 0;
+		private String stringValue;
 		private boolean assignd = false;
 		private boolean used = false;
 
@@ -104,11 +105,23 @@ public class VariableStore {
 		}
 
 		public void setValue(int value) {
-			this.value = value;
+			this.intValue = value;
+		}
+
+		public void setValue(String value) {
+			this.stringValue = value;
 		}
 
 		public int getValue() {
-			return value;
+			return intValue;
+		}
+
+		boolean isValidInt() {
+			return stringValue == null;
+		}
+
+		public String toString() {
+			return stringValue;
 		}
 
 		public boolean isAssignd() {

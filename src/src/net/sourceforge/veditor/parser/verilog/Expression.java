@@ -15,7 +15,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 public class Expression {
-	public static final int INVALID_WIDTH = 0;
+	private static final int INVALID_WIDTH = -1;
+	private static final int UNFIXED_WIDTH = 0; // used for non width indicated constant.
 
 	private int width = INVALID_WIDTH;
 	private boolean valid = false;
@@ -35,6 +36,11 @@ public class Expression {
 		setValue(value);
 	}
 
+	public Expression(int width, String value) {
+		setWidth(width);
+		setValue(value);
+	}
+
 	public void setWidth(int width) {
 		this.width = width;
 	}
@@ -43,8 +49,16 @@ public class Expression {
 		return width;
 	}
 
+	public int getVisibleWidth() {
+		return isFixedWidth() ? getWidth() : 32;
+	}
+
 	public boolean isValidWidth() {
 		return width != INVALID_WIDTH;
+	}
+
+	public boolean isFixedWidth() {
+		return width != UNFIXED_WIDTH && width != INVALID_WIDTH;
 	}
 
 	public boolean isValid() {
@@ -59,6 +73,10 @@ public class Expression {
 	public void setValue(String value) {
 		stringValue = value;
 		valid = true;
+	}
+	
+	public boolean isValidInt() {
+		return stringValue == null;
 	}
 
 	public int intValue() {
@@ -92,21 +110,11 @@ public class Expression {
 			return references.toArray(new Identifier[0]);
 	}
 
-	public Expression operate(String operator) {
-		Operator op = new Operator(operator);
-		return op.operate(this);
-	}
-
-	public Expression operate(String operator, Expression arg) {
-		Operator op = new Operator(operator);
-		return op.operate(this, arg);
-	}
-
-	public void parseLiteral(String image) {
+	public void parseIntegerLiteral(String image) {
 		int idx = image.indexOf('\'');
 		int width;
 		if (idx < 0) {
-			width = 32;
+			width = UNFIXED_WIDTH;
 			setValue(parseInt(image, 10));
 		} else {
 			if (idx == 0)
@@ -141,6 +149,14 @@ public class Expression {
 	private static int parseInt(String str, int radix) {
 		str = str.replace("_", ""); // Verilog allows "_" in integer literal
 		return Integer.parseInt(str, radix);
+	}
+
+	public void parseRealLiteral(String image) {
+		setValue(image);
+	}
+
+	public void parseStringLiteral(String image) {
+		setValue(image);
 	}
 
 	public String toString() {

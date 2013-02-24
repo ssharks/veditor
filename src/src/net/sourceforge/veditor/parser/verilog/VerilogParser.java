@@ -13,7 +13,9 @@ package net.sourceforge.veditor.parser.verilog;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -71,6 +73,7 @@ public class VerilogParser extends VerilogParserCore implements IParser, Prefere
 	private int blockStatus;
 	private Pattern[] taskTokenPattern;
 	private VariableStore variableStore;
+	private List<String> generateBlock = new ArrayList<String>();
 	
 	private Preferences preferences = new Preferences();
 	
@@ -114,7 +117,6 @@ public class VerilogParser extends VerilogParserCore implements IParser, Prefere
 			String[] types = type.split("#");
 			if (types[0].equals("parameter") || types[0].equals("localparam")) {
 				String bitRange = (types.length > 2) ? types[2] : "";
-				int value = (types.length > 3) ? Integer.parseInt(types[3]) : 0;
 				if (bitRange.equals(""))
 					bitRange = "[31:0]";
 				VariableStore.Symbol ref;
@@ -122,7 +124,14 @@ public class VerilogParser extends VerilogParserCore implements IParser, Prefere
 				if (ref == null) {
 					warning(line, DUPLICATE_PARAM, name);
 				} else {
-					ref.setValue(value);
+					try {
+						if (types.length > 3) {
+							int value = Integer.parseInt(types[3]);
+							ref.setValue(value);
+						}
+					} catch (NumberFormatException e) {
+						ref.setValue(types[3]);
+					}
 					ref.setAssignd();
 				}
 			} else if (types[0].equals("task")) {
@@ -176,6 +185,12 @@ public class VerilogParser extends VerilogParserCore implements IParser, Prefere
 			bitRange = (types.length > 3) ? types[3] : "";
 		}
 		if (bitRange != null) {
+			String head = "";
+			for(int i = 0; i < generateBlock.size(); i++) {
+				head += generateBlock.get(i) + ".";
+			}
+			name = head + name;
+			
 			if (variableStore.addSymbol(name, line, types, bitRange, dim) == null) {
 				// c-style port declaration can add reg or wire modifiers.
 				if (types[0].equals("variable")) {
@@ -261,6 +276,31 @@ public class VerilogParser extends VerilogParserCore implements IParser, Prefere
 		blockContext = STATEMENT; // no check of block or assign statement
 	}
 	
+	protected Expression operator(Expression arg, Token op) {
+		Operator ope = new Operator(op.image);
+		Expression ret = ope.operate(arg);
+		if (ope.isWarning())
+			warning(op.beginLine, ope.getWarning());
+		return ret;
+	}
+
+	protected Expression operator(Expression arg1, Token op, Expression arg2) {
+		Operator ope = new Operator(op.image);
+		Expression ret = ope.operate(arg1, arg2);
+		if (ope.isWarning())
+			warning(op.beginLine, ope.getWarning());
+		return ret;
+	}
+
+	protected Expression operator(Expression arg1, Token op, Expression arg2,
+			Expression arg3) {
+		Operator ope = new Operator(op.image);
+		Expression ret = ope.operate(arg1, arg2, arg3);
+		if (ope.isWarning())
+			warning(op.beginLine, ope.getWarning());
+		return ret;
+	}
+
 	protected Expression variableReference(Identifier ident) {
 		if (m_OutlineContainer != null) {
 			String name = ident.image;
@@ -280,7 +320,10 @@ public class VerilogParser extends VerilogParserCore implements IParser, Prefere
 						width = sym.getWidth();
 				}
 				if (sym.isParameter()) {
-					return new Expression(width, sym.getValue());
+					if (sym.isValidInt())
+						return new Expression(width, sym.getValue());
+					else
+						return new Expression(width, sym.toString());
 				} else {
 					Expression exp = new Expression(width);
 					exp.addReference(ident);
@@ -301,8 +344,8 @@ public class VerilogParser extends VerilogParserCore implements IParser, Prefere
 			if (sym == null) {
 				String[] types = {"task"};
 				sym = variableStore.addSymbol(name, line, types, "");
-				sym.setUsed();
 			}
+			sym.setUsed();
 		}
 	}
 
@@ -323,6 +366,7 @@ public class VerilogParser extends VerilogParserCore implements IParser, Prefere
 					width = sym.getWidth(); // doesn't have bit range
 				Expression exp = new Expression(width);
 				exp.addReference(ident);
+				sym.setUsed();
 				return exp;
 			}
 		}
@@ -396,11 +440,19 @@ public class VerilogParser extends VerilogParserCore implements IParser, Prefere
 				if (width == 32 && exp.isValid())
 					return;
 			}
-			if (lvalue != width && preferences.bitWidth) {
+			if (preferences.bitWidth && exp.isValidWidth() && lvalue != width) {
 				String message = "from " + width + " to " + lvalue;
 				warning(asn.beginLine, ASSIGN_WIDTH_MISMATCH, message);
 			}
 		}
+	}
+
+	protected void beginGenerateBlock(Identifier block) {
+		generateBlock.add(block.image);
+	}
+	
+	protected void endGenerateBlock(Identifier block) {
+		generateBlock.remove(generateBlock.size() - 1);
 	}
 
 	private void warning(int line, String format, String arg) {
@@ -408,8 +460,8 @@ public class VerilogParser extends VerilogParserCore implements IParser, Prefere
 		VerilogPlugin.setWarningMarker(m_File, line, message);
 	}
 
-	private void warning(int line, String format) {
-		VerilogPlugin.setWarningMarker(m_File, line, format);
+	private void warning(int line, String message) {
+		VerilogPlugin.setWarningMarker(m_File, line, message);
 	}
 
 	public int getContext() {

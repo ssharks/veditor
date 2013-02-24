@@ -38,12 +38,17 @@ public abstract class VerilogParserCore
 	}
 
 	protected abstract void addCollapsible(int startLine,int endLine);
+	protected abstract Expression operator(Expression arg, Token op);
+	protected abstract Expression operator(Expression arg1, Token op, Expression arg2);
+	protected abstract Expression operator(Expression arg1, Token op, Expression arg2, Expression arg3);
 	protected abstract Expression variableReference(Identifier ident);
 	protected abstract Expression functionReference(Identifier ident);
 	protected abstract void variableAssignment(Identifier ident);
 	protected abstract void taskReference(Identifier ident);
 	protected abstract void variableConnection(Expression arg, String module, String port);
 	protected abstract void evaluateAssignment(Token asn, int lvalue, Expression exp);
+	protected abstract void beginGenerateBlock(Identifier block);
+	protected abstract void endGenerateBlock(Identifier block);
 }
 
 PARSER_END(VerilogParserCore)
@@ -237,10 +242,10 @@ TOKEN :
   | < BINARY_LITERAL >
     >
 | < #NUMBER_LITERAL : ([ "0"-"9", "_" ])+ >
-| < #DECIMAL_LITERAL : ([ "0"-"9" ])* "'" [ "d", "D" ] ([" ", "\t"])* ([ "0"-"9", "_", "x", "X", "z", "Z", "?"])* >
-| < #HEX_LITERAL : ([ "0"-"9" ])* "'" [ "h", "H" ] ([" ", "\t"])* ([ "0"-"9", "a"-"f", "A"-"F", "_", "x", "X", "z", "Z", "?" ])+ >
-| < #OCTAL_LITERAL : ([ "0"-"9" ])* "'" [ "o", "O" ] ([" ", "\t"])* ([ "0"-"7", "_", "x", "X", "z", "Z", "?" ])* >
-| < #BINARY_LITERAL : ([ "0"-"9" ])* "'" [ "b", "B" ] ([" ", "\t"])* ([ "0"-"1", "_", "x", "X", "z", "Z", "?" ])* >
+| < #DECIMAL_LITERAL : ([ "0"-"9" ])* "'" (["s", "S"])? [ "d", "D" ] ([" ", "\t"])* ([ "0"-"9", "_", "x", "X", "z", "Z", "?"])* >
+| < #HEX_LITERAL : ([ "0"-"9" ])* "'" (["s", "S"])? [ "h", "H" ] ([" ", "\t"])* ([ "0"-"9", "a"-"f", "A"-"F", "_", "x", "X", "z", "Z", "?" ])+ >
+| < #OCTAL_LITERAL : ([ "0"-"9" ])* "'" (["s", "S"])? [ "o", "O" ] ([" ", "\t"])* ([ "0"-"7", "_", "x", "X", "z", "Z", "?" ])* >
+| < #BINARY_LITERAL : ([ "0"-"9" ])* "'" (["s", "S"])? [ "b", "B" ] ([" ", "\t"])* ([ "0"-"1", "_", "x", "X", "z", "Z", "?" ])* >
 | < REAL_LITERAL :
     ([ "0"-"9" ])+ "." ([ "0"-"9" ])*
   | ([ "0"-"9" ])+ ( "." ([ "0"-"9" ])*)? [ "e", "E" ] ([ "+", "-" ])? ([ "0"-"9" ])+ >
@@ -488,7 +493,7 @@ void moduleInstance():
 void parameterConnect() :
 {}
 {
-	"." identifier() "(" constantExpression() ")" ( "," "." identifier() "(" constantExpression() ")" )*
+	"." identifier() "(" [ constantExpression() ] ")" ( "," "." identifier() "(" [ constantExpression() ] ")" )*
 |	constantExpression() ( "," constantExpression() )*	
 }
 
@@ -845,7 +850,9 @@ void function() :
 	Token end ;
 }
 {
-	variableModifier() range = bitRange() name = identifier() ";"
+	variableModifier() range = bitRange() name = identifier()
+	[ "(" skipTo(RPAREN) ]
+	";"
 	{
 		beginOutlineElement(name, name.image, "function#" + range);
 	}
@@ -882,13 +889,28 @@ void generate() :
 }
 
 void generateItem() :
-{}
+{
+	Identifier block = null;
+}
 {
 	moduleOrGenerateItem()
 |  generateIfStatement()
 |  generateCaseStatement()
 |  generateForStatement()
-|  <BEGIN> [ ":" identifier() ] ( generateItem() )* <END>
+|	(
+		<BEGIN> [ ":" block = identifier() ]
+		{
+			if (block != null)
+				beginGenerateBlock(block);
+		}
+		( generateItem() )*
+		<END> 
+		{
+			if (block != null) {
+				endGenerateBlock(block);
+			}
+		}
+	)
 }
 
 void generateIfStatement() :
@@ -999,17 +1021,14 @@ Expression constantExpression() :
 Expression expression() :
 {
 	Expression ret, exp1, exp2;
+	Token op;
 }
 {
 	ret = logicalOrExpresstion()
 	[
-		LOOKAHEAD(2) "?" exp1 = expression() ":" exp2 = expression()
+		op = "?" exp1 = expression() ":" exp2 = expression()
 		{
-			if (ret.isValid())
-				ret = (ret.intValue() != 0) ? exp1 : exp2;
-			else {
-				ret = new Expression(exp1.getWidth());
-			}
+			ret = operator(ret, op, exp1, exp2);
 		}
 	]
 	{
@@ -1024,7 +1043,7 @@ Expression logicalOrExpresstion() :
 }
 {
 	ret = logicalAndExpresstion()
-	( op = "||" exp = logicalAndExpresstion() { ret = ret.operate(op.image, exp); } )*
+	( op = "||" exp = logicalAndExpresstion() { ret = operator(ret, op, exp); } )*
 	{
 		return ret;
 	}
@@ -1037,7 +1056,7 @@ Expression logicalAndExpresstion() :
 }
 {
 	ret = bitOrExpresstion()
-	( op = "&&" exp = bitOrExpresstion() { ret = ret.operate(op.image, exp); } )*
+	( op = "&&" exp = bitOrExpresstion() { ret = operator(ret, op, exp); } )*
 	{
 		return ret;
 	}
@@ -1050,7 +1069,7 @@ Expression bitOrExpresstion() :
 }
 {
 	ret = bitAndExpresstion()
-	( op = "|" exp = bitAndExpresstion() { ret = ret.operate(op.image, exp); } )*
+	( op = "|" exp = bitAndExpresstion() { ret = operator(ret, op, exp); } )*
 	{
 		return ret;
 	}
@@ -1065,7 +1084,7 @@ Expression bitAndExpresstion() :
 	ret = equalityExpression()
 	(
 		(op = "&" | op = "^" | op = "~^" | op = "^~")
-		exp = equalityExpression() { ret = ret.operate(op.image, exp); }
+		exp = equalityExpression() { ret = operator(ret, op, exp); }
 	)*
 	{
 		return ret;
@@ -1081,7 +1100,7 @@ Expression equalityExpression() :
 	ret = relationalExpression()
 	(
 		(op = "==" | op = "===" | op = "!=" | op = "!==")
-		exp = relationalExpression() { ret = ret.operate(op.image, exp); }
+		exp = relationalExpression() { ret = operator(ret, op, exp); }
 	)*
 	{
 		return ret;
@@ -1097,7 +1116,7 @@ Expression relationalExpression() :
 	ret = shiftExpression()
 	(
 		(op = "<" | op = "<=" | op = ">" | op = ">=")
-		exp = shiftExpression() { ret = ret.operate(op.image, exp); }
+		exp = shiftExpression() { ret = operator(ret, op, exp); }
 	)*
 	{
 		return ret;
@@ -1113,7 +1132,7 @@ Expression shiftExpression() :
 	ret = addExpression()
 	(
 		(op = "<<" | op = ">>" | op = "<<<" | op = ">>>")
-		exp = addExpression() { ret = ret.operate(op.image, exp); }
+		exp = addExpression() { ret = operator(ret, op, exp); }
 	)*
 	{
 		return ret;
@@ -1129,7 +1148,7 @@ Expression addExpression() :
 	ret = multiplyExpression()
 	(
 		(op = "+" | op = "-" )
-		exp = multiplyExpression() { ret = ret.operate(op.image, exp); }
+		exp = multiplyExpression() { ret = operator(ret, op, exp); }
 	)*
 	{
 		return ret;
@@ -1145,7 +1164,7 @@ Expression multiplyExpression() :
 	ret = unaryExpression()
 	(
 		(op = "*" | op = "/" | op = "%" | op = "**")
-		exp = unaryExpression() { ret = ret.operate(op.image, exp); }
+		exp = unaryExpression() { ret = operator(ret, op, exp); }
 	)*
 	{
 		return ret;
@@ -1155,14 +1174,14 @@ Expression multiplyExpression() :
 Expression unaryExpression() :
 {
 	Expression ret, exp;
-	String op = null;
+	Token op = null;
 }
 {
 	[ op = unaryOperator() ]
 	ret = primary()
 	{
 		if (op != null)
-			return ret.operate(op);
+			return operator(ret, op);
 		else
 			return ret;
 	}
@@ -1289,12 +1308,12 @@ String bitRange() :
 	}
 }
 
-String unaryOperator() :
+Token unaryOperator() :
 {}
 {
 	( "~" | "+" |  "-" |  "!" |  "&" |  "~&" | "|" |  "~|" |  "^" |  "~^" |  "^~" )
 	{
-		return token.image;
+		return token;
 	}
 }
 
@@ -1356,12 +1375,9 @@ Expression number() :
 }
 {
 	(
-	 < INTEGER_LITERAL >
-	 {
-		ret.parseLiteral(token.image);
-	}
-	|  < REAL_LITERAL >
-	|  < STRING_LITERAL >
+	< INTEGER_LITERAL > { ret.parseIntegerLiteral(token.image); }
+	|  < REAL_LITERAL > { ret.parseRealLiteral(token.image); }
+	|  < STRING_LITERAL > { ret.parseStringLiteral(token.image); }
 	)
 	{
 		return ret;

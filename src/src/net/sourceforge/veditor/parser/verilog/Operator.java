@@ -13,10 +13,24 @@ package net.sourceforge.veditor.parser.verilog;
 
 public class Operator {
 
+	// semantic warning.
+	private static final String COMPARE_WIDTH_MISMATCH = "Compare bit width mismatch: %d and %d";
+	private static final String CONDITIONAL_WIDTH_MISMATCH = "Conditional operator bit width mismatch: %d ? %d : %d";
+	private static final String LOGICAL_WIDTH_MISMATCH = "Logical operator bit width mismatch: %d and %d";
+
 	private String image;
+	private String warning = null;
 
 	public Operator(String image) {
 		this.image = image;
+	}
+	
+	public boolean isWarning() {
+		return warning != null;
+	}
+	
+	public String getWarning() {
+		return warning;
 	}
 	
 	public Expression operate(Expression arg) {
@@ -34,32 +48,66 @@ public class Operator {
 		}
 	}
 	
+	private static final String opLeft = " / >> << ** >>> <<< ";
+	private static final String opLog = " && || ";
+	private static final String opCmp = " == != === !== < <= > >= ";
+	
 	public Expression operate(Expression arg1, Expression arg2) {
-		String opLeft = " / >> << ** >>> <<< ";
-		String op1 = " == != === !== && || < <= > >= ";
+		String key = " " + image + " ";
 		int width1 = arg1.getWidth();
 		int width2 = arg2.getWidth();
-
-		String key = " " + image + " ";
 		int width = 0;
-		if (image.equals("*"))
+		if (image.equals("*")) {
 			width = width1 + width2;
-		else if (image.equals("%"))
+		} else if (image.equals("%")) {
 			width = width2;
-		else if (opLeft.contains(key))
+		} else if (opLeft.contains(key)) {
 			width = width1;
-		else if (op1.contains(key))
+		} else if (opLog.contains(key)) {
+			if (width1 != 1 || width2 != 1) {
+				warning = String.format(LOGICAL_WIDTH_MISMATCH,
+						arg1.getVisibleWidth(), arg2.getVisibleWidth());
+			}
 			width = 1;
-		else if (width2 == 32 && arg2.isValid())
+		} else if (opCmp.contains(key)) {
+			if (width1 != width2 && arg1.isFixedWidth() && arg2.isFixedWidth()) {
+				warning = String.format(COMPARE_WIDTH_MISMATCH,
+						arg1.getVisibleWidth(), arg2.getVisibleWidth());
+			}
+			width = 1;
+		} else if (width2 == 32 && arg2.isValid()) {
 			width = width1;
-		else
+		} else {
 			width = (width1 > width2) ? width1 : width2;
+		}
 		
 		if (arg1.isValid() && arg2.isValid()) {
-			int value = getValue2(arg1.intValue(), arg2.intValue());
+			int value = 0;
+			if (arg1.isValidInt()) {
+				value = getValue2(arg1.intValue(), arg2.intValue());
+			} else {
+				value = getValue2(arg1.stringValue(), arg2.stringValue());
+			}
 			return new Expression(width, value);
 		} else {
 			return new Expression(width);
+		}
+	}
+	
+	public Expression operate(Expression cond, Expression arg1, Expression arg2) {
+		int widthc = cond.getVisibleWidth();
+		int width1 = arg1.getVisibleWidth();
+		int width2 = arg2.getVisibleWidth();
+		if (widthc != 1 || width1 != width2) {
+			if (arg1.isFixedWidth() && arg2.isFixedWidth()) {
+				warning = String.format(CONDITIONAL_WIDTH_MISMATCH, widthc,
+						width1, width2);
+			}
+		}
+		if (cond.isValid()) {
+			return (cond.intValue() != 0) ? arg1 : arg2;
+		} else {
+			return new Expression(arg1.getWidth());
 		}
 	}
 
@@ -134,13 +182,18 @@ public class Operator {
 			return (value1 >= value2) ? 1 : 0;
 		if (image.equals("*"))
 			return value1 * value2;
-		if (image.equals("/"))
+		if (image.equals("/")) {
 			if (value2 == 0)
 				return 0;
 			else
 				return value1 / value2;
-		if (image.equals("%"))
-			return value1 % value2;
+		}
+		if (image.equals("%")) {
+			if (value2 == 0)
+				return 0;
+			else
+				return value1 % value2;
+		}
 		if (image.equals(">>") || image.equals(">>>"))
 			return value1 >> value2;
 		if (image.equals("<<") || image.equals("<<<"))
@@ -153,6 +206,14 @@ public class Operator {
 			}
 			return ret;
 		}
+		return 0;
+	}
+
+	private int getValue2(String value1, String value2) {
+		if (image.equals("==") || image.equals("==="))
+			return value1.equals(value2) ? 1 : 0;
+		if (image.equals("!=") || image.equals("!=="))
+			return value1.equals(value2) ? 0 : 1;
 		return 0;
 	}
 }
