@@ -11,8 +11,10 @@
 
 package net.sourceforge.veditor.parser.verilog;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
+import java.util.List;
 
 public class VariableStore {
 
@@ -26,6 +28,7 @@ public class VariableStore {
 		private String stringValue;
 		private boolean assignd = false;
 		private boolean used = false;
+		private List<String> connections = null;
 
 		Symbol(String name, int line, String[] types) {
 			this.name = name;
@@ -44,28 +47,28 @@ public class VariableStore {
 		public String[] getTypes() {
 			return types;
 		}
-		
+
 		public boolean isParameter() {
 			return types[0].equals("parameter")
 					|| types[0].equals("localparam");
 		}
-		
+
 		public boolean isVariable() {
 			return types[0].equals("variable") || types[0].equals("port");
 		}
-		
+
 		public boolean isPort() {
 			return types[0].equals("port");
 		}
-		
+
 		public boolean isTask() {
 			return types[0].equals("task");
 		}
-		
+
 		public boolean isFunction() {
 			return types[0].equals("function");
 		}
-		
+
 		public boolean isReg() {
 			int idx = isPort() ? 2 : 1;
 			if (idx >= types.length)
@@ -91,11 +94,23 @@ public class VariableStore {
 				width = Integer.parseInt(bit[1]) - Integer.parseInt(bit[2]) + 1;
 			}
 		}
-		
+
 		public int getWidth() {
 			return width;
 		}
-		
+
+		public String[] getConnections() {
+			if (connections == null)
+				return null;
+			return connections.toArray(new String[0]);
+		}
+
+		public void addConnection(String connection) {
+			if (connections == null)
+				connections = new ArrayList<String>();
+			connections.add(connection);
+		}
+
 		public void setDimemsion(int dimemsion) {
 			this.dimemsion = dimemsion;
 		}
@@ -173,8 +188,8 @@ public class VariableStore {
 		}
 	}
 
-	public Symbol addAssignedVariable(String name) {
-		Symbol sym = symbols.get(name);
+	public Symbol addAssignedVariable(String name, List<String> generateBlock) {
+		Symbol sym = getVariableSymbol(name, generateBlock);
 		if (sym != null && sym.isVariable()) {
 			sym.setAssignd();
 			return sym;
@@ -182,8 +197,8 @@ public class VariableStore {
 		return null;
 	}
 
-	public Symbol addUsedVariable(String name) {
-		Symbol sym = symbols.get(name);
+	public Symbol addUsedVariable(String name, List<String> generateBlock) {
+		Symbol sym = getVariableSymbol(name, generateBlock);
 		if (sym != null && (sym.isParameter() || sym.isVariable())) {
 			sym.setUsed();
 			return sym;
@@ -191,11 +206,31 @@ public class VariableStore {
 		return null;
 	}
 
+	public Symbol getVariableSymbol(String name, List<String> generateBlock) {
+		Symbol sym = symbols.get(name);
+		if (sym == null) {
+			String head = "";
+			for (int i = 0; i < generateBlock.size() && sym == null; i++) {
+				head += generateBlock.get(i) + ".";
+				sym = symbols.get(head + name);
+			}
+		}
+		return sym;
+	}
+
+	public void addConnection(String name, List<String> generateBlock,
+			String connection) {
+		Symbol sym = getVariableSymbol(name, generateBlock);
+		if (sym != null) {
+			sym.addConnection(connection);
+		}
+	}
+
 	public Symbol findSymbol(String name) {
 		return symbols.get(name);
 	}
 
-	public Iterator<Symbol> iterator() {
-		return symbols.values().iterator();
+	public Collection<Symbol> collection() {
+		return symbols.values();
 	}
 }

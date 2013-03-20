@@ -43,9 +43,12 @@ public abstract class VerilogParserCore
 	protected abstract Expression operator(Expression arg1, Token op, Expression arg2, Expression arg3);
 	protected abstract Expression variableReference(Identifier ident);
 	protected abstract Expression functionReference(Identifier ident);
+
+	protected abstract void parameterAssignment(String name, Expression value);
 	protected abstract void variableAssignment(Identifier ident);
 	protected abstract void taskReference(Identifier ident);
-	protected abstract void variableConnection(Expression arg, String module, String port);
+	protected abstract void variableConnection(Expression arg, String module, Identifier port);
+	protected abstract void variableConnection(Expression arg, String module, int portIndex);
 	protected abstract void evaluateAssignment(Token asn, int lvalue, Expression exp);
 	protected abstract void beginGenerateBlock(Identifier block);
 	protected abstract void endGenerateBlock(Identifier block);
@@ -276,7 +279,7 @@ void moduleDecl() :
 {
 	< MODULE > name = identifier()
 	{
-		beginOutlineElement(name, name.image, "module#");
+		beginOutlineElement(name, "module#");
 	}
 	[ "#" "(" [ parameterArg() ( "," parameterArg() )* ] ")"  ]
 	[ "(" [ argument() ( "," argument() )* ] ")" ]
@@ -327,6 +330,7 @@ void parameterAssign(String type, String mod, String range) :
 	{
 		String types = type + "#" + mod + "#" + range + "#" + value.toString();
 		beginOutlineElement(name, types);
+		parameterAssignment(name.image, value);
 		endOutlineElement(name, types);
 	}
 }
@@ -474,10 +478,12 @@ void moduleInstance():
 	(   //module instantiation
 		(   [ "#" ( identifier() | number() | "(" parameterConnect() ")" ) ]
 			inst = identifier()
+			{
+				beginOutlineElement(module, inst.image, "instance#"+module.image);
+			}
 			[ "(" [ portConnect(module.image) ] ")" ]
 		    iend = ";"
 		    {			
-				beginOutlineElement(module, inst.image, "instance#"+module.image);
 				endOutlineElement(iend, inst.image, "instance#"+module.image);
 				addCollapsible(module.beginLine, iend.endLine);
 		     }
@@ -514,14 +520,12 @@ int portConnectSingle(String module, int count) :
 {
 	"." port = identifier() "(" [ arg = expression() ] ")"
 	{
-		if (arg != null) {
-			variableConnection(arg, module, port.image);
-		}
+		variableConnection(arg, module, port);
 		return count + 1;
 	}
 |	arg = expression()
 	{
-		variableConnection(arg, module, Integer.toString(count));
+		variableConnection(arg, module, count);
 		return count + 1;
 	}
 }
@@ -854,7 +858,7 @@ void function() :
 	[ "(" skipTo(RPAREN) ]
 	";"
 	{
-		beginOutlineElement(name, name.image, "function#" + range);
+		beginOutlineElement(name, "function#" + range);
 	}
 	end = skipTo( ENDFUNCTION )
 	{		
@@ -871,7 +875,7 @@ void task() :
 {
 	name = identifier() ";"
 	{
-		beginOutlineElement(name, name.image, "task#");
+		beginOutlineElement(name, "task#");
 	}
 	end = skipTo( ENDTASK )
 	{	
@@ -1322,6 +1326,7 @@ Expression concatenation() :
 	int width;
 	int value;
 	boolean valid;
+	boolean assignable;
 	Expression exp;
 	Expression refs = new Expression();
 }
@@ -1331,6 +1336,7 @@ Expression concatenation() :
 		width = exp.getWidth();
 		value = exp.intValue();
 		valid = exp.isValid();
+		assignable = exp.isAssignable();
 		refs.addReference(exp);
 	}
 	[
@@ -1342,6 +1348,7 @@ Expression concatenation() :
 				width += exp.getWidth();
 			value = (value << width) | exp.intValue();
 			valid = valid && exp.isValid();
+			assignable = assignable && exp.isAssignable();
 			refs.addReference(exp);
 		}
 		)+
@@ -1350,6 +1357,7 @@ Expression concatenation() :
 			width = valid ? value : 0;
 			value = exp.intValue();
 			valid = exp.isValid();
+			assignable = exp.isAssignable();
 			refs = exp;
 		}
 	]
@@ -1358,6 +1366,7 @@ Expression concatenation() :
 		Expression ret = new Expression(width);
 		if (valid)
 			ret.setValue(value);
+		ret.setAssignable(assignable);
 		ret.addReference(refs);
 		return ret;
 	}

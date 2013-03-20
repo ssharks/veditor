@@ -88,4 +88,6 @@ public interface PreferenceStrings {
 	public static final String WARNING_INT_CONSTANT = "Warning.integerConstant";
 	public static final String WARNING_BLOCKING_ASSIGNMENT = "Warning.blockingAssignment";
 	public static final String WARNING_BLOCKING_ASSIGNMENT_IN_ALWAYS = "Warning.blockingAssignmentInAlways";
+	public static final String WARNING_UNRESOLVED_MODULE = "Warning.unresolvedModule";
+	public static final String WARNING_MODULE_CONNECTION = "Warning.moduleConnection";
 }

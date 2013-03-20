@@ -114,6 +114,20 @@ public class OutlineDatabase {
 	public OutlineElement[] findTopLevelElements(String name){
 		return findTopLevelElements(name, false);
 	}
+	
+	/**
+	 * Find a top level element with the given name.
+	 * @param name Element name
+	 * @return found element or null if not found.
+	 */
+	public OutlineElement findTopLevelElement(String name) {
+		for (OutlineContainer container : m_HierarchyDatabase.values()) {
+			OutlineElement element = container.findTopLevelElement(name);
+			if (element != null)
+				return element;
+		}
+		return null;
+	}
 
 	/**
 	 * Class used to inform the listeners of change

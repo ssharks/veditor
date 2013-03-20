@@ -22,7 +22,9 @@ public class Expression {
 	private boolean valid = false;
 	private int intValue = 0;
 	private String stringValue = null;
+	private boolean validString = false;
 	private ArrayList<Identifier> references = null;
+	boolean isAssignable = false;
 
 	public Expression() {
 	}
@@ -39,6 +41,12 @@ public class Expression {
 	public Expression(int width, String value) {
 		setWidth(width);
 		setValue(value);
+	}
+	
+	public Expression(int width, Identifier ident) {
+		setWidth(width);
+		addReference(ident);
+		isAssignable = true;
 	}
 
 	public void setWidth(int width) {
@@ -73,10 +81,11 @@ public class Expression {
 	public void setValue(String value) {
 		stringValue = value;
 		valid = true;
+		validString = true;
 	}
 	
 	public boolean isValidInt() {
-		return stringValue == null;
+		return validString == false;
 	}
 
 	public int intValue() {
@@ -85,6 +94,14 @@ public class Expression {
 
 	public String stringValue() {
 		return stringValue;
+	}
+
+	public boolean isAssignable() {
+		return isAssignable;
+	}
+
+	public void setAssignable(boolean isAssignable) {
+		this.isAssignable = isAssignable;
 	}
 
 	public void addReference(Identifier ident) {
@@ -143,6 +160,7 @@ public class Expression {
 				valid = false;
 			}
 		}
+		stringValue = image;
 		setWidth(width);
 	}
 

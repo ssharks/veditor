@@ -131,14 +131,16 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer impleme
 	}
 	
 	private void setDefaultWarning(IPreferenceStore preferences) {
-		Object values[][] = new Object[][] {
-				{SEMANTIC_WARNING, true },
-				{WARNING_UNRESOLVED, true},
-				{WARNING_NO_USED_ASIGNED, true},
-				{WARNING_BIT_WIDTH, true},
-				{WARNING_INT_CONSTANT, false},
-				{WARNING_BLOCKING_ASSIGNMENT, true},
-				{WARNING_BLOCKING_ASSIGNMENT_IN_ALWAYS, false}};
+		Object values[][] = new Object[][] { 
+				{ SEMANTIC_WARNING, true },
+				{ WARNING_UNRESOLVED, true },
+				{ WARNING_NO_USED_ASIGNED, true }, 
+				{ WARNING_BIT_WIDTH, true },
+				{ WARNING_INT_CONSTANT, false },
+				{ WARNING_BLOCKING_ASSIGNMENT, true },
+				{ WARNING_BLOCKING_ASSIGNMENT_IN_ALWAYS, false },
+				{ WARNING_UNRESOLVED_MODULE, true },
+				{ WARNING_MODULE_CONNECTION, true } };
 		for (int i = 0; i < values.length; i++) {
 			boolean flag = ((Boolean) values[i][1]).booleanValue();
 			preferences.setDefault(values[i][0].toString(), flag);

@@ -176,6 +176,22 @@ public class OutlineElement extends Object{
 	public OutlineElement[] getChildren() {
 		return m_Children.toArray(new OutlineElement[0]);
 	}
+	
+	public OutlineElement findChild(String name) {
+		for (OutlineElement child : m_Children) {
+			if (child.getName().equals(name)) {
+				return child;
+			}
+		}
+		return null;
+	}
+
+	public OutlineElement getChild(int index) {
+		if (index < m_Children.size())
+			return m_Children.get(index);
+		else
+			return null;
+	}
 
 	public String getType() {
 		return m_Type;

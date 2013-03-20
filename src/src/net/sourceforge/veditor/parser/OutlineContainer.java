@@ -89,6 +89,21 @@ public class OutlineContainer
 	public OutlineElement[] getTopLevelElements(){
 		return m_FileInfo.ElementList.toArray(new OutlineElement[0]);
 	}
+
+	/**
+	 * Find a top level element with the given name.
+	 * @param name Element name
+	 * @return found element or null if not found.
+	 */
+	public OutlineElement findTopLevelElement(String name) {
+		for (OutlineElement element : m_FileInfo.ElementList) {
+			if (element.getName().equals(name)) {
+				return element;
+			}
+		}
+		return null;
+	}
+	
 	/**
 	* returns true if the given element has any children
 	*/

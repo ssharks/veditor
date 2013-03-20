@@ -14,7 +14,6 @@ package net.sourceforge.veditor.parser.verilog;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -24,6 +23,7 @@ import net.sourceforge.veditor.parser.HdlParserException;
 import net.sourceforge.veditor.parser.IParser;
 import net.sourceforge.veditor.parser.OutlineContainer;
 import net.sourceforge.veditor.parser.OutlineDatabase;
+import net.sourceforge.veditor.parser.OutlineElement;
 import net.sourceforge.veditor.parser.OutlineElementFactory;
 import net.sourceforge.veditor.parser.OutlineContainer.Collapsible;
 import net.sourceforge.veditor.parser.ParserReader;
@@ -56,9 +56,14 @@ public class VerilogParser extends VerilogParserCore implements IParser, Prefere
 	private static final String NOT_USED_TASK = "The task %s is not used";
 	private static final String NOT_USED_FUNCTION = "The function %s is not used";
 	private static final String NOT_ASSIGNED = "The signal %s is not assigned";
+	private static final String REG_CONNECT_OUTPUT = "The register %s cannot be connected to output port";
 	private static final String ASSIGN_WIDTH_MISMATCH = "Assignment bit width mismatch: %s";
 	private static final String BOTH_ASSIGNMENT = "Both blocking and non-blocking assinments in a initial or always block";
 	private static final String BLOCKING_ALWAYS = "Blocking assinments in always block";
+	private static final String CANNOT_RESOLVED_MODULE = "The module %s is not found in the project";
+	private static final String MODULE_HAS_NO_PORT = "The module %s does not have port %s.";
+	private static final String BAD_PORT_CONNECTION = "The signal cannot connect to output or inout port %s";
+	private static final String UNCONNECTED_PORT = "The port %s in module %s does not connected.";
 
 	private static final int NO_ASSIGN = 0;
 	private static final int NON_BLOCKING = 1;
@@ -66,14 +71,18 @@ public class VerilogParser extends VerilogParserCore implements IParser, Prefere
 	
 	private IFile m_File;
 	private ParserReader m_Reader;
+	private IProject m_Project;
 	private static OutlineElementFactory m_OutlineElementFactory = new VerilogOutlineElementFactory();
 	private OutlineContainer m_OutlineContainer;
 	private int m_Context;
 	private int blockContext;
 	private int blockStatus;
 	private Pattern[] taskTokenPattern;
+	private boolean isPortConnect;
 	private VariableStore variableStore;
+	private InstanceStore instanceStore = new InstanceStore();
 	private List<String> generateBlock = new ArrayList<String>();
+	private List<VariableStore> variableStoreList = new ArrayList<VariableStore>();
 	
 	private Preferences preferences = new Preferences();
 	
@@ -81,6 +90,7 @@ public class VerilogParser extends VerilogParserCore implements IParser, Prefere
 		super(reader);
 		m_Context = IParser.OUT_OF_MODULE;
 		m_Reader = reader;
+		m_Project = project;
 		m_File = file;
 		m_OutlineContainer = null;
 		blockContext = STATEMENT; // no check of block or assign statement
@@ -123,21 +133,14 @@ public class VerilogParser extends VerilogParserCore implements IParser, Prefere
 				ref = variableStore.addSymbol(name, line, types, bitRange);
 				if (ref == null) {
 					warning(line, DUPLICATE_PARAM, name);
-				} else {
-					try {
-						if (types.length > 3) {
-							int value = Integer.parseInt(types[3]);
-							ref.setValue(value);
-						}
-					} catch (NumberFormatException e) {
-						ref.setValue(types[3]);
-					}
-					ref.setAssignd();
-				}
+				} 
 			} else if (types[0].equals("task")) {
 				addTask(name, line, types);
 			} else if (types[0].equals("function")) {
 				addFunciton(name, line, types);
+			} else if (types[0].equals("instance")) {
+				isPortConnect = true;
+				instanceStore.addInstance(types[1], line);
 			} else {
 				addVariable(name, line, types);
 			}
@@ -208,18 +211,82 @@ public class VerilogParser extends VerilogParserCore implements IParser, Prefere
 	protected void endOutlineElement(Token end, String name, String type) {
 		if (type.equals("module#")) {
 			m_Context = IParser.OUT_OF_MODULE;
-			checkVariables();
+			variableStoreList.add(variableStore);
 		}
 		if (m_OutlineContainer != null) {
+			if (type.startsWith("instance#")) {
+				isPortConnect = false;
+			}
 			m_OutlineContainer.endElement(name, type, end.endLine,
 					end.endColumn, m_File);
 		}
 	}
 	
-	private void checkVariables() {
-		Iterator<VariableStore.Symbol> iter = variableStore.iterator();
-		while (iter.hasNext()) {
-			VariableStore.Symbol sym = iter.next();
+	protected void parameterAssignment(String name, Expression value) {
+		VariableStore.Symbol sym;
+		sym = variableStore.getVariableSymbol(name, generateBlock);
+		if (sym != null) {
+			if (value.isValidInt())
+				sym.setValue(value.intValue());
+			else
+				sym.setValue(value.toString());
+			sym.setAssignd();
+		}
+	}
+	
+	private void updateConnection(OutlineDatabase database, VariableStore.Symbol sym) {
+		String conns[] = sym.getConnections();
+		if (conns == null)
+			return;
+		for (String conn : conns) {
+			String[] csplit = conn.split("#");
+			String moduleName = csplit[0];
+			String portName = csplit[1];
+			OutlineElement module = database.findTopLevelElement(moduleName);
+			if (module != null) {
+				OutlineElement port = findPortInModule(module, portName);
+				if (port != null) {
+					String type = port.getType();
+					if (type.startsWith("port#input")) {
+						sym.setUsed();
+					} else if (type.startsWith("port#output")) {
+						if (sym.isReg()) {
+							int line = Integer.parseInt(csplit[2]);
+							warning(line, REG_CONNECT_OUTPUT, sym.getName());
+						}
+						sym.setAssignd();
+					} else if (type.startsWith("port#inout")) {
+						sym.setUsed();
+						sym.setAssignd();
+					}
+				}
+			}
+		}
+	}
+	
+	private OutlineElement findPortInModule(OutlineElement module, String name) {
+		OutlineElement port;
+		if (Character.isDigit(name.charAt(0))) {
+			int index = Integer.parseInt(name);
+			port = module.getChild(index);
+		} else {
+			port = module.findChild(name);
+		}
+		if (port == null)
+			return null;
+		if (port.getType().startsWith("port#")) {
+			return port;
+		} else {
+			return null;
+		}
+	}
+
+	private void checkVariables(VariableStore store) {
+		OutlineDatabase database = OutlineDatabase.getProjectsDatabase(m_Project);
+		
+		for (VariableStore.Symbol sym : store.collection()) {
+			updateConnection(database, sym);
+
 			boolean notUsed = false;
 			boolean notAssigned = false;
 			if (sym.isUsed() == false && sym.containsType("output") == false) {
@@ -257,6 +324,63 @@ public class VerilogParser extends VerilogParserCore implements IParser, Prefere
 		}
 	}
 
+	private void checkInstance()  {
+		OutlineDatabase database = OutlineDatabase.getProjectsDatabase(m_Project);
+
+		InstanceStore store = instanceStore;
+		for(InstanceStore.Instance inst : store.collection()) {
+			String moduleName = inst.getName();
+			OutlineElement module = database.findTopLevelElement(moduleName);
+			if (module == null) {
+				if (preferences.unresolvedModule) {
+					int line = inst.getLine();
+					warning(line, CANNOT_RESOLVED_MODULE, moduleName);
+				}
+			} else {
+				if (preferences.moduleConnection) {
+					checkInstancePort(inst, module);
+				}
+			}
+		}
+	}
+
+	private void checkInstancePort(InstanceStore.Instance inst, OutlineElement module) {
+		String moduleName = inst.getName();
+
+		// scan all port in instance.
+		for (InstanceStore.Port port : inst.getPorts()) {
+			String name = port.getName();
+			int line = port.getLine();
+			OutlineElement eport = findPortInModule(module, name);
+			if (eport == null) {
+				warning(line, MODULE_HAS_NO_PORT, moduleName, name);
+			} else {
+				String type = eport.getType();
+				if (type.startsWith("port#input") == false) {
+					Expression signal = port.getSignal();
+					if (signal != null && signal.isAssignable() == false) {
+						warning(line, BAD_PORT_CONNECTION, name);
+					}
+				}
+			}
+		}
+
+		if (inst.isNamedMap() == false)
+			return;
+
+		// scan all port in module definition.
+		for (OutlineElement child : module.getChildren()) {
+			String type = child.getType();
+			if (type.startsWith("port#")) {
+				String portName = child.getName();
+				if (inst.findPort(portName) == null) {
+					int line = inst.getLine();
+					warning(line, UNCONNECTED_PORT, portName, moduleName);
+				}
+			}
+		}
+	}
+	
 	protected void addCollapsible(int startLine, int endLine) {
 		if (m_OutlineContainer != null) {
 			Collapsible c = m_OutlineContainer.new Collapsible(startLine,
@@ -281,6 +405,7 @@ public class VerilogParser extends VerilogParserCore implements IParser, Prefere
 		Expression ret = ope.operate(arg);
 		if (ope.isWarning())
 			warning(op.beginLine, ope.getWarning());
+		ret.addReference(arg);
 		return ret;
 	}
 
@@ -289,6 +414,8 @@ public class VerilogParser extends VerilogParserCore implements IParser, Prefere
 		Expression ret = ope.operate(arg1, arg2);
 		if (ope.isWarning())
 			warning(op.beginLine, ope.getWarning());
+		ret.addReference(arg1);
+		ret.addReference(arg2);
 		return ret;
 	}
 
@@ -307,7 +434,13 @@ public class VerilogParser extends VerilogParserCore implements IParser, Prefere
 			if (name.contains("."))
 				return new Expression();
 			int line = ident.beginLine;
-			VariableStore.Symbol sym = variableStore.addUsedVariable(name);
+			VariableStore.Symbol sym;
+			if (isPortConnect) {
+				// I cannot decide whether the variable is referred or assigned.
+				sym = variableStore.getVariableSymbol(name, generateBlock);
+			} else {
+				sym = variableStore.addUsedVariable(name, generateBlock);
+			}
 			if (sym == null) {
 				if (preferences.unresolved)
 					warning(line, CANNOT_RESOLVED_SIGNAL, name);
@@ -325,8 +458,7 @@ public class VerilogParser extends VerilogParserCore implements IParser, Prefere
 					else
 						return new Expression(width, sym.toString());
 				} else {
-					Expression exp = new Expression(width);
-					exp.addReference(ident);
+					Expression exp = new Expression(width, ident);
 					return exp;
 				}
 			}
@@ -377,7 +509,7 @@ public class VerilogParser extends VerilogParserCore implements IParser, Prefere
 		if (m_OutlineContainer != null) {
 			String name = ident.image;
 			int line = ident.beginLine;
-			VariableStore.Symbol sym = variableStore.addAssignedVariable(name);
+			VariableStore.Symbol sym = variableStore.addAssignedVariable(name, generateBlock);
 			if (sym == null || sym.isVariable() == false) {
 				if (preferences.unresolved)
 					warning(line, CANNOT_RESOLVED_SIGNAL, name);
@@ -395,55 +527,101 @@ public class VerilogParser extends VerilogParserCore implements IParser, Prefere
 		}
 	}
 
-	protected void variableConnection(Expression arg, String module, String port) {
-		if (m_OutlineContainer != null) {
-			Identifier[] idents = arg.getReferences();
-			if (idents != null) {
-				for (Identifier ident : idents) {
-					variableStore.addAssignedVariable(ident.image);
+	/**
+	 * Evaluate positional port connection.
+	 */
+	protected void variableConnection(Expression arg, String module, int portIndex) {
+		if (arg == null)
+			return;
+
+		// Don't add port to instanceStore.
+		// The connection check is available in named port connection only.
+		
+		Identifier[] idents = arg.getReferences();
+		if (idents == null)
+			return;
+
+		String name = Integer.toString(portIndex);
+		variableConnection(arg, module, name, idents[0].beginLine);
+	}
+
+	/**
+	 * Evaluate named port connection.
+	 */
+	protected void variableConnection(Expression arg, String module, Identifier port) {
+		if (m_OutlineContainer == null)
+			return;
+
+		int line = port.beginLine;
+		String portName = port.image;
+		instanceStore.addPort(portName, line, arg);
+
+		if (arg != null)
+			variableConnection(arg, module, portName, line);
+	}
+	
+	private void variableConnection(Expression arg, String module, String portName, int line) {
+		Identifier[] idents = arg.getReferences();
+		if (idents == null)
+			return;
+
+		for (Identifier ident : idents) {
+			if (preferences.moduleConnection) {
+				if (arg.isAssignable()) {
+					// The decision of input or output is delayed, just recorded now.
+					variableStore.addConnection(ident.image, generateBlock,
+							module + "#" + portName + "#" + line);
+				} else {
+					// Expression must be used as input only.
+					variableStore.addUsedVariable(ident.image, generateBlock);
 				}
+			} else {
+				// no checking module port connection, assume inout port.
+				variableStore.addAssignedVariable(ident.image, generateBlock);
+				variableStore.addUsedVariable(ident.image, generateBlock);
 			}
 		}
 	}
 	
 	protected void evaluateAssignment(Token asn, int lvalue, Expression exp) {
-		if (m_OutlineContainer != null) {
-			int width = exp.getWidth();
-			if (lvalue == 0 || width == 0)
-				return;
+		if (m_OutlineContainer == null)
+			return;
 
-			if (blockContext == INITIAL_BLOCK || blockContext == ALWAYS_BLOCK) {
-				if (preferences.blocking) {
-					if (asn.image.equals("=")) {
-						if (blockStatus == NON_BLOCKING) {
-							warning(asn.beginLine, BOTH_ASSIGNMENT);
-						} else {
-							blockStatus = BLOCKING;
-						}
+		if (blockContext == INITIAL_BLOCK || blockContext == ALWAYS_BLOCK) {
+			if (preferences.blocking) {
+				if (asn.image.equals("=")) {
+					if (blockStatus == NON_BLOCKING) {
+						warning(asn.beginLine, BOTH_ASSIGNMENT);
 					} else {
-						if (blockStatus == BLOCKING) {
-							warning(asn.beginLine, BOTH_ASSIGNMENT);
-						} else {
-							blockStatus = NON_BLOCKING;
-						}
+						blockStatus = BLOCKING;
+					}
+				} else {
+					if (blockStatus == BLOCKING) {
+						warning(asn.beginLine, BOTH_ASSIGNMENT);
+					} else {
+						blockStatus = NON_BLOCKING;
 					}
 				}
 			}
+		}
 
-			if (blockContext == ALWAYS_BLOCK) {
-				if (preferences.blockingAlways && asn.image.equals("=")) {
-					warning(asn.beginLine, BLOCKING_ALWAYS);
-				}
+		if (blockContext == ALWAYS_BLOCK) {
+			if (preferences.blockingAlways && asn.image.equals("=")) {
+				warning(asn.beginLine, BLOCKING_ALWAYS);
 			}
+		}
 
-			if (preferences.intConst == false) {
-				if (width == 32 && exp.isValid())
-					return;
-			}
-			if (preferences.bitWidth && exp.isValidWidth() && lvalue != width) {
-				String message = "from " + width + " to " + lvalue;
-				warning(asn.beginLine, ASSIGN_WIDTH_MISMATCH, message);
-			}
+		if (exp.isFixedWidth() == false || lvalue == 0)
+			return;
+
+		int width = exp.getWidth();
+		if (preferences.intConst == false) {
+			if (width == 32 && exp.isValid())
+				return;
+		}
+		if (preferences.bitWidth && exp.isValidWidth() && lvalue != width) {
+			String message = "from " + width + " to " + lvalue;
+			warning(asn.beginLine, ASSIGN_WIDTH_MISMATCH, message);
 		}
 	}
 
@@ -453,6 +631,11 @@ public class VerilogParser extends VerilogParserCore implements IParser, Prefere
 	
 	protected void endGenerateBlock(Identifier block) {
 		generateBlock.remove(generateBlock.size() - 1);
+	}
+
+	private void warning(int line, String format, String arg1, String arg2) {
+		String message = String.format(format, arg1, arg2);
+		VerilogPlugin.setWarningMarker(m_File, line, message);
 	}
 
 	private void warning(int line, String format, String arg) {
@@ -508,6 +691,11 @@ public class VerilogParser extends VerilogParserCore implements IParser, Prefere
 			parseLineComment();
 		}
 		close();
+		
+		for(VariableStore store : variableStoreList) {
+			checkVariables(store);
+		}
+		checkInstance();
 	}
 	 
 	/**
@@ -674,6 +862,8 @@ public class VerilogParser extends VerilogParserCore implements IParser, Prefere
 		public boolean intConst;
 		public boolean blocking;
 		public boolean blockingAlways;
+		public boolean unresolvedModule;
+		public boolean moduleConnection;
 
 		public void updatePreferences() {
 			unresolved = get(WARNING_UNRESOLVED);
@@ -682,6 +872,8 @@ public class VerilogParser extends VerilogParserCore implements IParser, Prefere
 			intConst = get(WARNING_INT_CONSTANT);
 			blocking = get(WARNING_BLOCKING_ASSIGNMENT);
 			blockingAlways = get(WARNING_BLOCKING_ASSIGNMENT_IN_ALWAYS);
+			unresolvedModule = get(WARNING_UNRESOLVED_MODULE);
+			moduleConnection = get(WARNING_MODULE_CONNECTION);
 		}
 
 		private boolean get(String key) {
