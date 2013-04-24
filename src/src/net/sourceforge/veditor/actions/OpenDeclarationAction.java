@@ -17,6 +17,7 @@ import net.sourceforge.veditor.document.HdlDocument;
 import net.sourceforge.veditor.editor.HdlEditor;
 import net.sourceforge.veditor.parser.OutlineDatabase;
 import net.sourceforge.veditor.parser.OutlineElement;
+import net.sourceforge.veditor.parser.vhdl.VhdlOutlineElementFactory.ArchitectureElement;
 import net.sourceforge.veditor.parser.vhdl.VhdlOutlineElementFactory.PackageDeclElement;
 
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -188,6 +189,20 @@ public class OpenDeclarationAction extends AbstractAction
 							}
 						}
 					}
+					// jump to architecture
+					 if(elements[i] instanceof ArchitectureElement ){
+						 ArchitectureElement architureElement =(ArchitectureElement)elements[i];
+						 if(architureElement.GetEntityName().equalsIgnoreCase(selectionText)){
+							 editor.showElement(architureElement);
+						 }
+					 }
+					 
+					 if(elements[i] instanceof PackageDeclElement ){
+						 PackageDeclElement packageDeclElement = (PackageDeclElement)elements[i];
+						 if (packageDeclElement.getName().equalsIgnoreCase(selectionText)) {
+							 editor.showElement(packageDeclElement);
+						 }
+					 }
 				
 				}	
 
