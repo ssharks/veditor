@@ -169,7 +169,7 @@ abstract public class HdlEditor extends TextEditor
 		setAction("Compile", new CompileAction());
 		setAction("Synthesize", new SynthesizeAction());
 		setAction("Comment", new CommentAction());
-		setAction("Unomment", new UnCommentAction());
+		setAction("Uncomment", new UnCommentAction());
 		setAction("CollapseAll",new CollapseAll());
 		setAction("ExpandAll",new ExpandAll());
 		setAction("ShowInHierarchy",new ShowInHierarchy());
