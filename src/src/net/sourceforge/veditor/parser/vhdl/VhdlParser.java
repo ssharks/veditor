@@ -13,7 +13,6 @@ package net.sourceforge.veditor.parser.vhdl;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.Reader;
 import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -530,7 +529,15 @@ public class VhdlParser implements IParser
 		name.append(componentInst.getIdentifier());
 		if(instantType.equalsIgnoreCase("entity")){
 			type.append("entityInst#");
-			type.append(instantiatedUnit.getName());
+			
+			ASTname entityName = (ASTname)instantiatedUnit.getChild(0);
+			if (entityName.getChildCount() > 1 && entityName.getChild(1) instanceof ASTidentifier) {
+				// when using direct instantiation (<library>.<entity>)
+				type.append(((ASTidentifier)entityName.getChild(1)).first_token.toString());
+			} else {				
+				type.append(instantiatedUnit.getName());
+			}
+			
 			type.append("#");
 			type.append(instantiatedUnit.getidentifier());
 		}else if(instantType.equalsIgnoreCase("configuration")){
