@@ -11,6 +11,7 @@
 
 package net.sourceforge.veditor.builder;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -24,12 +25,12 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.debug.ui.console.FileLink;
 import org.eclipse.jface.text.BadLocationException;
-import org.eclipse.swt.custom.Bullet;
 import org.eclipse.ui.console.IPatternMatchListener;
 import org.eclipse.ui.console.PatternMatchEvent;
 import org.eclipse.ui.console.TextConsole;
@@ -285,6 +286,7 @@ public class ErrorParser
 		}
 	}
 
+
 	private IFile getFileRecursive(IContainer cont, IPath path) {
 		try {
 			for(IResource res: cont.members()) {
@@ -302,12 +304,25 @@ public class ErrorParser
 		return null;
 	}
 	
-	
-	private IResource getFile(String filename)
+	// Christian R. aka supachris from http://www.mikrocontroller.net/topic/264288
+	// mg
+	private IResource getFile(String filename) {
+		File TestFile = new File(filename);
+		IResource test;
+		if(TestFile.isAbsolute())
+		{
+			IContainer project = ResourcesPlugin.getWorkspace().getRoot();
+			IPath projectPath = Path.fromOSString(TestFile.getAbsolutePath());
+			test = getFileRecursive(project, projectPath);
+		}
+		else
 	{
 		IPath projectPath = project.getLocation().append(buildConfig.getWorkFolder());
 		projectPath = projectPath.append(filename);	
-		IResource test = getFileRecursive(project,projectPath);
+			IContainer project = ResourcesPlugin.getWorkspace().getRoot();
+			test = getFileRecursive(project,projectPath);
+		}
+
 		return test;
 	}
 	
