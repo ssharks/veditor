@@ -24,6 +24,7 @@ import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.debug.ui.StringVariableSelectionDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.FocusAdapter;
 import org.eclipse.swt.events.FocusEvent;
@@ -42,6 +43,7 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.ContainerSelectionDialog;
 import org.eclipse.ui.dialogs.ISelectionValidator;
 import org.eclipse.ui.dialogs.PropertyPage;
@@ -194,7 +196,7 @@ public class SimulatorPropertyPage extends PropertyPage
 		row3.pack();		
 		//////////////////////
 		//Command
-		Composite row4=createGroup(composite,2,SWT.NONE);	
+		Composite row4=createGroup(composite,3,SWT.NONE);	
 		label=new Label(row4,SWT.NONE);
 		label.setText("Command");		
 		gd = new GridData();
@@ -205,9 +207,14 @@ public class SimulatorPropertyPage extends PropertyPage
 		gd = new GridData();
 		gd.widthHint=textWidth*2;
 		m_BuildCommand.setLayoutData(gd);
+		
+		//mg
+		createCommandButton(row4, m_BuildCommand);
+		
+		row4.pack();
 		//////////////////////
 		//Clean Command
-		Composite row5=createGroup(composite,2,SWT.NONE);	
+		Composite row5=createGroup(composite,3,SWT.NONE);
 		label=new Label(row5,SWT.NONE);
 		label.setText("Clean Command");		
 		gd = new GridData();
@@ -219,8 +226,24 @@ public class SimulatorPropertyPage extends PropertyPage
 		gd.widthHint=textWidth*2;
 		m_CleanCommand.setLayoutData(gd);
 		
-		
+		//mg
+		createCommandButton(row5, m_CleanCommand);		
 		composite.pack();
+	}
+		
+	//mg
+	private void createCommandButton(Composite parent, final Text commandText) {
+		Button button = new Button(parent, SWT.NONE);
+		button.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e)
+			{
+				StringVariableSelectionDialog dialog = new StringVariableSelectionDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell());
+				dialog.open();
+				String var = dialog.getVariableExpression();
+				commandText.insert(var);
+			}
+		});
+		button.setText("Variables...");
 	}
 	
 	protected Control createContents(Composite parent)
@@ -241,7 +264,7 @@ public class SimulatorPropertyPage extends PropertyPage
 	
 
 	
-	private Composite createGroup(Composite parent, int column,int style)
+	static public Composite createGroup(Composite parent, int column,int style)
 	{
 		Composite group = new Composite(parent, style);
 		group.setLayout(new GridLayout(column, false));
