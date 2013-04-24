@@ -23,6 +23,8 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.variables.VariablesPlugin;
+
 
 public class SimulateBuilder extends IncrementalProjectBuilder
 {
@@ -44,6 +46,14 @@ public class SimulateBuilder extends IncrementalProjectBuilder
 		monitor.beginTask("Building HDL Files", keyList.size());
 		for(String name : keyList.toArray(new String[0])){
 			BuildConfig buildConfig=buildConfigs.get(name);
+			//mg
+			try {
+				buildConfig.m_Command = VariablesPlugin.getDefault().getStringVariableManager().performStringSubstitution(buildConfig.m_Command);
+				buildConfig.m_CleanCommand = VariablesPlugin.getDefault().getStringVariableManager().performStringSubstitution(buildConfig.m_CleanCommand);
+			} catch (CoreException e) {
+				e.printStackTrace();
+			}
+
 			
 			//is this configuration enabled?
 			if(buildConfig.isEnabled() == false){
