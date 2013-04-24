@@ -12,14 +12,16 @@ package net.sourceforge.veditor.actions;
 
 import java.io.File;
 
+
 import net.sourceforge.veditor.VerilogPlugin;
-import net.sourceforge.veditor.builder.ErrorParser;
 import net.sourceforge.veditor.builder.ExternalLauncher;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.variables.VariablesPlugin;
 
 public class CompileAction extends AbstractAction
 {
@@ -102,6 +104,14 @@ public class CompileAction extends AbstractAction
 		command = command.replace("%p", temp);
 		command = command.replace("%s", simulationdir);		
 		command = command.replace("%w", path.toString());
+		
+		//mg
+		try {
+			command = VariablesPlugin.getDefault().getStringVariableManager().performStringSubstitution(command);
+		} catch (CoreException e) {
+			e.printStackTrace();
+		}
+		
 		temp = temp.replace(path.toString(), "");
 		command = command.replace("%d", temp.substring(1,temp.length()));
 		
