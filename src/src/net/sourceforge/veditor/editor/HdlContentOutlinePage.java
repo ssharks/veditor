@@ -181,6 +181,14 @@ public class HdlContentOutlinePage extends ContentOutlinePage implements IDouble
 								editor.showElement(el);
 							}
 						}
+						if(componenttype.startsWith("entityInst#")) {
+							EntityInstElement entityInst = (EntityInstElement)outlineElement;
+							
+							ArchitectureElement el = ((VhdlHierarchyProvider)(prov)).getArchElement(entityInst.GetEntityName());
+							if(el!=null) {
+								editor.showElement(el);
+							}
+						}
 					}
 				}
 			}
