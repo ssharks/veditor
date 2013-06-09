@@ -15,8 +15,14 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 public class Expression {
-	private static final int INVALID_WIDTH = -1;
-	private static final int UNFIXED_WIDTH = 0; // used for non width indicated constant.
+	public static final int INVALID_WIDTH = -1;
+	public static final int UNFIXED_WIDTH = 0; // used for non width indicated constant.
+
+	private static VerilogParser.Preferences preferences = null;
+
+	public static void setPreferences(VerilogParser.Preferences p) {
+		preferences = p;
+	}
 
 	private int width = INVALID_WIDTH;
 	private boolean valid = false;
@@ -42,7 +48,7 @@ public class Expression {
 		setWidth(width);
 		setValue(value);
 	}
-	
+
 	public Expression(int width, Identifier ident) {
 		setWidth(width);
 		addReference(ident);
@@ -83,7 +89,7 @@ public class Expression {
 		valid = true;
 		validString = true;
 	}
-	
+
 	public boolean isValidInt() {
 		return validString == false;
 	}
@@ -131,7 +137,10 @@ public class Expression {
 		int idx = image.indexOf('\'');
 		int width;
 		if (idx < 0) {
-			width = UNFIXED_WIDTH;
+			if (preferences.intConst == false)
+				width = UNFIXED_WIDTH;
+			else
+				width = 32;
 			setValue(parseInt(image, 10));
 		} else {
 			if (idx == 0)

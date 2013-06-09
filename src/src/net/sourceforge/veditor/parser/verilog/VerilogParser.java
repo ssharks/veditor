@@ -179,7 +179,9 @@ public class VerilogParser extends VerilogParserCore implements IParser, Prefere
 		String bitRange = null;
 		int dim = 0;
 		if (types[0].equals("variable")) {
-			if (types[1].contains("integer") || types[1].contains("genvar"))
+			if (types[1].contains("genvar"))
+				bitRange = "[-1:0]"; // unfixed
+			else if (types[1].contains("integer"))
 				bitRange = "[31:0]";
 			else
 				bitRange = (types.length > 2) ? types[2] : "";
@@ -668,6 +670,7 @@ public class VerilogParser extends VerilogParserCore implements IParser, Prefere
 		if (m_OutlineContainer != null) {
 			VerilogPlugin.deleteMarkers(m_File);
 			preferences.updatePreferences();
+			Expression.setPreferences(preferences);
 		}
 		try
 		{
@@ -855,7 +858,7 @@ public class VerilogParser extends VerilogParserCore implements IParser, Prefere
 	private int prevCommentLine;
 
 	// preferences
-	private static class Preferences {
+	public static class Preferences {
 		public boolean unresolved;
 		public boolean noUsed;
 		public boolean bitWidth;
