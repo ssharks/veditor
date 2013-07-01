@@ -13,37 +13,19 @@ package net.sourceforge.veditor.wizard;
 
 import java.util.Calendar;
 
-import net.sourceforge.veditor.VerilogPlugin;
-import net.sourceforge.veditor.templates.VhdlGlobalContext;
-
-import org.eclipse.jface.text.templates.Template;
-
 public class NewVhdlWizard extends NewHdlWizard
 {
-	private static String NEW_FILE_TEMPLATE_NAME="NewFile";
 	public void addPages()
 	{
 		super.addPages(".vhd");
 	}
 
-	String getInitialContents(String moduleName)
-	{
-		String results=
-			"-- \n"+
-			"-- "+moduleName+" \n"+
-			"-- \n"+
-			"\n"+
-			"library ieee;\n"+
-			"use ieee.std_logic_1164.all;"+"\n";
-		
-		//attempt to get new file template
-		Template[] templates = VerilogPlugin.getPlugin().getTemplateStore().getTemplates(VhdlGlobalContext.CONTEXT_TYPE);
-		for(Template template: templates){
-			if(NEW_FILE_TEMPLATE_NAME.equals(template.getName())){
-				results=template.getPattern();
-				break;
-			}
-		}
+	String getInitialContents( String templatePattern,  String moduleName,  String brief ) {
+		String results;	
+
+
+		results = templatePattern;
+		results = results.replaceAll( "\\$\\{brief\\}", brief );
 		
 		results=results.replaceAll("\\$\\{modulename\\}", moduleName);
 		results=results.replaceAll("\\$\\{user\\}", System.getProperty("user.name"));
@@ -57,6 +39,7 @@ public class NewVhdlWizard extends NewHdlWizard
 
 		return results.toString();
 	}
+	
 
 }
 

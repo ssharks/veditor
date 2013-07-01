@@ -17,7 +17,6 @@ import java.util.Map;
 import java.util.Vector;
 
 import net.sourceforge.veditor.HdlNature;
-import net.sourceforge.veditor.builder.BuildConfig;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
@@ -196,7 +195,7 @@ public class SimulatorPropertyPage extends PropertyPage
 		row3.pack();		
 		//////////////////////
 		//Command
-		Composite row4=createGroup(composite,3,SWT.NONE);	
+		Composite row4=createGroup(composite,2,SWT.NONE);	
 		label=new Label(row4,SWT.NONE);
 		label.setText("Command");		
 		gd = new GridData();
@@ -210,11 +209,12 @@ public class SimulatorPropertyPage extends PropertyPage
 		
 		//mg
 		createCommandButton(row4, m_BuildCommand);
+		//mg-----------------
 		
 		row4.pack();
 		//////////////////////
 		//Clean Command
-		Composite row5=createGroup(composite,3,SWT.NONE);
+		Composite row5=createGroup(composite,2,SWT.NONE);	
 		label=new Label(row5,SWT.NONE);
 		label.setText("Clean Command");		
 		gd = new GridData();
@@ -228,23 +228,29 @@ public class SimulatorPropertyPage extends PropertyPage
 		
 		//mg
 		createCommandButton(row5, m_CleanCommand);		
+		//mg-----------
+
 		composite.pack();
 	}
 		
 	//mg
-	private void createCommandButton(Composite parent, final Text commandText) {
-		Button button = new Button(parent, SWT.NONE);
+		private void createCommandButton( final Composite parent,
+				final Text commandText ) {
+			final Button button = new Button( parent, SWT.NONE );
 		button.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(SelectionEvent e)
-			{
-				StringVariableSelectionDialog dialog = new StringVariableSelectionDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell());
+				
+				public void widgetSelected( final SelectionEvent e ) {
+					final StringVariableSelectionDialog dialog = new StringVariableSelectionDialog(
+							PlatformUI.getWorkbench().getActiveWorkbenchWindow()
+									.getShell() );
 				dialog.open();
-				String var = dialog.getVariableExpression();
+					final String var = dialog.getVariableExpression();
 				commandText.insert(var);
 			}
 		});
 		button.setText("Variables...");
 	}
+		//mg------------------
 	
 	protected Control createContents(Composite parent)
 	{
@@ -264,7 +270,7 @@ public class SimulatorPropertyPage extends PropertyPage
 	
 
 	
-	static public Composite createGroup(Composite parent, int column,int style)
+	private Composite createGroup(Composite parent, int column,int style)
 	{
 		Composite group = new Composite(parent, style);
 		group.setLayout(new GridLayout(column, false));

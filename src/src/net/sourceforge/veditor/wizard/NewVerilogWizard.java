@@ -11,6 +11,8 @@
 
 package net.sourceforge.veditor.wizard;
 
+import java.util.Calendar;
+
 public class NewVerilogWizard extends NewHdlWizard
 {
 	public void addPages()
@@ -18,10 +20,27 @@ public class NewVerilogWizard extends NewHdlWizard
 		super.addPages(".v");
 	}
 
-	String getInitialContents(String moduleName)
-	{
-		return "module " + moduleName + "(\n" + ");\n" + "endmodule\n";
-	}
-
+	
+	// isn't called in the code yet.
+	String getInitialContents( String templatePattern, String moduleName,
+			String brief ) {
+		String results= "module " + moduleName + "(\n" + ");\n" + "endmodule\n";
+		
+		results = templatePattern;
+		results = results.replaceAll( "\\$\\{brief\\}", brief );
+		
+		results=results.replaceAll("\\$\\{modulename\\}", moduleName);
+		results=results.replaceAll("\\$\\{user\\}", System.getProperty("user.name"));
+		results=results.replaceAll("\\$\\{year\\}", Integer.toString(Calendar.getInstance().get(Calendar.YEAR)));
+		String month = Integer.toString(Calendar.getInstance().get(Calendar.MONTH)+1);
+		if(month.length()<2) month = "0"+month;
+		String day = Integer.toString(Calendar.getInstance().get(Calendar.DAY_OF_MONTH));
+		if(day.length()<2) day = "0"+day;
+		results=results.replaceAll("\\$\\{month\\}", month);
+		results=results.replaceAll("\\$\\{day\\}", day);
+		
+		return results.toString();
+	
+	}	
 }
 

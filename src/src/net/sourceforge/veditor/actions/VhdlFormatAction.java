@@ -34,7 +34,19 @@ public class VhdlFormatAction extends AbstractAction {
 	private boolean m_AlignOnArrowRight = true;
 	private boolean m_AlignOnArrowLeft = true;
 	private boolean m_AlignOnColon = true;
+	private boolean	m_AlignOnAssignment	= true;
+	private boolean	m_AlignOnComment	= true;
+	private boolean	m_AlignInOut		= true;
 	private String m_eol;
+	
+	/**
+	 * Class used to store stop and start points for 
+	 * fixing indents
+	 */
+	private class StartStop{
+		public int start;
+		public int indentAmount;
+	}
 	
 	public VhdlFormatAction(){
 		super("VhdlFormatAction");
@@ -43,6 +55,9 @@ public class VhdlFormatAction extends AbstractAction {
 	@Override
 	public void run() {		
 		StyledText widget = getViewer().getTextWidget();
+		//mg
+		final int topLineIndex = widget.getTopIndex();
+		//mg------------------------
 
 		Point point = widget.getSelection();
 		int begin = point.x;
@@ -64,10 +79,49 @@ public class VhdlFormatAction extends AbstractAction {
 	
 		selectedText=fixIndentation(selectedText);	
 		selectedText=addSpacePadding(selectedText);
-		selectedText=convertTabs(selectedText);		
+		selectedText=convertTabs(selectedText);	
+		// adjust the case of key words
+		if(m_KeywordsLowercase){
+			selectedText=fixCase(selectedText);
+		}
+		// align on colons
+		if (m_AlignOnColon) {
+			selectedText=alignBefore(selectedText,new int[]{VhdlParserCoreTokenManager.COLON});
+		}
+		// do we need to align after direction assignments
+		if ( m_AlignInOut ) {			
+			selectedText=alignAfter(selectedText, 
+					new int[]{ VhdlParserCoreTokenManager.IN, 
+				               VhdlParserCoreTokenManager.OUT,
+				               VhdlParserCoreTokenManager.INOUT,
+				               VhdlParserCoreTokenManager.BUFFER	
+					          }
+			        );
+		}
+		if (m_AlignOnArrowRight) {
+			selectedText=alignBefore(selectedText,new int[]{VhdlParserCoreTokenManager.RARROW});
+		}
+		if (m_AlignOnArrowLeft) {
+			selectedText=alignBefore(selectedText,new int[]{VhdlParserCoreTokenManager.LE});
+		}
+		if ( m_AlignOnAssignment ) {
+			selectedText=alignBefore(selectedText,new int[]{VhdlParserCoreTokenManager.ASSIGN});
+		}		
+		if ( m_AlignOnComment ) {
+			selectedText=alignBefore(selectedText,new int[]{VhdlParserCoreTokenManager.COMMENT});
+		}
+		
 		
 		//replace the text
 		widget.replaceTextRange(begin, end - begin, selectedText);
+		
+		//set caret and the part shown in the editor
+		//mg
+		if ( topLineIndex <= widget.getLineCount() ) {
+			widget.setCaretOffset( widget.getOffsetAtLine( topLineIndex ) );
+			widget.setTopIndex( topLineIndex );
+		}
+		//mg-------------------------------
 	}
 	
 	/**
@@ -90,6 +144,10 @@ public class VhdlFormatAction extends AbstractAction {
 		m_AlignOnColon = VerilogPlugin.getPreferenceBoolean(PreferenceStrings.ALIGNONCOLON);
 		m_AlignOnArrowRight = VerilogPlugin	.getPreferenceBoolean(PreferenceStrings.ALIGNONARROWRIGHT);
 		m_AlignOnArrowLeft = VerilogPlugin	.getPreferenceBoolean(PreferenceStrings.ALIGNONARROWLEFT);
+		m_AlignOnAssignment = VerilogPlugin.getPreferenceBoolean( PreferenceStrings.ALIGNONASSIGNMENT );
+		m_AlignOnComment = VerilogPlugin.getPreferenceBoolean( PreferenceStrings.ALIGNONCOMMENT );
+		m_AlignInOut = VerilogPlugin.getPreferenceBoolean( PreferenceStrings.ALIGNINOUT );
+		
 		m_eol = TextUtilities.getDefaultLineDelimiter(getViewer().getDocument());
 	}
 	
@@ -112,7 +170,7 @@ public class VhdlFormatAction extends AbstractAction {
 	}
 	
 	/**
-	 * Scans the token list for the next occurance of the given image 
+	 * Scans the token list for the next occurrence of the given image 
 	 * @param image Token image
 	 * @param tokens Token list
 	 * @param startIdx starting index
@@ -159,7 +217,7 @@ public class VhdlFormatAction extends AbstractAction {
 		HashMap<Integer,Integer> results=new HashMap<Integer,Integer>();
 		//compute indentation
 		
-		// when has another meaning when it is used inside or outside a case
+		// 'when' has another meaning when it is used inside or outside a case
 		// we keep a counter whether we are in a case structure or not
 		// (cases can be nested)
 		int incase = 0;
@@ -333,14 +391,14 @@ public class VhdlFormatAction extends AbstractAction {
 		}
 		return results;
 	}
+	 
 	/**
 	 * Fixes the line indentation for the given text block
 	 * @param text text block to examine
 	 * @return properly indented string
 	 */
-	private String fixIndentation(String text){
-		//get a list of lines
-		String[] lines=text.split("\n");
+	private String fixIndentation(String text){		
+		String[] lines = text.split("\n");
 		//if there is only 1 line, bail
 		if(lines.length < 2){
 			return text;
@@ -351,10 +409,6 @@ public class VhdlFormatAction extends AbstractAction {
 		//adjust the lines
 		String indentString=getIndentString();		
 		String currentIndent=getLineIndent(lines[0]);
-		
-		if( m_KeywordsLowercase) {
-			putToLowercase(lines,tokens);
-		}
 		
 		for(int lineNum=0; lineNum < lines.length; lineNum++){			
 			//adjust the indentation. Need to add 1 since the token lines are zero based			
@@ -382,7 +436,7 @@ public class VhdlFormatAction extends AbstractAction {
 			if(indexcomment>=0) prevline = prevline.substring(0,indexcomment).trim();
 			
 			// sometimes statements are written over multiple lines
-			// in that case, only adjust the furst line.			
+			// in that case, only adjust the first line.			
 			boolean linecontinuation =
 				!lineIndentation.containsKey(lineNum+1) &&//lineIndentation starts counting at 0!
 				!prevline.endsWith(",") &&
@@ -396,21 +450,12 @@ public class VhdlFormatAction extends AbstractAction {
 			}
 
 		}
-		if (m_AlignOnColon) {
-			align(lines, ":", lineIndentation);
-		}
-		if (m_AlignOnArrowRight) {
-			align(lines, "=>", lineIndentation);
-		}
-		if (m_AlignOnArrowLeft) {
-			align(lines, "<=", lineIndentation);
-		}
 
-		//reassemble the lines
 		StringBuffer buffer=new StringBuffer();
 		for(int lineNum=0; lineNum < lines.length; lineNum++){
-			if (lines[lineNum].trim().length() != 0)
-			buffer.append(lines[lineNum]);
+			if (lines[lineNum].trim().length() != 0){
+				buffer.append(lines[lineNum]);
+			}
 			buffer.append(m_eol);
 		}
 		return buffer.toString();
@@ -590,193 +635,223 @@ public class VhdlFormatAction extends AbstractAction {
 		return line.substring(0, firstNonSpace);
 	}
 
-	/**
-	 * align for symbol like "=>"":"
-	 * 
-	 * @param String
-	 *            [] lines
-	 * @param String
-	 *            regex
-	 * @return Converted text
-	 */
-	private void align(String[] lines, String regex, HashMap<Integer,Integer> lineIndentation) {
-
-		for (int lineNum = 0; lineNum < lines.length; lineNum++) {
-
-			int index = indexOfAlignSymbol(lines, regex, lineNum);
-			if (index == -1)
-				continue;
-			int startLine = lineNum;
-			int stopLine = lineNum;
-			int maxIndexassign = 0;
-			while (index != -1 && stopLine+1 < lines.length) {
-				if (index > maxIndexassign)
-					maxIndexassign = index;
-				stopLine++;
-				index = indexOfAlignSymbol(lines, regex, stopLine);
-				if(lineIndentation.containsKey(stopLine+1)) {
-					int indentValue=lineIndentation.get(stopLine+1);
-					if(indentValue!=0) break;
-				}
-			}
-			for (int LineNum2 = startLine; LineNum2 < stopLine; LineNum2++) {
-				index = indexOfAlignSymbol(lines, regex, LineNum2);
-				if(index==-1) {
-					VerilogPlugin.println("Format: error on line "+LineNum2);
-				} else {
-					String substring3 = trimRight(lines[LineNum2].substring(0, index));
-					String substring4 = lines[LineNum2].substring(index).trim();
-					for (int i = 0; i < maxIndexassign - index + 1; i++) {
-						if (!inString(lines[lineNum], regex)) {
-							substring3 = substring3 + " ";
-						}
-					}
-					lines[LineNum2] = "" + substring3 + substring4;
-				}
-			}
-
-			lineNum = stopLine;
-
-		}
-	}
-
-	/**
-	 * get the index of the regex in particular
-	 * 
-	 * @param lines
-	 * @param regex
-	 * @param array
-	 * @param lineNum
-	 * @return indexAssign
-	 */
-	private int indexOfAlignSymbol(String[] lines, String regex, int lineNum) {
-		if (!lines[lineNum].contains(regex))
-			return -1;
-		if (lines[lineNum].endsWith(regex))
-			return -1;
-		if (lines[lineNum].trim().startsWith("--"))
-			return -1;
-		if (!closebracket(lines[lineNum], regex))
-			return -1;
-		int indexAssign = lines[lineNum].indexOf(regex);
-		if(indexAssign==-1) { // thought it contained regex????
-			return -1;
-		}
-		int index1 = lines[lineNum].indexOf("--");
-		if(index1>=0 && index1<indexAssign) return -1;
-		int index2 = lines[lineNum].indexOf("=>");
-		if(index2>=0 && index2<indexAssign) return -1;
-		int index3 = lines[lineNum].indexOf("<=");
-		if(index3>=0 && index3<indexAssign) return -1;
-		int index4 = lines[lineNum].indexOf(":");
-		if(index4>=0 && index4<indexAssign) return -1;
 		
-		String substring1 = lines[lineNum].substring(0, indexAssign);
-		if (substring1.trim().length() == 0)
-			return -1;
-
-		String substring2 = lines[lineNum].substring(indexAssign + regex.length());
-		String substring1_trimmed = trimRight(substring1);
-		String substring2_trimmed = substring2.trim();
-		lines[lineNum] = "" + substring1_trimmed + regex + substring2_trimmed;
-		indexAssign = lines[lineNum].indexOf(regex);
-
-		return indexAssign;
+	/**
+	 * Create a string made up of the repetition of str
+	 * @param str The String to repeat
+	 * @param repeat Number of times to repeat
+	 * @return new String
+	 */
+	private String fillString(String str,int repeat){
+		StringBuffer results=new StringBuffer();
+		for(int i=0; i < repeat; i++){
+			results.append(str);
+		}
+		return results.toString();
 	}
 	
-
 	/**
-	 * to judge if the regex is in the close bracket
-	 * 
-	 * @param stringc
-	 * @param regex
-	 * @return close bracket
+	 * Checks to see if the passed token is on list of tokens
+	 * @return true if the token is on the list, false if not
 	 */
-	private boolean closebracket(String stringc, String regex) {
-		boolean closebracket = true;
-
-		if (stringc.contains(regex) && stringc.contains("(")) {
-			int indexAssign0 = stringc.indexOf(regex);
-			String substring0 = stringc.substring(0, indexAssign0);
-			int leftbracket = -1;
-			int rightbracket = -1;
-			int c = 1;
-			int d = 1;
-			do {
-				leftbracket++;
-				c = substring0.indexOf("(");
-				String substrin = substring0.substring(c + 1);
-				substring0 = substrin;
-			} while (c != -1);
-			substring0 = stringc.substring(0, indexAssign0);
-			do {
-				rightbracket++;
-				d = substring0.indexOf(")");
-				String substri = substring0.substring(d + 1);
-				substring0 = substri;
-
-			} while (d != -1);
-			if (leftbracket == rightbracket) {
-				closebracket = true;
-			} else
-				closebracket = false;
-
-		}
-		return closebracket;
-	}
-	
-
-	/**
-	 * trim only at right side of the string
-	 * 
-	 * @param s
-	 * @return String been trim
-	 */
-	public String trimRight(String s) {
-		String _s = s;
-
-		while (_s.length() > 0 && _s.charAt(_s.length() - 1) == ' ') {
-			_s = _s.substring(0, _s.length() - 1);
-		}
-
-		return _s;
-	}
-
-	/**
-	 * to see if the regex is within a string.if it is,no align.
-	 * @param stringc
-	 * @param regex
-	 * @return if regex in a string or not 
-	 */
-	private boolean inString(String stringc, String regex) {
-		boolean inString = false;
-		if (stringc.contains(regex) && stringc.contains("\"")) {
-			int indexAssign0 = stringc.indexOf(regex);
-			String substring0 = stringc.substring(0, indexAssign0);
-			int quotation = -1;
-			int c = 1;
-			do {
-				quotation++;
-				c = substring0.indexOf("\"");
-				String substrin = substring0.substring(c + 1);
-				substring0 = substrin;
-			} while (c != -1);
-			if (quotation % 2 == 1) {
-				inString = true;
-			} else {
-				inString = false;
+	private boolean isTokenOnList(int tokenId, int valid_tokens[]){
+		for(int i: valid_tokens){
+			if (tokenId == i){
+				return true;
 			}
 		}
-		return inString;
+		return false;
+	}
+	
+	/**
+	 * Aligns the text before one or more tokens
+	 * @param text
+	 * @param valid_tokens An array of tokens to align on
+	 * @return String after alignment is done
+	 * @note The alignment value is only valid for a consecutive set of lines. If
+	 * a line without a token is encountered, the alignment value gets reset
+	 */
+	private String alignBefore(String text,int valid_tokens[]) {
+		// list of lines that need to be indented and the location of indent
+		HashMap<Integer,StartStop> indentSet = new HashMap<Integer,StartStop>();		
+		//grouping of indent level
+		ArrayList <HashMap<Integer,StartStop>> indentGroups = new ArrayList <HashMap<Integer,StartStop>>() ;	
+		ArrayList<Token> tokens=TokenizeText(text);
+		String[] lines=text.split(m_eol);
+		//if there is only 1 line, bail
+		if(lines.length < 2){
+			return text;
+		}
+		
+		//find the indent position following the direction directive
+		int maxPosAfterDirection=0;
+		int lastLineWithToken=0;		
+		for(int i=0;i < tokens.size();i++){
+			Token token=tokens.get(i);
+			if(isTokenOnList(token.kind,valid_tokens) ){		
+				lastLineWithToken =  token.beginLine;
+				//record the info about the tokens
+				StartStop indentInfo = new StartStop();
+				indentInfo.start = token.beginColumn;				
+				//token lines are one based
+				indentSet.put(token.beginLine -1, indentInfo);
+				//record the max indentation after the directive
+				if(tokens.get(i).beginColumn  > maxPosAfterDirection){
+					maxPosAfterDirection=tokens.get(i).beginColumn;
+				}				
+				
+			}
+			else{
+				//token not found
+				if (  token.beginLine > (lastLineWithToken+1) && lastLineWithToken!=0){
+					// we encounter a whole line without a valid token 
+					for( Integer line: indentSet.keySet()){
+						//set all the indent values to max encountered in this block
+						indentSet.get(line).indentAmount = maxPosAfterDirection;					
+					}
+					//file away the current group
+					indentGroups.add(indentSet);
+					//make a new group
+					indentSet = new HashMap<Integer,StartStop>();				
+					maxPosAfterDirection=0;
+					lastLineWithToken   =0;
+				}
+			}
+		}	
+		//add the last alignment set to the list
+		for( Integer line: indentSet.keySet()){
+			//set all the indent values to max encountered in this block
+			indentSet.get(line).indentAmount = maxPosAfterDirection;					
+		}
+		indentGroups.add(indentSet);
+		
+		
+		for(HashMap<Integer,StartStop> indentInfoSet : indentGroups){
+			//adjust alignment
+			for( Integer line: indentInfoSet.keySet()){
+				StartStop indentInfo=indentInfoSet.get(line);
+				String indentString = fillString(" ", indentInfo.indentAmount - indentInfo.start+1);
+				String str1 =  lines[line].substring(0,indentInfo.start-2);
+				String str2 =  lines[line].substring(indentInfo.start-1);
+				lines[line] = str1 + indentString + str2;
+			}
+		}
+		
+		//reassemble the lines
+		StringBuffer buffer=new StringBuffer();
+		for(int lineNum=0; lineNum < lines.length; lineNum++){
+			//skip the lines that consist only of white space 
+			if (lines[lineNum].trim().length() != 0){
+				buffer.append(lines[lineNum]);				
+			}
+			//do not append a new line to the last line
+			if(lineNum +1 !=  lines.length ){
+				buffer.append(m_eol);
+			}
+		}
+		return buffer.toString(); 
 	}
 
 	/**
-	 * put tokens in lowercase
-	 * @param lines
-	 * @param tokens
+	 * Aligns the text after one or more tokens
+	 * @param text
+	 * @param valid_tokens An array of tokens to align on
+	 * @return String after alignment is done
+	 * @note The alignment value is only valid for a consecutive set of lines. If
+	 * a line without a token is encountered, the alignment value gets reset
 	 */
-	private void putToLowercase(String[] lines, ArrayList<Token> tokens) {
-
+	private String alignAfter(String text,int valid_tokens[]) {
+		// list of lines that need to be indented and the location of indent
+		HashMap<Integer,StartStop> indentSet = new HashMap<Integer,StartStop>();
+		//grouping of indent level
+		ArrayList <HashMap<Integer,StartStop>> indentGroups = new ArrayList <HashMap<Integer,StartStop>>() ;		
+		ArrayList<Token> tokens=TokenizeText(text);
+		String[] lines=text.split(m_eol);
+		//if there is only 1 line, bail
+		if(lines.length < 2){
+			return text;
+		}
+		
+		//find the indent position following the direction directive
+		int maxPosAfterDirection=0;
+		int lastLineWithToken=0;		
+		for(int i=0;i < tokens.size();i++){
+			Token token=tokens.get(i);					
+			 
+			if(isTokenOnList(token.kind,valid_tokens) ){				
+				lastLineWithToken =  token.beginLine;
+				//make sure there is another token on the same line
+				if( (i+1) < tokens.size() && token.beginLine == tokens.get(i+1).beginLine){
+					//record the info about the tokens
+					StartStop indentInfo = new StartStop();				
+					indentInfo.start  = tokens.get(i+1).beginColumn;
+					//token lines are one based
+					indentSet.put(token.beginLine -1, indentInfo);
+					//record the max indentation after the directive
+					if(tokens.get(i+1).beginColumn  > maxPosAfterDirection){
+						maxPosAfterDirection=tokens.get(i+1).beginColumn;
+					}					
+				}
+			}			
+			else{
+				//token not found
+				if (  token.beginLine > (lastLineWithToken+1) && lastLineWithToken!=0){
+					// we encounter a whole line without a valid token 
+					for( Integer line: indentSet.keySet()){
+						//set all the indent values to max encountered in this block
+						indentSet.get(line).indentAmount = maxPosAfterDirection;					
+					}
+					//file away the current group
+					indentGroups.add(indentSet);
+					//make a new group
+					indentSet = new HashMap<Integer,StartStop>();				
+					maxPosAfterDirection=0;
+					lastLineWithToken   =0;
+				}
+			}
+		}	
+		//add the last alignment set to the list
+		for( Integer line: indentSet.keySet()){
+			//set all the indent values to max encountered in this block
+			indentSet.get(line).indentAmount = maxPosAfterDirection;					
+		}
+		indentGroups.add(indentSet);
+		
+		for(HashMap<Integer,StartStop> indentInfoSet : indentGroups){
+			//adjust alignment
+			for( Integer line: indentInfoSet.keySet()){
+				StartStop indentInfo=indentInfoSet.get(line);
+				String indentString = fillString(" ", indentInfo.indentAmount - indentInfo.start+1);
+				String str1 =  lines[line].substring(0,indentInfo.start-2);
+				String str2 =  lines[line].substring(indentInfo.start-1);
+				lines[line] = str1 + indentString + str2;
+			}
+		}
+		
+		//reassemble the lines
+		StringBuffer buffer=new StringBuffer();
+		for(int lineNum=0; lineNum < lines.length; lineNum++){
+			//skip the lines that consist only of white space 
+			if (lines[lineNum].trim().length() != 0){
+				buffer.append(lines[lineNum]);				
+			}
+			buffer.append(m_eol);
+		}
+		return buffer.toString(); 
+	}
+	
+	/**
+	 * Converts all the keywords in the passed text to lower case
+	 * @param text Text to be formatted
+	 */
+	private String fixCase(String text) {
+		ArrayList<Token> tokens=TokenizeText(text);
+		String[] lines=text.split(m_eol);
+		//if there is only 1 line, bail
+		if(lines.length < 2){
+			return text;
+		}
+		
 		for (int tokennr = 0; tokennr < tokens.size(); tokennr++) {
 			Token token = tokens.get(tokennr);
 			for (int s = 0; s < HdlScanner.vhdlWords.length; s++) {
@@ -798,6 +873,19 @@ public class VhdlFormatAction extends AbstractAction {
 				}
 			}
 		}
+		//reassemble the lines
+		StringBuffer buffer=new StringBuffer();
+		for(int lineNum=0; lineNum < lines.length; lineNum++){
+			//skip the lines that consist only of white space 
+			if (lines[lineNum].trim().length() != 0){
+				buffer.append(lines[lineNum]);				
+			}
+			//do not append a new line to the last line
+			if(lineNum +1 !=  lines.length ){
+				buffer.append(m_eol);
+			}
+		}
+		return buffer.toString(); 
 	}
 
 }

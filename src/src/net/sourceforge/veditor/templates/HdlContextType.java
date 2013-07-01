@@ -25,5 +25,8 @@ public class HdlContextType extends TemplateContextType{
 		addResolver(new GlobalTemplateVariables.Year());
 		addResolver(new GlobalTemplateVariables.Time());
 		addResolver(new GlobalTemplateVariables.User());
+		//mg
+		addResolver( new VhdlTemplateVariable.Brief() );
+		//mg-------------------
 	}
 }

@@ -48,12 +48,16 @@ public class SimulateBuilder extends IncrementalProjectBuilder
 			BuildConfig buildConfig=buildConfigs.get(name);
 			//mg
 			try {
-				buildConfig.m_Command = VariablesPlugin.getDefault().getStringVariableManager().performStringSubstitution(buildConfig.m_Command);
-				buildConfig.m_CleanCommand = VariablesPlugin.getDefault().getStringVariableManager().performStringSubstitution(buildConfig.m_CleanCommand);
-			} catch (CoreException e) {
+				buildConfig.m_Command = VariablesPlugin.getDefault()
+						.getStringVariableManager()
+						.performStringSubstitution( buildConfig.m_Command );
+				buildConfig.m_CleanCommand = VariablesPlugin.getDefault()
+						.getStringVariableManager()
+						.performStringSubstitution( buildConfig.m_CleanCommand );
+			} catch ( final CoreException e ) {
 				e.printStackTrace();
 			}
-
+			//mg--------------
 			
 			//is this configuration enabled?
 			if(buildConfig.isEnabled() == false){

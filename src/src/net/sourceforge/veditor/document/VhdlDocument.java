@@ -22,6 +22,7 @@ import net.sourceforge.veditor.parser.OutlineElement;
 import net.sourceforge.veditor.parser.ParserFactory;
 import net.sourceforge.veditor.parser.vhdl.VhdlOutlineElementFactory.ArchitectureElement;
 import net.sourceforge.veditor.parser.vhdl.VhdlOutlineElementFactory.EntityDeclElement;
+import net.sourceforge.veditor.parser.vhdl.VhdlOutlineElementFactory.PackageDeclElement;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -96,6 +97,21 @@ public class VhdlDocument extends HdlDocument
 				}
 			}
 		}
+		
+		{
+			OutlineDatabase database = getOutlineDatabase();
+			PackageDeclElement packs[] = database.findTopLevelPackages();
+			for (int p=0;p<packs.length;p++){
+				PackageDeclElement packDecl = packs[p];
+				OutlineElement[] enitityChildren=packDecl.getChildren();
+				for(int entChildIdx=0;entChildIdx<enitityChildren.length;entChildIdx++){
+					if(	enitityChildren[entChildIdx].getName().equalsIgnoreCase(name)){
+						results.add(enitityChildren[entChildIdx]);
+					}
+				}
+			}
+		}
+		
 		return results;
 	}
 	/**

@@ -40,6 +40,50 @@ import org.eclipse.swt.widgets.Display;
 
 public class VhdlCompletionProcessor extends HdlCompletionProcessor {
 	private static String TEST_BENCH_TEMPLATE_NAME="testbench";
+	
+	private String simplifyCodeLine(String line){
+		char[] cc = line.toCharArray();
+		int edi=0;
+		
+		for(int esi=0;esi<cc.length;esi++){
+			char c = cc[esi];
+			if(c==9)c = 32;
+			if(c==32 && edi!=0 && cc[edi-1]==32){
+				// skip multiple whitespace
+			}else{
+				cc[edi++] = c;
+			}
+		}
+		
+		return new String(cc,0,edi);
+	}
+	
+	
+	private List<IComparableCompletionProposal> matchSpecificPattern(HdlDocument doc,int documentOffset){
+		String line = getCurrentLineUpToOffset(doc.get(), documentOffset);
+		line = line.toLowerCase();
+		line = simplifyCodeLine(line);
+		String tline = line; // left-trimmed line. Can start with whitespace
+		List<IComparableCompletionProposal> matchList = new ArrayList<IComparableCompletionProposal>();
+		
+		if(tline.length()!=0 && tline.charAt(0)==32){
+			tline = tline.substring(1);
+		}
+		
+		if(tline.compareTo("use ")==0){
+			matchList.add(getSimpleProposal("ieee", documentOffset, 0));
+			matchList.add(getSimpleProposal("work", documentOffset, 0));
+		}else if(tline.compareTo("use ieee.")==0){
+			matchList.add(getSimpleProposal("std_logic_1164.all;", documentOffset, 0));
+			matchList.add(getSimpleProposal("numeric_std.all;", documentOffset, 0));
+			matchList.add(getSimpleProposal("std_logic_unsigned.all;", documentOffset, 0));
+		}
+		
+		
+		
+		if(matchList.size()!=0) return matchList;
+		return null;
+	}
 
 	public ICompletionProposal[] computeCompletionProposals(ITextViewer viewer,
 			int documentOffset) {
@@ -56,12 +100,15 @@ public class VhdlCompletionProcessor extends HdlCompletionProcessor {
 		} catch (BadLocationException e) {
 		} catch (HdlParserException e) {
 		}
+		
+		matchList = matchSpecificPattern(doc, documentOffset);
 		String matchwithdot = getMatchingWordWithdot(doc.get(), documentOffset);
 		
 		matchwithdot = matchwithdot+" ";//add space
 		String matchword[]=matchwithdot.split("[.]");
 		
-		if(matchword.length==1) {
+		if (matchList != null){
+		} else if(matchword.length==1) {
 			switch (context) {
 		 		case VhdlDocument.VHDL_GLOBAL_CONTEXT:
 		 			matchList = getGlobalPropsals(doc, documentOffset, match);

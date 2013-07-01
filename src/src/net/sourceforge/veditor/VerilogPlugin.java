@@ -18,8 +18,10 @@ import java.util.List;
 
 import net.sourceforge.veditor.templates.VerilogInModuleContextType;
 import net.sourceforge.veditor.templates.VerilogInStatementContextType;
+import net.sourceforge.veditor.templates.VerilogNewFileContext;
 import net.sourceforge.veditor.templates.VerilogOutModuleContextType;
 import net.sourceforge.veditor.templates.VhdlGlobalContext;
+import net.sourceforge.veditor.templates.VhdlNewFileContext;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
@@ -451,6 +453,9 @@ public class VerilogPlugin extends AbstractUIPlugin
 		if (contextTypeRegistry == null) {
 			// create an configure the contexts available in the template editor
 			contextTypeRegistry= new ContributionContextTypeRegistry();
+
+			contextTypeRegistry.addContextType( VhdlNewFileContext.CONTEXT_TYPE );
+			contextTypeRegistry.addContextType( VerilogNewFileContext.CONTEXT_TYPE );
 			contextTypeRegistry.addContextType(VhdlGlobalContext.CONTEXT_TYPE);
 			contextTypeRegistry.addContextType(VerilogInStatementContextType.CONTEXT_TYPE);
 			contextTypeRegistry.addContextType(VerilogInModuleContextType.CONTEXT_TYPE);

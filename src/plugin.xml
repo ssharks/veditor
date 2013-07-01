@@ -407,6 +407,16 @@
       <include
       		file="templates/verilog.xml">      		
       </include>
+      <contextType
+            class="net.sourceforge.veditor.templates.VhdlNewFileContext"
+            id="net.sourceforge.veditor.templates.vhdl.context.newfile"
+            name="VHDL New File">
+      </contextType>
+      <contextType
+            class="net.sourceforge.veditor.templates.VerilogNewFileContext"
+            id="net.sourceforge.veditor.templates.verilog.context.newfile"
+            name="Verilog New File">
+      </contextType>
    </extension>
 
    <extension point="org.eclipse.core.runtime.contentTypes">

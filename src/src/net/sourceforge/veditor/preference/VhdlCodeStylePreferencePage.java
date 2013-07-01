@@ -25,6 +25,10 @@ public class VhdlCodeStylePreferencePage extends AbstractSimplePreferencePage {
 		addField(new BooleanFieldEditor(PreferenceStrings.ALIGNONARROWRIGHT,"Align On =>",parent));
 		addField(new BooleanFieldEditor(PreferenceStrings.ALIGNONARROWLEFT,"Align On <=",parent));
 		addField(new BooleanFieldEditor(PreferenceStrings.ALIGNONCOLON,"Align On :",parent));
+		//not supported for now
+		//addField( new BooleanFieldEditor( PreferenceStrings.ALIGNONCOMMENT,"Align On --", parent ) );
+		addField( new BooleanFieldEditor( PreferenceStrings.ALIGNONASSIGNMENT,"Align On :=", parent ) );
+		addField( new BooleanFieldEditor( PreferenceStrings.ALIGNINOUT, "Align After \"in\", \"out\", \"inout\" and \"buffer\"", parent ) );
 	}
 
 }

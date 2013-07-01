@@ -11,7 +11,6 @@
 
 package net.sourceforge.veditor.editor;
 
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Vector;
 
@@ -323,7 +322,9 @@ abstract public class HdlSourceViewerConfiguration extends
 						results=results.replaceAll("\n","\n"+commentString+" ");
 						results+="\n";
 					}
-					results+=element.getLongName()+"\n";
+					// ULTRANO
+					//results+=element.getLongName()+"\n";
+					results+=element.getFullSourceCode();
 				}
 			} else {
 				VhdlOutlineElement component1 = (VhdlOutlineElement) component;

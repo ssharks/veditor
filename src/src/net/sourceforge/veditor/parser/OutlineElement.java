@@ -10,8 +10,12 @@
  *******************************************************************************/
 package net.sourceforge.veditor.parser;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Vector;
 
 import org.eclipse.core.resources.IFile;
 
@@ -130,6 +134,52 @@ public class OutlineElement extends Object{
 	public String getLongName(){
 		return m_Name;
 	}
+	
+	public String getFullSourceCode(){
+		try {
+			InputStream is = m_File.getContents(true);
+			BufferedReader br = new BufferedReader(new InputStreamReader(is));
+			int line=1;
+			for(;line < m_StartingLine;line++)	br.readLine();
+			StringBuffer sb = new StringBuffer();
+			
+			Vector<String> lines = new Vector<String>();
+			lines.add(br.readLine()); line++;
+			
+			for(;line <= m_EndingLine;line++)	{
+				lines.add(br.readLine());
+			}
+			br.close();
+			is.close();
+			
+			String firstline = lines.elementAt(0);
+			int wordstart = 0;
+			for(;wordstart < firstline.length();wordstart++){
+				char c = firstline.charAt(wordstart);
+				if(c==9 || c==32)continue;
+				break;
+			}
+			
+			String whitespace = firstline.substring(0,wordstart);
+			
+			for(int i=0; i<lines.size();i++){
+				String a = lines.elementAt(i);
+				String b = a;
+				if(wordstart != 0){
+					if(a.startsWith(whitespace))b = a.substring(wordstart);
+				}
+				if(i!=0)sb.append("\n");
+				sb.append(b);
+			}
+			
+			
+			return sb.toString().trim();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return "";
+		}
+	}
+	
 
 	/**
 	 * @return The name of this element with minimum decorations

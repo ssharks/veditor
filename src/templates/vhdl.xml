@@ -249,6 +249,41 @@ end if;
 
 
 <template
+	autoinsert="true"
+	context="net.sourceforge.veditor.templates.vhdl.context.global"
+	deleted="false"
+	description=""
+	enabled="true"
+	name="type-record"
+    id="net.sourceforge.veditor.templates.vhdl.type_record"
+>type ${cursor} is record
+	
+end record;
+</template>
+
+<template
+	autoinsert="true"
+	context="net.sourceforge.veditor.templates.vhdl.context.global"
+	deleted="false"
+	description=""
+	enabled="true"
+	name="type-array"
+    id="net.sourceforge.veditor.templates.vhdl.type_array"
+>type ${name} is array(0 to ${top}) of ${type};</template>
+
+
+<template
+	autoinsert="false"
+	context="net.sourceforge.veditor.templates.vhdl.context.global"
+	deleted="false"
+	description=""
+	enabled="true"
+	name="subtype"
+    id="net.sourceforge.veditor.templates.vhdl.subtype"
+>subtype ${name} is std_logic_vector(${top} downto 0);</template>
+
+
+<template
 	autoinsert="false"
 	context="net.sourceforge.veditor.templates.vhdl.context.global"
 	deleted="false"
@@ -354,24 +389,19 @@ end block;
 
 <template
 	autoinsert="false"
-	context="net.sourceforge.veditor.templates.vhdl.context.global"
+	context="net.sourceforge.veditor.templates.vhdl.context.newfile"
 	deleted="false"
-	description="This is a special template that is used to create new files. Do not change its name or its context"
+	description="This is a special template that is used to create new files."
 	enabled="true"
 	id="net.sourceforge.veditor.templates.vhdl.newFile"
-	name="NewFile"
+	name="VHDL NewFile"
 >--------------------------------------------------------------------------------
 -- Entity: ${modulename}
 -- Date:${year}-${month}-${day}  
 -- Author: ${user}     
 --
--- Description ${cursor}
+-- Description: ${brief}
 --------------------------------------------------------------------------------
-library ieee;
-use ieee.std_logic_1164.all;
-use ieee.std_logic_unsigned.all;
-
-
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.std_logic_unsigned.all;

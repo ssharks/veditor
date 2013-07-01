@@ -49,6 +49,9 @@ abstract public class NewHdlWizard extends Wizard implements INewWizard
 		final String containerName = page.getContainerName();
 		final String moduleName = page.getModuleName();
 		final String fileName = page.getFileName();
+		final String brief = page.getBrief();
+		final String template = page.getTemplatePattern();
+
 		IRunnableWithProgress op = new IRunnableWithProgress()
 		{
 			public void run(IProgressMonitor monitor)
@@ -56,7 +59,8 @@ abstract public class NewHdlWizard extends Wizard implements INewWizard
 			{
 				try
 				{
-					doFinish(containerName, moduleName, fileName, monitor);
+					doFinish( template, containerName, moduleName, brief, fileName, monitor );					
+
 				}
 				catch (CoreException e)
 				{
@@ -86,8 +90,12 @@ abstract public class NewHdlWizard extends Wizard implements INewWizard
 		return true;
 	}
 	
-	private void doFinish(String containerName, String moduleName,
-			String fileName, IProgressMonitor monitor) throws CoreException
+//	private void doFinish(String containerName, String moduleName,
+//			String fileName, IProgressMonitor monitor) throws CoreException
+	//mg
+	private void doFinish( final String template, final String containerName, final String moduleName, final String brief,
+			final String fileName, final IProgressMonitor monitor ) throws CoreException
+	//mg--------------------------
 	{
 		monitor.beginTask("Creating " + fileName, 2);
 
@@ -109,7 +117,10 @@ abstract public class NewHdlWizard extends Wizard implements INewWizard
 		}
 		try
 		{
-			InputStream stream = openContentStream(moduleName);
+//			InputStream stream = openContentStream(moduleName);
+			//mg
+			final InputStream stream = openContentStream( template, moduleName, brief );
+			//mg------------------
 			file.create(stream, true, monitor);
 			stream.close();
 		}
@@ -137,13 +148,15 @@ abstract public class NewHdlWizard extends Wizard implements INewWizard
 		monitor.worked(2);
 	}
 	
-	private InputStream openContentStream(String moduleName)
-	{
-		String contents = getInitialContents(moduleName);
+
+	private InputStream openContentStream( final String template, final String moduleName, final String brief ) {
+
+		String contents = getInitialContents( template, moduleName, brief );
+
 		return new ByteArrayInputStream(contents.getBytes());
 	}
 	
-	abstract String getInitialContents(String moduleName);
+	abstract String getInitialContents( String templatePattern, String moduleName, String brief );
 
 	private void throwCoreException(String message) throws CoreException
 	{

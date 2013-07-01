@@ -117,4 +117,27 @@ endgenerate
 end
 </template>
 
+<template
+    autoinsert="false"
+    context="net.sourceforge.veditor.templates.verilog.context.newfile"
+    deleted="false"
+    description="This is a special template that is used to create new files."
+    enabled="true"
+    id="net.sourceforge.veditor.templates.verilog.newFile"
+    name="Verilog NewFile"
+>/**************************************
+* Module: ${modulename}
+* Date:${year}-${month}-${day}  
+* Author: ${user}     
+*
+* Description: ${brief}
+***************************************/
+module  ${modulename}(
+);
+
+
+endmodule
+
+</template>
+
 </templates>

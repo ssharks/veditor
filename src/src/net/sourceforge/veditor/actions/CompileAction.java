@@ -107,10 +107,12 @@ public class CompileAction extends AbstractAction
 		
 		//mg
 		try {
-			command = VariablesPlugin.getDefault().getStringVariableManager().performStringSubstitution(command);
-		} catch (CoreException e) {
+			command = VariablesPlugin.getDefault().getStringVariableManager()
+					.performStringSubstitution( command );
+		} catch ( final CoreException e ) {
 			e.printStackTrace();
 		}
+		//mg-------------------
 		
 		temp = temp.replace(path.toString(), "");
 		command = command.replace("%d", temp.substring(1,temp.length()));

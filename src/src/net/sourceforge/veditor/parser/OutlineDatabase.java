@@ -18,6 +18,7 @@ import java.util.Vector;
 import net.sourceforge.veditor.VerilogPlugin;
 import net.sourceforge.veditor.parser.verilog.VerilogOutlineElementFactory.VerilogInstanceElement;
 import net.sourceforge.veditor.parser.verilog.VerilogParserReader;
+import net.sourceforge.veditor.parser.vhdl.VhdlOutlineElementFactory.PackageDeclElement;
 import net.sourceforge.veditor.semanticwarnings.SemanticWarnings;
 
 import org.eclipse.core.resources.IContainer;
@@ -113,6 +114,27 @@ public class OutlineDatabase {
 
 	public OutlineElement[] findTopLevelElements(String name){
 		return findTopLevelElements(name, false);
+	}
+	
+	
+	
+	synchronized public PackageDeclElement[] findTopLevelPackages() {
+		ArrayList<PackageDeclElement> list = new ArrayList<PackageDeclElement>();
+		Iterator<OutlineContainer> iter = m_HierarchyDatabase.values()
+				.iterator();
+
+		while (iter.hasNext()) {
+			OutlineContainer outline = iter.next();
+
+			Object[] obj = outline.getTopLevelElements();
+			for (int i = 0; i < obj.length; i++) {
+				if (obj[i] instanceof PackageDeclElement) {
+					PackageDeclElement element = (PackageDeclElement) obj[i];
+					list.add(element);
+				}
+			}
+		}
+		return list.toArray(new PackageDeclElement[0]);
 	}
 	
 	/**

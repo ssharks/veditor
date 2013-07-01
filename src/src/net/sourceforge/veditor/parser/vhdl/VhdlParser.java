@@ -25,6 +25,8 @@ import net.sourceforge.veditor.parser.OutlineDatabase;
 import net.sourceforge.veditor.parser.OutlineElementFactory;
 import net.sourceforge.veditor.parser.OutlineContainer.Collapsible;
 import net.sourceforge.veditor.parser.ParserReader;
+import net.sourceforge.veditor.parser.vhdl.ASTsubtype_declaration;
+import net.sourceforge.veditor.parser.vhdl.ASTsubtype_indication;
 import net.sourceforge.veditor.parser.vhdl.VhdlParserCore;
 import net.sourceforge.veditor.preference.PreferenceStrings;
 import net.sourceforge.veditor.semanticwarnings.SemanticWarnings;
@@ -394,6 +396,12 @@ public class VhdlParser implements IParser
 			type.append("type#");
 		} else if (node instanceof ASTrecord_type_definition) {		
 			childNum += examineRecordDeclaration((ASTrecord_type_definition)node);
+		} else if (node instanceof ASTsubtype_declaration) {
+			childNum += examineSubtypeDecl((ASTsubtype_declaration)node, name,type);
+			bNeetToOutline = true;
+		} else if (node instanceof ASTsubtype_indication) {		 
+			childNum += examineSubtypeIndication((ASTsubtype_indication)node, name,type);
+			//bNeetToOutline = true;
 		} else if (node instanceof ASTport_clause) {
 			childNum += examinePortClause((ASTport_clause) node);
 		} else if (node instanceof ASTgeneric_clause) {
@@ -560,6 +568,17 @@ public class VhdlParser implements IParser
 	protected int examineEntityDecl(ASTentity_declaration entityDecl,StringBuffer name,StringBuffer type){
 		name.append(entityDecl.getIdentifier());
 		type.append("entityDecl#");	
+		return 0;
+	}
+	
+	protected int examineSubtypeDecl(ASTsubtype_declaration subtypeDecl,StringBuffer name,StringBuffer type){
+		name.append(subtypeDecl.getIdentifier());
+		type.append("subtypeDecl#");
+		return 0;
+	}
+	protected int examineSubtypeIndication(ASTsubtype_indication subtypeIndi,StringBuffer name,StringBuffer type){
+		name.append(subtypeIndi.getIdentifier());
+		type.append("subtypeIndi#");
 		return 0;
 	}
 	
