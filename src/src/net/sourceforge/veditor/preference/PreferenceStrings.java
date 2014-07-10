@@ -59,6 +59,7 @@ public interface PreferenceStrings {
    public static final String ALIGNONARROWRIGHT="Style.Vhdl.AlignOnArrowRight";
    public static final String ALIGNONARROWLEFT="Style.Vhdl.AlignOnArrowLeft";
    public static final String ALIGNONCOLON="Style.Vhdl.AlignOnColon";
+   public static final String ALIGNONTAB="Style.Vhdl.AlignOnTab";
    //mg
    public static final String	ALIGNONASSIGNMENT= "Style.Vhdl.AlingOnAssignment";
    public static final String	ALIGNONCOMMENT= "Style.Vhdl.AlignOnComment";

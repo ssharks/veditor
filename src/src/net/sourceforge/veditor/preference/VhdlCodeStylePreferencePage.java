@@ -29,6 +29,7 @@ public class VhdlCodeStylePreferencePage extends AbstractSimplePreferencePage {
 		//addField( new BooleanFieldEditor( PreferenceStrings.ALIGNONCOMMENT,"Align On --", parent ) );
 		addField( new BooleanFieldEditor( PreferenceStrings.ALIGNONASSIGNMENT,"Align On :=", parent ) );
 		addField( new BooleanFieldEditor( PreferenceStrings.ALIGNINOUT, "Align After \"in\", \"out\", \"inout\" and \"buffer\"", parent ) );
+		addField( new BooleanFieldEditor(PreferenceStrings.ALIGNONTAB,"Always align to multiples of the tab width",parent));
 	}
 
 }

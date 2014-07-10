@@ -37,6 +37,8 @@ public class VhdlFormatAction extends AbstractAction {
 	private boolean	m_AlignOnAssignment	= true;
 	private boolean	m_AlignOnComment	= true;
 	private boolean	m_AlignInOut		= true;
+	private boolean m_AlignOnTab		= true;
+	
 	private String m_eol;
 	
 	/**
@@ -147,6 +149,7 @@ public class VhdlFormatAction extends AbstractAction {
 		m_AlignOnAssignment = VerilogPlugin.getPreferenceBoolean( PreferenceStrings.ALIGNONASSIGNMENT );
 		m_AlignOnComment = VerilogPlugin.getPreferenceBoolean( PreferenceStrings.ALIGNONCOMMENT );
 		m_AlignInOut = VerilogPlugin.getPreferenceBoolean( PreferenceStrings.ALIGNINOUT );
+		m_AlignOnTab = VerilogPlugin.getPreferenceBoolean( PreferenceStrings.ALIGNONTAB );
 		
 		m_eol = TextUtilities.getDefaultLineDelimiter(getViewer().getDocument());
 	}
@@ -221,6 +224,7 @@ public class VhdlFormatAction extends AbstractAction {
 		// we keep a counter whether we are in a case structure or not
 		// (cases can be nested)
 		int incase = 0;
+		boolean inDirect = false;
 		int use;
 		int EOS;
 		for(int i=0;i < tokens.size();i++){
@@ -247,6 +251,12 @@ public class VhdlFormatAction extends AbstractAction {
 					else{
 						//otherwise, just adjust the following line
 						adjustLineIndentValue(results,tokens.get(closeParan1).beginLine+1, -1);
+					}
+					
+					// remove the extra indentation at a direct instantiation
+					if (inDirect) {
+						adjustLineIndentValue(results,tokens.get(closeParan1).beginLine+1, -1);
+						inDirect = false;
 					}
 				}
 				i=closeParan1;
@@ -307,6 +317,14 @@ public class VhdlFormatAction extends AbstractAction {
 				EOS = skipTo(";", tokens, i+1);
 				if(isTokenPos > EOS) {
 					results.put(token.beginLine+1, +1);
+				}
+				break;
+			case VhdlParserCoreTokenManager.ENTITY:
+				// check for the difference between a direct instantiation and a entity definition
+				if(skipTo("is", tokens, i+1) > i+2) {
+					// direct instantiation, add indent
+					results.put(token.beginLine+1, +1);
+					inDirect = true;
 				}
 				break;
 			case VhdlParserCoreTokenManager.PROCESS:
@@ -635,6 +653,13 @@ public class VhdlFormatAction extends AbstractAction {
 		return line.substring(0, firstNonSpace);
 	}
 
+	private int getAlignedIndentPostion(int indent) {
+		if (m_AlignOnTab) {
+			return (((indent - 2)/m_IndentSize) + 1) * m_IndentSize + 2;
+		} else {
+			return indent + 1;
+		}
+	}
 		
 	/**
 	 * Create a string made up of the repetition of str
@@ -704,33 +729,46 @@ public class VhdlFormatAction extends AbstractAction {
 			else{
 				//token not found
 				if (  token.beginLine > (lastLineWithToken+1) && lastLineWithToken!=0){
-					// we encounter a whole line without a valid token 
-					for( Integer line: indentSet.keySet()){
-						//set all the indent values to max encountered in this block
-						indentSet.get(line).indentAmount = maxPosAfterDirection;					
+					if (indentSet.size() > 1) { // ignore single lines
+						// we encounter a whole line without a valid token 
+						for( Integer line: indentSet.keySet()){
+							//set all the indent values to max encountered in this block
+							indentSet.get(line).indentAmount = getAlignedIndentPostion(maxPosAfterDirection);
+						}
+						//file away the current group
+						indentGroups.add(indentSet);
 					}
-					//file away the current group
-					indentGroups.add(indentSet);
 					//make a new group
-					indentSet = new HashMap<Integer,StartStop>();				
+					indentSet = new HashMap<Integer,StartStop>();
 					maxPosAfterDirection=0;
 					lastLineWithToken   =0;
 				}
 			}
-		}	
-		//add the last alignment set to the list
-		for( Integer line: indentSet.keySet()){
-			//set all the indent values to max encountered in this block
-			indentSet.get(line).indentAmount = maxPosAfterDirection;					
 		}
-		indentGroups.add(indentSet);
-		
+		if (indentSet.size() > 1) { // ignore single lines
+			//add the last alignment set to the list
+			for( Integer line: indentSet.keySet()){
+				//set all the indent values to max encountered in this block
+				indentSet.get(line).indentAmount = getAlignedIndentPostion(maxPosAfterDirection);
+			}
+			indentGroups.add(indentSet);
+		}
 		
 		for(HashMap<Integer,StartStop> indentInfoSet : indentGroups){
 			//adjust alignment
 			for( Integer line: indentInfoSet.keySet()){
 				StartStop indentInfo=indentInfoSet.get(line);
-				String indentString = fillString(" ", indentInfo.indentAmount - indentInfo.start+1);
+				
+				int fillLength = indentInfo.indentAmount - indentInfo.start;
+				String indentString;
+				if (m_AlignOnTab && (!m_UseSpaceForTab)) {
+					// since we aligned on tabs at the end, we only need to divide the filling length
+					// to length of the filling divided by the tab width, rounded up
+					indentString = fillString("\t", (fillLength + m_IndentSize - 1)/m_IndentSize);
+				} else {
+					indentString = fillString(" ", fillLength);
+				}
+				
 				String str1 =  lines[line].substring(0,indentInfo.start-2);
 				String str2 =  lines[line].substring(indentInfo.start-1);
 				lines[line] = str1 + indentString + str2;
@@ -790,38 +828,52 @@ public class VhdlFormatAction extends AbstractAction {
 					//record the max indentation after the directive
 					if(tokens.get(i+1).beginColumn  > maxPosAfterDirection){
 						maxPosAfterDirection=tokens.get(i+1).beginColumn;
-					}					
+					}
 				}
-			}			
+			}
 			else{
 				//token not found
 				if (  token.beginLine > (lastLineWithToken+1) && lastLineWithToken!=0){
-					// we encounter a whole line without a valid token 
-					for( Integer line: indentSet.keySet()){
-						//set all the indent values to max encountered in this block
-						indentSet.get(line).indentAmount = maxPosAfterDirection;					
+					// we encounter a whole line without a valid token
+					if (indentSet.size() > 1) { // ignore single lines
+						for( Integer line: indentSet.keySet()){
+							//set all the indent values to max encountered in this block
+							indentSet.get(line).indentAmount = getAlignedIndentPostion(maxPosAfterDirection);
+						}
+						//file away the current group
+						indentGroups.add(indentSet);
 					}
-					//file away the current group
-					indentGroups.add(indentSet);
 					//make a new group
-					indentSet = new HashMap<Integer,StartStop>();				
+					indentSet = new HashMap<Integer,StartStop>();
 					maxPosAfterDirection=0;
 					lastLineWithToken   =0;
 				}
 			}
-		}	
-		//add the last alignment set to the list
-		for( Integer line: indentSet.keySet()){
-			//set all the indent values to max encountered in this block
-			indentSet.get(line).indentAmount = maxPosAfterDirection;					
 		}
-		indentGroups.add(indentSet);
+		
+		if (indentSet.size() > 1) { // ignore single lines
+			//add the last alignment set to the list
+			for( Integer line: indentSet.keySet()){
+				//set all the indent values to max encountered in this block
+				indentSet.get(line).indentAmount = getAlignedIndentPostion(maxPosAfterDirection);
+			}
+			indentGroups.add(indentSet);
+		}
 		
 		for(HashMap<Integer,StartStop> indentInfoSet : indentGroups){
 			//adjust alignment
 			for( Integer line: indentInfoSet.keySet()){
 				StartStop indentInfo=indentInfoSet.get(line);
-				String indentString = fillString(" ", indentInfo.indentAmount - indentInfo.start+1);
+				
+				String indentString = "";
+				int fillLength = indentInfo.indentAmount - indentInfo.start;
+				if (m_AlignOnTab && (!m_UseSpaceForTab)) {
+					// since we aligned on tabs at the end, we only need to divide the filling length
+					// to length of the filling divided by the tab width, rounded up
+					indentString = fillString("\t", (fillLength + m_IndentSize - 1)/m_IndentSize);
+				} else {
+					indentString = fillString(" ", fillLength);
+				}
 				String str1 =  lines[line].substring(0,indentInfo.start-2);
 				String str2 =  lines[line].substring(indentInfo.start-1);
 				lines[line] = str1 + indentString + str2;
