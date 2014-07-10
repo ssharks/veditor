@@ -83,7 +83,20 @@ public class VhdlInstanceCompletionProposal extends
 		String replace = getReplaceString();
 
 		try {
-			document.replace(getOffset() - getLength(), getLength(),
+			// with replacements of a length of 0, the cursor remains in front of the insert
+			// make the replacement at least 1, by replacing the last character
+			// this causes the replacement to make the cursor jump to the completion string
+			int length = getLength();
+			int offset = getOffset();
+			if (length == 0) {
+				if (offset > 0) {
+					// add the previous character to the replacement string
+					replace = document.getChar(offset-1) + replace;
+					length = 1;
+				}
+			}
+			
+			document.replace(offset - length, length,
 					replace);
 		} catch (BadLocationException e) {
 		}

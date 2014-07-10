@@ -121,16 +121,65 @@ public class VhdlCompletionProcessor extends HdlCompletionProcessor {
 			addSignalPropsals(doc, documentOffset, match, currentElement,matchList);
 			addSubprogramProposals(doc, documentOffset, match,currentElement, matchList);
 		} else {  
-			if(matchword.length==2 && matchword[0].equals("work")) { // packages auto completion
-				String match2 = matchword[1].trim();
-				OutlineDatabase database = doc.getOutlineDatabase();
-				OutlineElement[] elements = database.findTopLevelElements(match2);
-				
-				matchList = new ArrayList<IComparableCompletionProposal>();
-				
-				for (int i = 0; i < elements.length; i++) {
-					if(elements[i] instanceof PackageDeclElement){
-						matchList.add(new VhdlInstanceCompletionProposal(doc, elements[i], documentOffset, match2.length()));
+			if ((matchword.length>=2) && matchword[0].equals("work")) { // packages auto completion
+				if (matchword.length==2) {
+					String match2 = matchword[1].trim();
+					OutlineDatabase database = doc.getOutlineDatabase();
+					OutlineElement[] elements = database.findTopLevelElements(match2);
+					
+					matchList = new ArrayList<IComparableCompletionProposal>();
+					
+					for (int i = 0; i < elements.length; i++) {
+						if(elements[i] instanceof PackageDeclElement){
+							matchList.add(new VhdlInstanceCompletionProposal(doc, elements[i], documentOffset, match2.length()));
+						}
+					}
+				}
+				if (matchword.length==3) {
+					String match3 = matchword[2].trim();
+					
+					// find subtypes in the package
+					OutlineDatabase database = doc.getOutlineDatabase();
+					OutlineElement[] elements = database.findTopLevelElements(matchword[1]);
+					
+					matchList = new ArrayList<IComparableCompletionProposal>();
+					
+					for (int i = 0; i < elements.length; i++) {
+						if(elements[i] instanceof PackageDeclElement){
+							PackageDeclElement packageDecl = (PackageDeclElement)elements[i];
+							
+							if (matchword.length>3) {
+								String recordname = null;
+								recordname = getSignalType(doc, documentOffset, matchword[0], packageDecl);
+								for(int j=1;i<matchword.length-1;j++){
+									OutlineElement[] tempRecord=searchRecordDefinition(doc, documentOffset, recordname,packageDecl).getChildren();
+									recordname=getMemberType(doc,documentOffset,matchword[j],tempRecord);
+								}
+								
+								TypeDecl finalRecord=(TypeDecl)searchRecordDefinition(doc, documentOffset, recordname,packageDecl);
+								
+								matchList = new ArrayList<IComparableCompletionProposal>();
+								
+								if (finalRecord != null) {
+									OutlineElement[] memberElements = finalRecord.getChildren();
+									String matchlc1 = matchword[matchword.length-1];
+									String matchlc=matchlc1.trim().toLowerCase();   
+									for (int h = 0; h < memberElements.length; h++) {
+										String recordmember = memberElements[h].getName().toLowerCase();
+										if (recordmember.startsWith(matchlc)) {
+											 int cc=matchlc.length();
+											 String replace = memberElements[h].getName();
+											
+											 matchList.add(new VhdlRecordCompletionProposal(replace, documentOffset, cc, replace.length(), replace));
+										}
+									}
+								}
+							} else {
+								for (int j = 0; j < packageDecl.getChildren().length; j++) {
+									matchList.add(new VhdlInstanceCompletionProposal(doc, packageDecl.getChild(j), documentOffset, match3.length()));
+								}
+							}
+						}
 					}
 				}
 			} else { // record member auto completion
