@@ -114,7 +114,8 @@ public class SemanticWarnings {
 				if(archname!=null && archname.equalsIgnoreCase(m_entityname)) {
 					for(DeclaredSymbol symb:oldstore.getDeclaredSymbolsThis()) {
 						if (symb.declarationType==DeclaredSymbol.DECLARATIONTYPE_INTERFACEINPUT ||
-								symb.declarationType==DeclaredSymbol.DECLARATIONTYPE_INTERFACEOUTPUT) {
+								symb.declarationType==DeclaredSymbol.DECLARATIONTYPE_INTERFACEOUTPUT ||
+								symb.declarationType==DeclaredSymbol.DECLARATIONTYPE_INTERFACEBIDIR) {
 							store.addDeclaredSymbol(symb);
 						}
 					}
@@ -152,6 +153,8 @@ public class SemanticWarnings {
 			m_entityname = "";
 			store.clear();
 			addPortToDeclaredSymbols((ASTentity_declaration)node, store, false);
+		} else if (node instanceof ASTsubprogram_specification) {
+			addPortToDeclaredSymbols((ASTsubprogram_specification)node, store, false);
 		}
 
 		if(node instanceof ASTassociation_element) {
@@ -258,6 +261,8 @@ public class SemanticWarnings {
 			node instanceof ASTsignal_assignment_statement ||
 			node instanceof ASTvariable_assignment_statement				
 		) {
+			checkAssignmentSymbol(store, node);
+			
 			for(int i=0;i<node.getChildCount();i++) {
 				if(node.getChild(i) instanceof ASTname) {
 					for(int j=0;j<node.getChild(i).getChildCount();j++) {
@@ -310,6 +315,7 @@ public class SemanticWarnings {
 				if(node.getChild(i) instanceof ASTmode) {
 					String mode = node.getChild(i).getFirstToken().image;
 					if(mode.equalsIgnoreCase("in")) declarationtype=DeclaredSymbol.DECLARATIONTYPE_INTERFACEINPUT;
+					if(mode.equalsIgnoreCase("inout")) declarationtype=DeclaredSymbol.DECLARATIONTYPE_INTERFACEBIDIR;
 				}
 			}
 			for(int i=0;i<node.getChildCount();i++) {
@@ -346,9 +352,12 @@ public class SemanticWarnings {
 			return result;
 		}
 		
+		// do not go into expressions like "port'range"
 		Vector<String> result = new Vector<String>();
-		for(int i=0;i<node.getChildCount();i++) {
-			result.addAll(getAllIdentifiers(node.getChild(i)));
+		if (!(node instanceof ASTsubtype_indication)) {
+			for(int i=0;i<node.getChildCount();i++) {
+				result.addAll(getAllIdentifiers(node.getChild(i)));
+			}
 		}
 		return result;
 	}
@@ -469,4 +478,71 @@ public class SemanticWarnings {
 		}
 	}
 
+	// check for incorrect assignment statements, line using := to assign a signal or <= to assing a variable
+	private void checkAssignmentSymbol(VariableStore store, SimpleNode node) {
+		if (node instanceof ASTsignal_assignment_statement ||
+			node instanceof ASTvariable_assignment_statement ||
+			node instanceof ASTconditional_signal_assignment) {
+			for(int i=0;i<node.getChildCount();i++) {
+				Vector<DeclaredSymbol> declared = store.getDeclaredSymbolsComplete();
+				if (i == 0) {
+					if ((node.getChild(i) instanceof ASTname) && (i == 0)) {
+						String assignedName = node.getChild(0).getFirstToken().toString();
+						checkAssignmentType(node, declared, assignedName);
+					}
+				}
+			}
+		}
+	}
+
+	// check whether assignments are allowed to the affected type
+	private void checkAssignmentType(SimpleNode node,
+			Vector<DeclaredSymbol> declared, String assignedName) {
+		for(int j=declared.size()-1;j>=0;j--) {
+			if(declared.get(j).name.equalsIgnoreCase(assignedName)) {
+				
+				// check for incorrectly assigning using a variable statement
+				if (node instanceof ASTvariable_assignment_statement) {
+					if (declared.get(j).declarationType == DeclaredSymbol.DECLARATIONTYPE_INTERFACEOUTPUT){
+						VerilogPlugin.setErrorMarker(m_File, node.getFirstToken().beginLine, "Output " + assignedName + " assigned using :=, use <= instead");
+					}
+					if (declared.get(j).declarationType == DeclaredSymbol.DECLARATIONTYPE_INTERFACEBIDIR){
+						VerilogPlugin.setErrorMarker(m_File, node.getFirstToken().beginLine, "InOutput " + assignedName + " assigned using :=, use <= instead");
+					}
+					if (declared.get(j).declarationType == DeclaredSymbol.DECLARATIONTYPE_SIGNAL){
+						VerilogPlugin.setErrorMarker(m_File, node.getFirstToken().beginLine, "Signal " + assignedName + " assigned using :=, use <= instead");
+					}
+				}
+				
+				// check for incorrectly assigning using a signal statement
+				if (node instanceof ASTsignal_assignment_statement) {
+					if (declared.get(j).declarationType == DeclaredSymbol.DECLARATIONTYPE_VARIABLE){
+						VerilogPlugin.setErrorMarker(m_File, node.getFirstToken().beginLine, "Variable " + assignedName + " assigned using <=, use := instead");
+					}
+				}
+				
+				// check for declarations that cannot be assigned at all
+				if (declared.get(j).declarationType == DeclaredSymbol.DECLARATIONTYPE_INTERFACEINPUT) {
+					VerilogPlugin.setErrorMarker(m_File, node.getFirstToken().beginLine, "Cannot assign to an input " + assignedName);
+				}
+				if (declared.get(j).declarationType == DeclaredSymbol.DECLARATIONTYPE_CONSTANT) {
+					VerilogPlugin.setErrorMarker(m_File, node.getFirstToken().beginLine, "Cannot assign to a constant " + assignedName);
+				}
+				if (declared.get(j).declarationType == DeclaredSymbol.DECLARATIONTYPE_INTERFACEGENERIC) {
+					VerilogPlugin.setErrorMarker(m_File, node.getFirstToken().beginLine, "Cannot assign to a generic " + assignedName);
+				}
+				if (declared.get(j).declarationType == DeclaredSymbol.DECLARATIONTYPE_COMPONENT) {
+					VerilogPlugin.setErrorMarker(m_File, node.getFirstToken().beginLine, "Cannot assign to a component " + assignedName);
+				}
+				if (declared.get(j).declarationType == DeclaredSymbol.DECLARATIONTYPE_FULLTYPE) {
+					VerilogPlugin.setErrorMarker(m_File, node.getFirstToken().beginLine, "Cannot assign to a type " + assignedName);
+				}
+				if (declared.get(j).declarationType == DeclaredSymbol.DECLARATIONTYPE_SUBPROGRAM) {
+					VerilogPlugin.setErrorMarker(m_File, node.getFirstToken().beginLine, "Cannot assign to a procedure or a function " + assignedName);
+				}
+				// break when found one, to prevent duplicate warnings
+				break;
+			}
+		}
+	}
 }

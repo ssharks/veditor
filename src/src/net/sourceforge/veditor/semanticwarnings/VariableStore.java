@@ -16,6 +16,7 @@ public class VariableStore {
 		public static final int DECLARATIONTYPE_INTERFACEINPUT = 7;
 		public static final int DECLARATIONTYPE_INTERFACEOUTPUT = 8;
 		public static final int DECLARATIONTYPE_INTERFACEGENERIC = 9;
+		public static final int DECLARATIONTYPE_INTERFACEBIDIR = 10;
 		
 		DeclaredSymbol(String n,int l,int d) {
 			name=n;

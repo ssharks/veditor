@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import net.sourceforge.veditor.preference.PreferenceStrings;
 import net.sourceforge.veditor.templates.VerilogInModuleContextType;
 import net.sourceforge.veditor.templates.VerilogInStatementContextType;
 import net.sourceforge.veditor.templates.VerilogNewFileContext;
@@ -472,9 +473,20 @@ public class VerilogPlugin extends AbstractUIPlugin
 	 * @return The aligned string
 	 */
 	public static String alignOnChar(String s,char c,int count){
+		
 		String lines[]=s.split("\n");
 		String results="";
 		int maxOffset=0,index,index_count;
+		boolean useSpaceForTab;
+		boolean alignOnTab = VerilogPlugin.getPreferenceBoolean( PreferenceStrings.ALIGNONTAB );
+		int indentSize= Integer.parseInt(VerilogPlugin.getPreferenceString("Style.indentSize"));
+		String indent = VerilogPlugin.getPreferenceString("Style.indent");
+		if (indent.equals("Tab"))
+			useSpaceForTab=false;
+		else
+		{
+			useSpaceForTab=true;
+		}
 		
 		//find the offset the of character
 		for(int nLine=0; nLine < lines.length;nLine++){
@@ -489,6 +501,12 @@ public class VerilogPlugin extends AbstractUIPlugin
 				maxOffset=index;
 			}
 		}
+		
+		// when alignment on tabs is activated, together with the space requirement, recalculate the maxOffset
+		if (alignOnTab && useSpaceForTab) {
+			maxOffset = (((maxOffset - 2)/indentSize) + 1) * indentSize + 1; 
+		}
+		
 		//now align
 		for(int nLine=0; nLine < lines.length;nLine++){				
 			index=0;

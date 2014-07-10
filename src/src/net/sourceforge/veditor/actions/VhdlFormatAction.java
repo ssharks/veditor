@@ -224,7 +224,7 @@ public class VhdlFormatAction extends AbstractAction {
 		// we keep a counter whether we are in a case structure or not
 		// (cases can be nested)
 		int incase = 0;
-		boolean inDirect = false;
+		int inDirect = -1;
 		int use;
 		int EOS;
 		for(int i=0;i < tokens.size();i++){
@@ -252,15 +252,16 @@ public class VhdlFormatAction extends AbstractAction {
 						//otherwise, just adjust the following line
 						adjustLineIndentValue(results,tokens.get(closeParan1).beginLine+1, -1);
 					}
-					
-					// remove the extra indentation at a direct instantiation
-					if (inDirect) {
-						adjustLineIndentValue(results,tokens.get(closeParan1).beginLine+1, -1);
-						inDirect = false;
-					}
 				}
+				// remove the extra indentation at a direct instantiation
 				i=closeParan1;
 			}
+			
+			// at the end of the direct instantiation, decrease the indentation one
+			if (inDirect == i) {
+				adjustLineIndentValue(results,tokens.get(i).beginLine+1, -1);
+			}
+			
 			switch(token.kind){
 			case VhdlParserCoreTokenManager.CASE:
 				adjustLineIndentValue(results,token.beginLine+1, +2);
@@ -324,7 +325,8 @@ public class VhdlFormatAction extends AbstractAction {
 				if(skipTo("is", tokens, i+1) > i+2) {
 					// direct instantiation, add indent
 					results.put(token.beginLine+1, +1);
-					inDirect = true;
+					// find the end of the direct instantiation
+					inDirect = skipTo(";", tokens, i + 1);
 				}
 				break;
 			case VhdlParserCoreTokenManager.PROCESS:
