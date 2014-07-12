@@ -377,13 +377,17 @@ public class VhdlParser implements IParser
 			bIsCollapsible = true;
 			childNum += examineComponentDecl((ASTcomponent_declaration) node,
 					name, type);
+		} else if (node instanceof ASTuse_clause) {
+			bNeetToOutline = true;
+			bIsCollapsible = false;
+			childNum += examineUseClause((ASTuse_clause) node, name, type);
 		} else if (node instanceof ASTentity_declaration) {
 			bNeetToOutline = true;
 			bIsCollapsible = true;
 			childNum += examineEntityDecl((ASTentity_declaration) node, name,
 					type);
 
-		} else if (node instanceof ASTfull_type_declaration) {	
+	} else if (node instanceof ASTfull_type_declaration) {	
 			bNeetToOutline = true;
 			
 			for (Node c : ((ASTfull_type_declaration) node).children) {
@@ -522,6 +526,30 @@ public class VhdlParser implements IParser
 		type.append("componentDecl#");
 		return 0;
 	}
+	
+	/**
+	 * Breaks out a use statement
+	 * @param componentDecl
+	 * @param name
+	 * @param type
+	 * @return  number of children consumed by this function
+	 */
+	protected int examineUseClause(ASTuse_clause useClause,StringBuffer name,StringBuffer type){
+		SimpleNode selName = useClause.getChild(0);
+		if (selName instanceof ASTselected_name) {
+			String nameStr = "";
+			for (int i=0; i<selName.getChildCount(); i++) {
+				if (i > 0) {
+					nameStr = nameStr.concat(".");
+				}
+				nameStr = nameStr.concat(selName.getChild(i).getFirstToken().toString());
+			}
+			name.append(nameStr);
+			type.append("useClause#");
+		}
+		return 0;
+	}
+	
 	/**
 	 * Breaks out a component,entity, and configuration instantiation 
 	 * @param componentInst

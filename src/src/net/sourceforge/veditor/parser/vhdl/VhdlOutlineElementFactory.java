@@ -35,6 +35,7 @@ public class VhdlOutlineElementFactory extends OutlineElementFactory {
     private boolean isComponentInst(String type){return type.startsWith("componentInst#"); }
     private boolean isEntityDecl   (String type){return type.startsWith("entityDecl#"); }
     private boolean isEntityInst   (String type){return type.startsWith("entityInst#"); }
+    private boolean isUseClause    (String type){return type.startsWith("useClause#"); }
     private boolean isPort         (String type){return type.toLowerCase().startsWith("port#"); }
     private boolean isGeneric      (String type){return type.toLowerCase().startsWith("generic#"); }
     private boolean isSignal       (String type){return type.toLowerCase().startsWith("signal#"); }
@@ -314,6 +315,17 @@ public class VhdlOutlineElementFactory extends OutlineElementFactory {
 			m_ShortName=m_LongName;
 		}		
 	}
+	
+	/**  @note type string: useClause#[type] */
+	public class UseClauseElement extends VhdlOutlineElement{
+		public UseClauseElement(String name,String type,int startLine,int startCol,int endLine,int endCol,IFile file,boolean bVisible){
+			super(name,type,startLine,startCol,endLine,endCol,file,bVisible);
+			m_LongName=name +" (use)";
+			
+			m_ShortName=m_LongName;
+		}		
+	}
+	
 	/**  @note type string: signal#[type] */
 	public class VhdlSignalElement extends VhdlOutlineElement{
 		public VhdlSignalElement(String name,String type,int startLine,int startCol,int endLine,int endCol,IFile file,boolean bVisible){
@@ -480,8 +492,9 @@ public class VhdlOutlineElementFactory extends OutlineElementFactory {
 		else if (isSubTypeDecl(type)){
 			return new SubTypeDecl(name,type,startLine,startCol,endLine,endCol,file,true);
         }
-		
-		
+		else if (isUseClause(type)){
+			return new UseClauseElement(name,type,startLine,startCol,endLine,endCol,file,false);
+        }
 		
 		//default case
 		return new OutlineElement(name,type,startLine,startCol,endLine,endCol,file,true);
