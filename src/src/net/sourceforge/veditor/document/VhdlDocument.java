@@ -99,6 +99,7 @@ public class VhdlDocument extends HdlDocument
 		}
 		
 		{
+			Vector<OutlineElement> packageResults = new Vector<OutlineElement>();
 			OutlineDatabase database = getOutlineDatabase();
 			PackageDeclElement packs[] = database.findTopLevelPackages();
 			for (int p=0;p<packs.length;p++){
@@ -106,14 +107,25 @@ public class VhdlDocument extends HdlDocument
 				OutlineElement[] enitityChildren=packDecl.getChildren();
 				for(int entChildIdx=0;entChildIdx<enitityChildren.length;entChildIdx++){
 					if(	enitityChildren[entChildIdx].getName().equalsIgnoreCase(name)){
-						results.add(enitityChildren[entChildIdx]);
+						packageResults.add(enitityChildren[entChildIdx]);
 					}
+				}
+			}
+			
+			// check if the results are backed up by package use
+			OutlineContainer docContainer = new OutlineContainer();
+			for (int i=0;i<packageResults.size();i++) {
+				OutlineElement useElement = docContainer.findTopLevelElement(
+					"work." + packageResults.get(i).getParent().getName());
+				if (useElement != null) {
+					results.add(packageResults.get(i));
 				}
 			}
 		}
 		
 		return results;
 	}
+	
 	/**
 	 * returns the context of the given offset
 	 * @param documentOffset

@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
+import java.util.Vector;
 
 import net.sourceforge.veditor.VerilogPlugin;
 import net.sourceforge.veditor.document.HdlDocument;
@@ -400,8 +401,13 @@ public class VhdlCompletionProcessor extends HdlCompletionProcessor {
 			}
 		}
 		
+		Vector<OutlineElement> packageResults = doc.getPackageElementByName(recordname, true, -1);
+		// only with a unique result resolve it
+		if (packageResults.size() == 0) {
+			return packageResults.get(0);
+		}
 		// not found in this file, search it in packages of other files
-		OutlineDatabase database = doc.getOutlineDatabase();
+		/*OutlineDatabase database = doc.getOutlineDatabase();
 		
 		if (database != null) {
 			OutlineElement[] elements = database.findTopLevelElements("");
@@ -413,13 +419,12 @@ public class VhdlCompletionProcessor extends HdlCompletionProcessor {
 								&& subPackageElements[j].getName()
 										.equalsIgnoreCase(recordname)) {
 							return subPackageElements[j];
-
 						}
 					}
 				}
 			
 			}
-		}
+		}*/
 
 		return null;
 	}

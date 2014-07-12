@@ -224,7 +224,7 @@ public class HdlContentOutlinePage extends ContentOutlinePage implements IDouble
 	 * @param element
 	 */
 	public void showElement(OutlineElement element){
-		if(element == null)
+		if (element == null)
 			return;
 		TreeViewer viewer = getTreeViewer();		
 		viewer.reveal(element);				

@@ -10,18 +10,24 @@
  *******************************************************************************/
 package net.sourceforge.veditor.actions;
 
+import java.awt.List;
 import java.util.Vector;
 
 import net.sourceforge.veditor.VerilogPlugin;
 import net.sourceforge.veditor.document.HdlDocument;
+import net.sourceforge.veditor.document.VhdlDocument;
 import net.sourceforge.veditor.editor.HdlEditor;
+import net.sourceforge.veditor.parser.HdlParserException;
+import net.sourceforge.veditor.parser.OutlineContainer;
 import net.sourceforge.veditor.parser.OutlineDatabase;
 import net.sourceforge.veditor.parser.OutlineElement;
 import net.sourceforge.veditor.parser.vhdl.VhdlOutlineElementFactory.ArchitectureElement;
 import net.sourceforge.veditor.parser.vhdl.VhdlOutlineElementFactory.PackageDeclElement;
+import net.sourceforge.veditor.parser.vhdl.VhdlOutlineElementFactory.VhdlOutlineElement;
 
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
+import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.FocusEvent;
@@ -119,7 +125,7 @@ public class OpenDeclarationAction extends AbstractAction
 			m_ProposalTable.setLocation(0, 0);
 			GridData data= new GridData(GridData.FILL_BOTH);
 			m_ProposalTable.setLayoutData(data);
-			Point size= new Point(200,200);
+			Point size= new Point(400,200);
 			m_ProposalShell.setSize(size);
 			m_ProposalTable.setSize(size);
 			m_ProposalTable.addFocusListener(new focusListener());
@@ -128,7 +134,8 @@ public class OpenDeclarationAction extends AbstractAction
 		m_ProposalTable.setItemCount(definitionList.size());		
 		TableItem[] tableItem=m_ProposalTable.getItems();
 		for(int i=0;i<tableItem.length;i++){
-			tableItem[i].setText(definitionList.get(i).getName());
+			tableItem[i].setText(definitionList.get(i).getFile().getName() + " : " +
+				definitionList.get(i).getLongName());
 			String imageName=definitionList.get(i).GetImageName();
 			if(imageName!=null){
 				tableItem[i].setImage(VerilogPlugin.getPlugin().getImage(imageName));
@@ -153,17 +160,87 @@ public class OpenDeclarationAction extends AbstractAction
 		Point  selectionRange = widget.getSelection();
 		Point  selectionPos   = widget.getLocationAtOffset(selectionRange.y);
 
-		Vector<OutlineElement> definitionList=
-			doc.getDefinitionList(selectionText,selectionRange.x);
-		
+		Vector<OutlineElement> definitionList = new Vector<OutlineElement>(
+			doc.getDefinitionList(selectionText,selectionRange.x));
 
 		//go to the definition
+		if(definitionList.size() > 0) {
+			Vector<OutlineElement> directPackageHits = new Vector<OutlineElement>();
+			
+			// check if there is a package name in front of this keyword we are looking for
+			for (int i = 0; i < definitionList.size(); i++) {
+				OutlineElement parent = definitionList.get(i).getParent();
+				if ((parent != null) && (parent instanceof PackageDeclElement)) {
+					// look if the name of the package is there
+					String parentName = parent.getName() + ".";
+					int offset = selectionRange.x - parent.getName().length();
+					// get the length of the name leading to the selection
+					String leadingString = "";
+					try {
+						leadingString = doc.get(offset, parent.getName().length());
+					} catch (BadLocationException e) {
+					}
+					
+					// compare with the package name
+					if (leadingString.equalsIgnoreCase(parentName)) {
+						directPackageHits.add(definitionList.get(i));
+					}
+				}
+			}
+			
+			// when one or more elements are found, remove all the package elements
+			// from the list and replace them by the direct addressed ones
+			if (directPackageHits.size() > 0) {
+				for (int i = definitionList.size(); i >= 0; i--) {
+					OutlineElement parent = definitionList.get(i).getParent();
+					if ((parent != null) && (parent instanceof PackageDeclElement)) {
+						definitionList.remove(i);
+					}
+				}
+				definitionList.addAll(directPackageHits);
+			}
+		
+		} else {
+			// not found in this file, search in packages of other files
+			OutlineDatabase database = doc.getOutlineDatabase();
+			// try the get the outline container of this document, start wih ina empty one
+			OutlineContainer docContainer = new OutlineContainer();
+			try {
+				docContainer = doc.getOutlineContainer(false);
+			} catch (HdlParserException e) {
+			}
+			if (database != null) {
+				OutlineElement[] elements = database.findTopLevelElements("");
+				Vector<OutlineElement> subPackageHits = new Vector<OutlineElement>();
+				for (int i = 0; i < elements.length; i++) {
+					// jump to architecture
+					if(elements[i] instanceof ArchitectureElement ){
+						ArchitectureElement architureElement =(ArchitectureElement)elements[i];
+						if(architureElement.GetEntityName().equalsIgnoreCase(selectionText)){
+							definitionList.add(architureElement);
+						}
+					}
+					
+					if(elements[i] instanceof PackageDeclElement ){
+						PackageDeclElement packageDeclElement = (PackageDeclElement)elements[i];
+						if (packageDeclElement.getName().equalsIgnoreCase(selectionText)) {
+							definitionList.add(packageDeclElement);
+						}
+					}
+				}
+			}
+			definitionList.addAll(
+				doc.getPackageElementByName(selectionText, false, selectionRange.x));
+		}
+		
 		if(definitionList.size() == 1){
+			// when only one element is found, jump to it now
 			editor.showElement(definitionList.get(0));
 		}
 		else if(definitionList.size() > 1){
 			for(int i = 0; i < definitionList.size(); i++)
 			{
+				// when a module is found, directly jump to it
 				OutlineElement element = definitionList.get(i);
 				if (element.getType().equals("module#"))
 				{
@@ -174,44 +251,7 @@ public class OpenDeclarationAction extends AbstractAction
 			
 			// if module is not found, show popup
 			showPopUp(definitionList, editor, selectionPos);
-		} else { // not found in this file, search in packages of other files
-			OutlineDatabase database = doc.getOutlineDatabase();	
-			if (database != null) {
-				OutlineElement[] elements = database.findTopLevelElements("");
-				for (int i = 0; i < elements.length; i++) {
-					if(elements[i] instanceof PackageDeclElement ){
-						OutlineElement[] subPackageElements=elements[i].getChildren();
-						for(int j=0; j< subPackageElements.length; j++){
-							if ( subPackageElements[j].getName()
-											.equalsIgnoreCase(selectionText)) {
-								editor.showElement(subPackageElements[j]);
-
-							}
-						}
-					}
-					// jump to architecture
-					 if(elements[i] instanceof ArchitectureElement ){
-						 ArchitectureElement architureElement =(ArchitectureElement)elements[i];
-						 if(architureElement.GetEntityName().equalsIgnoreCase(selectionText)){
-							 editor.showElement(architureElement);
-						 }
-					 }
-					 
-					 if(elements[i] instanceof PackageDeclElement ){
-						 PackageDeclElement packageDeclElement = (PackageDeclElement)elements[i];
-						 if (packageDeclElement.getName().equalsIgnoreCase(selectionText)) {
-							 editor.showElement(packageDeclElement);
-						 }
-					 }
-				
-				}	
-
-			}
-
-			return ;
 		}
-	
-		
 	}
 }
 
