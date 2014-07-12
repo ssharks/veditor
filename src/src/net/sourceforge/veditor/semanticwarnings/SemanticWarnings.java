@@ -345,6 +345,21 @@ public class SemanticWarnings {
 		}
 	}
 
+	private Vector<SimpleNode> getAllIdentifierNodes(SimpleNode node) {
+		if(node instanceof ASTidentifier) {
+			Vector<SimpleNode> result = new Vector<SimpleNode>();
+			result.add(node);
+			return result;
+		}
+		
+		// do not go into expressions like "port'range"
+		Vector<SimpleNode> result = new Vector<SimpleNode>();
+		for(int i=0;i<node.getChildCount();i++) {
+			result.addAll(getAllIdentifierNodes(node.getChild(i)));
+		}
+		return result;
+	}
+	
 	private Vector<String> getAllIdentifiers(SimpleNode node) {
 		if(node instanceof ASTidentifier) {
 			Vector<String> result = new Vector<String>();
@@ -354,10 +369,8 @@ public class SemanticWarnings {
 		
 		// do not go into expressions like "port'range"
 		Vector<String> result = new Vector<String>();
-		if (!(node instanceof ASTsubtype_indication)) {
-			for(int i=0;i<node.getChildCount();i++) {
-				result.addAll(getAllIdentifiers(node.getChild(i)));
-			}
+		for(int i=0;i<node.getChildCount();i++) {
+			result.addAll(getAllIdentifiers(node.getChild(i)));
 		}
 		return result;
 	}
@@ -478,17 +491,48 @@ public class SemanticWarnings {
 		}
 	}
 
+	// check if it is not an identifier in the order of 'length
+	private boolean checkForSignature(SimpleNode node) {
+		Node parent = node.jjtGetParent();
+		if (parent != null) {
+			if (parent instanceof ASTname) {
+				ASTname astParent = (ASTname)parent;
+				for(int i=0;i<astParent.getChildCount();i++) {
+					if (astParent.getChild(i) instanceof ASTsignature) {
+						return true;
+					}
+				}
+			}
+		}
+		return false;
+	}
+	
 	// check for incorrect assignment statements, line using := to assign a signal or <= to assing a variable
 	private void checkAssignmentSymbol(VariableStore store, SimpleNode node) {
 		if (node instanceof ASTsignal_assignment_statement ||
 			node instanceof ASTvariable_assignment_statement ||
 			node instanceof ASTconditional_signal_assignment) {
-			for(int i=0;i<node.getChildCount();i++) {
+			for(int i=0;i<node.getChildCount()-1;i++) {
 				Vector<DeclaredSymbol> declared = store.getDeclaredSymbolsComplete();
-				if (i == 0) {
-					if ((node.getChild(i) instanceof ASTname) && (i == 0)) {
-						String assignedName = node.getChild(0).getFirstToken().toString();
-						checkAssignmentType(node, declared, assignedName);
+				if (node.getChild(i) instanceof ASTname) {
+					String assignedName = node.getChild(i).getFirstToken().toString();
+					checkAssignmentType(node, declared, assignedName);
+					
+					// find in the inputs for the expression if there are any outputs used
+					Vector<SimpleNode> inputName = getAllIdentifierNodes(node.getChild(i+1));
+					
+					// check if not of the inputs is an output of the entity
+					for (int k=0;k<inputName.size();k++) {
+						// walk backwards through the list to give the highest priority to local symbols
+						for(int j=declared.size()-1;j>=0;j--) {
+							if(declared.get(j).name.equalsIgnoreCase(inputName.get(k).getFirstToken().toString())) {
+								if ((declared.get(j).declarationType == DeclaredSymbol.DECLARATIONTYPE_INTERFACEOUTPUT) 
+										&& (checkForSignature(inputName.get(k)) == false)) {
+									VerilogPlugin.setErrorMarker(m_File, node.getFirstToken().beginLine, "Output " + inputName.get(k).getFirstToken().toString() +" cannot be used in an expression ");
+								}
+								break;
+							}
+						}
 					}
 				}
 			}
