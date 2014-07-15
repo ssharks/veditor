@@ -4,7 +4,7 @@
    <extension
          point="org.eclipse.ui.editors">
       <editor
-            name="Verilog Editor"
+            name="%editor.name"
             icon="icons/vsrc.gif"
             contributorClass="net.sourceforge.veditor.editor.HdlActionContributor"
             class="net.sourceforge.veditor.editor.VerilogEditor"
@@ -16,7 +16,7 @@
    <extension
          point="org.eclipse.ui.editors">
       <editor
-            name="VHDL Editor"
+            name="%editor.name.0"
             icon="icons/vsrc.gif"
             contributorClass="net.sourceforge.veditor.editor.HdlActionContributor"
             class="net.sourceforge.veditor.editor.VhdlEditor"
@@ -28,7 +28,7 @@
    <extension
          point="org.eclipse.ui.editors">
       <editor
-            name="Verilog/VHDL Log Viewer"
+            name="%editor.name.1"
             icon="icons/vsrc.gif"
             class="net.sourceforge.veditor.log.LogEditor"
             contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
@@ -40,7 +40,7 @@
    <extension
          point="org.eclipse.ui.perspectives">
       <perspective
-            name="Verilog/VHDL"
+            name="%perspective.name"
             icon="icons/pers.gif"
             class="net.sourceforge.veditor.VerilogPerspective"
             id="net.sourceforge.veditor.editor.perspective"
@@ -50,11 +50,11 @@
    <extension
          point="org.eclipse.ui.views">
       <category
-            name="Verilog/VHDL Editor"
+            name="%category.name"
             id="veditor">
       </category>
       <view
-            name="Hierarchy"
+            name="%view.name"
             icon="icons/hierarchy.gif"
             category="veditor"
             class="net.sourceforge.veditor.editor.ModuleHierarchyView"
@@ -67,61 +67,61 @@
       <page
             id="net.sourceforge.veditor.preference.TopPreferencePage"
             class="net.sourceforge.veditor.preference.TopPreferencePage"
-            name="Verilog/VHDL Editor">
+            name="%page.name">
       </page>
       <page
             category="net.sourceforge.veditor.preference.TopPreferencePage"
             id="net.sourceforge.veditor.preference.ColorPreferencePage"
             class="net.sourceforge.veditor.preference.ColorPreferencePage"
-            name="Color">
+            name="%page.name.0">
       </page>
       <page
             category="net.sourceforge.veditor.preference.TopPreferencePage"
             id="net.sourceforge.veditor.preference.TemplatePreferencePage"
             class="net.sourceforge.veditor.preference.TemplatePreferencePage"
-            name="Templates">
+            name="%page.name.1">
       </page>
       <page
             category="net.sourceforge.veditor.preference.TopPreferencePage"
             id="net.sourceforge.veditor.preference.ErrorParserPreferencePage"
             class="net.sourceforge.veditor.preference.ErrorParserPreferencePage"
-            name="Error Parser">
+            name="%page.name.2">
       </page>
       <page
             category="net.sourceforge.veditor.preference.TopPreferencePage"
             id="net.sourceforge.veditor.preference.CodeStylePreferencePage"
             class="net.sourceforge.veditor.preference.CodeStylePreferencePage"
-            name="Code Style">
+            name="%page.name.3">
       </page>
       <page
             category="net.sourceforge.veditor.preference.CodeStylePreferencePage"
             id="net.sourceforge.veditor.preference.VerilogCodeStylePreferencePage"
             class="net.sourceforge.veditor.preference.VerilogCodeStylePreferencePage"
-            name="Verilog Code Style">
+            name="%page.name.4">
       </page>
       <page
             category="net.sourceforge.veditor.preference.CodeStylePreferencePage"
             id="net.sourceforge.veditor.preference.VhdlCodeStylePreferencePage"
             class="net.sourceforge.veditor.preference.VhdlCodeStylePreferencePage"
-            name="VHDL Code Style">
+            name="%page.name.5">
       </page>
       <page
             category="net.sourceforge.veditor.preference.TopPreferencePage"
             id="net.sourceforge.veditor.preference.WarningPreferencePage"
             class="net.sourceforge.veditor.preference.WarningPreferencePage"
-            name="Warning">
+            name="%page.name.6">
       </page>
       <page
             category="net.sourceforge.veditor.preference.WarningPreferencePage"
             id="net.sourceforge.veditor.preference.VerilogWarningPreferencePage"
             class="net.sourceforge.veditor.preference.VerilogWarningPreferencePage"
-            name="Verilog Warning">
+            name="%page.name.7">
       </page>
       <page
             category="net.sourceforge.veditor.preference.WarningPreferencePage"
             id="net.sourceforge.veditor.preference.VhdlWarningPreferencePage"
             class="net.sourceforge.veditor.preference.VhdlWarningPreferencePage"
-            name="VHDL Warning">
+            name="%page.name.8">
       </page>
    </extension>
 
@@ -133,25 +133,25 @@
    <extension
          point="org.eclipse.ui.newWizards">
       <category
-            name="Verilog/VHDL"
+            name="%category.name.0"
             id="net.sourceforge.veditor.wizard">
       </category>
       <wizard
-            name="Verilog file"
+            name="%wizard.name"
             icon="icons/vsrc.gif"
             category="net.sourceforge.veditor.wizard"
             class="net.sourceforge.veditor.wizard.NewVerilogWizard"
             id="net.sourceforge.veditor.wizard.NewVerilogWizard">
       </wizard>
       <wizard
-            name="VHDL file"
+            name="%wizard.name.0"
             icon="icons/vsrc.gif"
             category="net.sourceforge.veditor.wizard"
             class="net.sourceforge.veditor.wizard.NewVhdlWizard"
             id="net.sourceforge.veditor.wizard.NewVhdlWizard">
       </wizard>
       <wizard
-            name="Verilog/VHDL project"
+            name="%wizard.name.1"
             icon="icons/vsrc.gif"
             category="net.sourceforge.veditor.wizard"
             class="net.sourceforge.veditor.wizard.NewProjectWizard"
@@ -164,9 +164,9 @@
    <extension
          point="org.eclipse.ui.contexts">
        <context
-            name="Editing Verilog/VHDL"
+            name="%context.name"
             parentId="org.eclipse.ui.textEditorScope"
-            description="Editing Verilog/VHDL"
+            description="%context.description"
             id="net.sourceforge.veditor.scope">
        </context>
    </extension>
@@ -174,85 +174,85 @@
    <extension
          point="org.eclipse.ui.commands">
       <category
-            name="Verilog/VHDL Editing"
-            description="Verilog/VHDL editing commands"
+            name="%category.name.1"
+            description="%category.description"
             id="net.sourceforge.veditor.commands">
       </category>
       <command
-            name="Format"
-            description="Format region"
+            name="%command.name"
+            description="%command.description"
             categoryId="net.sourceforge.veditor.commands"
             id="net.sourceforge.veditor.actions.Format">
       </command>
       <command
-            name="Compile"
-            description="Compile"
+            name="%command.name.0"
+            description="%command.description.0"
             categoryId="net.sourceforge.veditor.commands"
             id="net.sourceforge.veditor.actions.Compile">
       </command>
       <command
-            name="Synthesize"
-            description="Synthesize"
+            name="%command.name.1"
+            description="%command.description.1"
             categoryId="net.sourceforge.veditor.commands"
             id="net.sourceforge.veditor.actions.Synthesize">
       </command>
       <command
-            name="Matching Bracket"
-            description="Goto Matching Bracket"
+            name="%command.name.2"
+            description="%command.description.2"
             categoryId="net.sourceforge.veditor.commands"
             id="net.sourceforge.veditor.actions.GotoMatchingBracket">
       </command>
       <command
-            name="Open Declaration"
-            description="Goto Open Declaration"
+            name="%command.name.3"
+            description="%command.description.3"
             categoryId="net.sourceforge.veditor.commands"
             id="net.sourceforge.veditor.actions.OpenDeclaration">
       </command>
       <command
-            name="Collapse All"
-            description="Collapse all foldable sections"
+            name="%command.name.4"
+            description="%command.description.4"
             categoryId="net.sourceforge.veditor.commands"
             id="net.sourceforge.veditor.actions.CollapseAll">
       </command>
       <command
-            name="Expand All"
-            description="Expand all foldable sections"
+            name="%command.name.5"
+            description="%command.description.5"
             categoryId="net.sourceforge.veditor.commands"
             id="net.sourceforge.veditor.actions.ExpandAll">
       </command>
       <command
-            name="Show in Hierarchy"
-            description="Shows the current element in the hierarchy"
+            name="%command.name.6"
+            description="%command.description.6"
             categoryId="net.sourceforge.veditor.commands"
             id="net.sourceforge.veditor.actions.ShowInHierarchy">
       </command>
       <command
-            name="Show in Outline"
-            description="Shows the current element in the outline"
+            name="%command.name.7"
+            description="%command.description.7"
             categoryId="net.sourceforge.veditor.commands"
             id="net.sourceforge.veditor.actions.ShowInOutline">
       </command>
       <command
-            name="Comment"
-            description="Comments a block of code"
+            name="%command.name.8"
+            description="%command.description.8"
             categoryId="net.sourceforge.veditor.commands"
             id="net.sourceforge.veditor.actions.Comment">
       </command>
        <command
-            name="Uncomment"
-            description="Remove block comments from code"
+            name="%command.name.9"
+            description="%command.description.9"
             categoryId="net.sourceforge.veditor.commands"
             id="net.sourceforge.veditor.actions.Uncomment">
       </command>
       <command
-            name="Show In Navigator"
-            description="Shows the current file in the navigator"
+            name="%command.name.10"
+            description="%command.description.10"
             categoryId="net.sourceforge.veditor.commands"
             id="net.sourceforge.veditor.actions.ShowInNavigator">
       </command>
       <command
-            name="Clear Error Markers"
-            description="Clears the error markers for this file"
+            name="%command.name.11"
+            description="%command.description.11"
             categoryId="net.sourceforge.veditor.commands"
             id="net.sourceforge.veditor.actions.ClearErrorMarkers">
       </command>
@@ -318,7 +318,7 @@
 
    <extension
          id="simulateBuilder"
-         name="VEdiot Builder"
+         name="%extension.name"
          point="org.eclipse.core.resources.builders">
       <builder 
             hasNature="true">
@@ -330,7 +330,7 @@
 
    <extension
          id="HdlNature"
-         name="Verilog/VHDL Project Nature"
+         name="%extension.name.0"
          point="org.eclipse.core.resources.natures">
       <runtime>
          <run
@@ -356,7 +356,7 @@
       <page
             adaptable="true"
             objectClass="org.eclipse.core.resources.IProject"
-            name="VEditor Builds"
+            name="%page.name.9"
             class="net.sourceforge.veditor.builder.SimulatorPropertyPage"
             id="net.sourceforge.veditor.simulatorProperty">
             <filter
@@ -382,22 +382,22 @@
    <extension
          point="org.eclipse.ui.editors.templates">
 	  <contextType
-            name="VHDL Global"
+            name="%contextType.name"
             class="net.sourceforge.veditor.templates.VhdlGlobalContext"
             id="net.sourceforge.veditor.templates.vhdl.context.global">
 	  </contextType>
 	  <contextType
-            name="Verilog In Statement"
+            name="%contextType.name.0"
             class="net.sourceforge.veditor.templates.VerilogInStatementContextType"
             id="net.sourceforge.veditor.verilogInStatement">
 	  </contextType>
 	  <contextType
-            name="Verilog In Module"
+            name="%contextType.name.1"
             class="net.sourceforge.veditor.templates.VerilogInModuleContextType"
             id="net.sourceforge.veditor.verilogInModule">
 	  </contextType>
 	  <contextType
-            name="Verilog Out of Module"
+            name="%contextType.name.2"
             class="net.sourceforge.veditor.templates.VerilogOutModuleContextType"
             id="net.sourceforge.veditor.verilogOutModule">
 	  </contextType>
@@ -410,23 +410,23 @@
       <contextType
             class="net.sourceforge.veditor.templates.VhdlNewFileContext"
             id="net.sourceforge.veditor.templates.vhdl.context.newfile"
-            name="VHDL New File">
+            name="%contextType.name.3">
       </contextType>
       <contextType
             class="net.sourceforge.veditor.templates.VerilogNewFileContext"
             id="net.sourceforge.veditor.templates.verilog.context.newfile"
-            name="Verilog New File">
+            name="%contextType.name.4">
       </contextType>
    </extension>
 
    <extension point="org.eclipse.core.runtime.contentTypes">
-	  <content-type id="verilogSource" name="Verilog Source File" 
+	  <content-type id="verilogSource" name="%content-type.name" 
 		  base-type="org.eclipse.core.runtime.text"
 		  priority="high"/>
-      <content-type id="vhdlSource" name="VHDL Source File" 
+      <content-type id="vhdlSource" name="%content-type.name.0" 
 		  base-type="org.eclipse.core.runtime.text"
           priority="high"/>
-      <content-type id="simulationLog" name="Simulation Log File" 
+      <content-type id="simulationLog" name="%content-type.name.1" 
 		  base-type="org.eclipse.core.runtime.text"
           priority="high"/>
     </extension>
@@ -454,7 +454,7 @@
     
      <extension
        id="autotaskmarker"
-       name="Auto Task"
+       name="%extension.name.1"
        point="org.eclipse.core.resources.markers">
       <persistent value="true"/>       
       <super type="org.eclipse.core.resources.taskmarker"/>
@@ -462,7 +462,7 @@
 
      <extension
        id="builderproblemmarker"
-       name="Problem of the external builder"
+       name="%extension.name.2"
        point="org.eclipse.core.resources.markers">
       <persistent value="true"/>
       <super type="org.eclipse.core.resources.problemmarker"/>
