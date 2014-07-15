@@ -125,8 +125,8 @@ public class VerilogParserReader extends ParserReader {
 						buffer.append(' '); // for keeping line number
 					else
 						buffer.append('\n');
-				} else if (enable && context != BLOCK_COMMENT
-						&& context != LINE_COMMENT) {
+				} else if (enable && context != BLOCK_COMMENT) { 
+						//&& context != LINE_COMMENT) // do parse line comments, to find pragma's
 					buffer.append(c);
 				}
 			}

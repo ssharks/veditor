@@ -101,9 +101,25 @@ SKIP :
 	" " | "\t" | "\r" | "\n" | "\f"
 }
 
+MORE :
+{      < ("//")* "pragma protect begin_protected" > : IN_PROTECTED
+}
+
+<IN_PROTECTED>
+SKIP :
+{
+    <PROTECTED: "pragma protect end_protected"> : DEFAULT
+}
+
+<IN_PROTECTED>
+MORE :
+{
+    < ~[] >
+}
+
 SPECIAL_TOKEN :
 {
-	<SINGLE_LINE_COMMENT: "//" (~["\n"])* >
+    <SINGLE_LINE_COMMENT: "//" (~["\n"])*>
 }
 
 TOKEN :

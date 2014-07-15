@@ -1811,9 +1811,9 @@ public class VhdlParserCore/*@bgen(jjtree)*/implements VhdlParserCoreTreeConstan
   jjtreeOpenNodeScope(jjtn000);
     try {
       if (jj_2_26(2147483647)) {
-        discrete_range();
-      } else if (jj_2_27(2147483647)) {
         simple_expression();
+      } else if (jj_2_27(2147483647)) {
+        discrete_range();
       } else {
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
         case basic_identifier:
@@ -12269,12 +12269,12 @@ try {errs.Error(message,null);
 
   private boolean jj_3R_481() {
     if (jj_scan_token(160)) return true;
-    if (jj_3R_89()) return true;
+    if (jj_3R_90()) return true;
     return false;
   }
 
   private boolean jj_3_51() {
-    if (jj_3R_89()) return true;
+    if (jj_3R_90()) return true;
     return false;
   }
 
@@ -12296,7 +12296,7 @@ try {errs.Error(message,null);
   }
 
   private boolean jj_3R_599() {
-    if (jj_3R_89()) return true;
+    if (jj_3R_90()) return true;
     return false;
   }
 
@@ -12322,7 +12322,7 @@ try {errs.Error(message,null);
 
   private boolean jj_3R_405() {
     if (jj_scan_token(158)) return true;
-    if (jj_3R_89()) return true;
+    if (jj_3R_90()) return true;
     Token xsp;
     while (true) {
       xsp = jj_scanpos;
@@ -13199,9 +13199,9 @@ try {errs.Error(message,null);
     if (jj_3R_314()) jj_scanpos = xsp;
     xsp = jj_scanpos;
     if (jj_3R_315()) jj_scanpos = xsp;
-    if (jj_3R_90()) return true;
+    if (jj_3R_89()) return true;
     if (jj_scan_token(165)) return true;
-    if (jj_3R_90()) return true;
+    if (jj_3R_89()) return true;
     xsp = jj_scanpos;
     if (jj_3R_316()) jj_scanpos = xsp;
     if (jj_scan_token(SEMICOLON)) return true;
@@ -14555,7 +14555,7 @@ try {errs.Error(message,null);
   }
 
   private boolean jj_3_33() {
-    if (jj_3R_90()) return true;
+    if (jj_3R_89()) return true;
     if (jj_3R_97()) return true;
     return false;
   }
@@ -14610,12 +14610,12 @@ try {errs.Error(message,null);
     return false;
   }
 
-  private boolean jj_3R_203() {
+  private boolean jj_3R_204() {
     if (jj_3R_262()) return true;
     return false;
   }
 
-  private boolean jj_3R_202() {
+  private boolean jj_3R_203() {
     if (jj_3R_98()) return true;
     return false;
   }
@@ -14640,19 +14640,19 @@ try {errs.Error(message,null);
     return false;
   }
 
-  private boolean jj_3R_201() {
+  private boolean jj_3R_202() {
     if (jj_3R_262()) return true;
     return false;
   }
 
-  private boolean jj_3R_89() {
+  private boolean jj_3R_90() {
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_3R_201()) {
-    jj_scanpos = xsp;
     if (jj_3R_202()) {
     jj_scanpos = xsp;
-    if (jj_3R_203()) return true;
+    if (jj_3R_203()) {
+    jj_scanpos = xsp;
+    if (jj_3R_204()) return true;
     }
     }
     return false;
@@ -14944,7 +14944,7 @@ try {errs.Error(message,null);
     return false;
   }
 
-  private boolean jj_3R_204() {
+  private boolean jj_3R_201() {
     if (jj_3R_341()) return true;
     return false;
   }
@@ -14955,10 +14955,10 @@ try {errs.Error(message,null);
     return false;
   }
 
-  private boolean jj_3R_90() {
+  private boolean jj_3R_89() {
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_3R_204()) jj_scanpos = xsp;
+    if (jj_3R_201()) jj_scanpos = xsp;
     if (jj_3R_148()) return true;
     while (true) {
       xsp = jj_scanpos;
@@ -15217,12 +15217,12 @@ try {errs.Error(message,null);
 
   private boolean jj_3_107() {
     if (jj_3R_146()) return true;
-    if (jj_3R_90()) return true;
+    if (jj_3R_89()) return true;
     return false;
   }
 
   private boolean jj_3R_325() {
-    if (jj_3R_90()) return true;
+    if (jj_3R_89()) return true;
     Token xsp;
     xsp = jj_scanpos;
     if (jj_3_107()) jj_scanpos = xsp;
@@ -15814,6 +15814,16 @@ try {errs.Error(message,null);
     return false;
   }
 
+  private boolean jj_3R_99() {
+    if (jj_3R_216()) return true;
+    Token xsp;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3R_217()) { jj_scanpos = xsp; break; }
+    }
+    return false;
+  }
+
   private boolean jj_3_26() {
     if (jj_3R_89()) return true;
     Token xsp;
@@ -15827,16 +15837,6 @@ try {errs.Error(message,null);
     if (jj_scan_token(160)) return true;
     }
     }
-    }
-    return false;
-  }
-
-  private boolean jj_3R_99() {
-    if (jj_3R_216()) return true;
-    Token xsp;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3R_217()) { jj_scanpos = xsp; break; }
     }
     return false;
   }
@@ -15874,11 +15874,6 @@ try {errs.Error(message,null);
     return false;
   }
 
-  private boolean jj_3R_353() {
-    if (jj_3R_89()) return true;
-    return false;
-  }
-
   private boolean jj_3R_700() {
     if (jj_3R_68()) return true;
     if (jj_scan_token(ACROSS)) return true;
@@ -15900,6 +15895,11 @@ try {errs.Error(message,null);
     }
     }
     }
+    return false;
+  }
+
+  private boolean jj_3R_353() {
+    if (jj_3R_89()) return true;
     return false;
   }
 
@@ -16182,7 +16182,7 @@ try {errs.Error(message,null);
   }
 
   private boolean jj_3_88() {
-    if (jj_3R_90()) return true;
+    if (jj_3R_89()) return true;
     if (jj_3R_97()) return true;
     return false;
   }
@@ -16228,9 +16228,9 @@ try {errs.Error(message,null);
   }
 
   private boolean jj_3R_396() {
-    if (jj_3R_90()) return true;
+    if (jj_3R_89()) return true;
     if (jj_3R_97()) return true;
-    if (jj_3R_90()) return true;
+    if (jj_3R_89()) return true;
     return false;
   }
 
@@ -17664,7 +17664,7 @@ try {errs.Error(message,null);
   private boolean jj_3R_491() {
     if (jj_3R_85()) return true;
     if (jj_scan_token(IN)) return true;
-    if (jj_3R_89()) return true;
+    if (jj_3R_90()) return true;
     return false;
   }
 
@@ -18044,7 +18044,7 @@ try {errs.Error(message,null);
   }
 
   private boolean jj_3R_770() {
-    if (jj_3R_90()) return true;
+    if (jj_3R_89()) return true;
     return false;
   }
 
@@ -18069,7 +18069,7 @@ try {errs.Error(message,null);
   }
 
   private boolean jj_3R_769() {
-    if (jj_3R_90()) return true;
+    if (jj_3R_89()) return true;
     return false;
   }
 
@@ -18160,7 +18160,7 @@ try {errs.Error(message,null);
 
   private boolean jj_3_61() {
     if (jj_scan_token(158)) return true;
-    if (jj_3R_89()) return true;
+    if (jj_3R_90()) return true;
     if (jj_scan_token(159)) return true;
     return false;
   }
@@ -18207,7 +18207,7 @@ try {errs.Error(message,null);
 
   private boolean jj_3R_243() {
     if (jj_scan_token(158)) return true;
-    if (jj_3R_89()) return true;
+    if (jj_3R_90()) return true;
     if (jj_scan_token(159)) return true;
     return false;
   }
