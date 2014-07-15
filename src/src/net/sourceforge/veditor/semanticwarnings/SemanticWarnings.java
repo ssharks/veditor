@@ -99,9 +99,9 @@ public class SemanticWarnings {
 		//updates the assigned and used symbols.
 		if(isCodeBlock(node)) {
 			VariableStore oldstore = store;
-
+			
 			store = new VariableStore(new Vector<String>(),new Vector<String>(),
-					oldstore.getDeclaredSymbolsComplete(), new Vector<DeclaredSymbol>());
+						oldstore.getDeclaredSymbolsComplete(), new Vector<DeclaredSymbol>());
 			
 			if(node instanceof ASTarchitecture_body) {
 				String archname=null;
@@ -128,7 +128,9 @@ public class SemanticWarnings {
 				}
 				else if(node.getChild(i) instanceof ASTidentifier_list) {
 				}
-				else {
+				else if (node.getChild(i) instanceof ASTsubprogram_specification) {
+					addPortToDeclaredSymbols((ASTsubprogram_specification)node.getChild(i), store, false, true);
+				} else {
 					analyze(node.getChild(i),store);
 				}
 			}
@@ -152,9 +154,7 @@ public class SemanticWarnings {
 		else if(node instanceof ASTentity_declaration) {
 			m_entityname = "";
 			store.clear();
-			addPortToDeclaredSymbols((ASTentity_declaration)node, store, false);
-		} else if (node instanceof ASTsubprogram_specification) {
-			addPortToDeclaredSymbols((ASTsubprogram_specification)node, store, false);
+			addPortToDeclaredSymbols((ASTentity_declaration)node, store, false, false);
 		}
 
 		if(node instanceof ASTassociation_element) {
@@ -303,11 +303,13 @@ public class SemanticWarnings {
 	}
 
 	
-	private void addPortToDeclaredSymbols(SimpleNode node, VariableStore store, boolean isgeneric) {
-		if(node instanceof ASTinterface_constant_declaration || node instanceof ASTinterface_signal_declaration) {
+	private void addPortToDeclaredSymbols(SimpleNode node, VariableStore store, boolean isgeneric, boolean subprogram) {
+		if(node instanceof ASTinterface_constant_declaration || node instanceof ASTinterface_signal_declaration || node instanceof ASTinterface_variable_declaration) {
 			int declarationtype = (node instanceof ASTinterface_constant_declaration)?
 					DeclaredSymbol.DECLARATIONTYPE_INTERFACEINPUT:
 					DeclaredSymbol.DECLARATIONTYPE_INTERFACEOUTPUT;
+			
+			if (subprogram) declarationtype = DeclaredSymbol.DECLARATIONTYPE_INTERFACEINPUT;
 			
 			if(isgeneric) declarationtype = DeclaredSymbol.DECLARATIONTYPE_INTERFACEGENERIC;
 			
@@ -316,8 +318,20 @@ public class SemanticWarnings {
 					String mode = node.getChild(i).getFirstToken().image;
 					if(mode.equalsIgnoreCase("in")) declarationtype=DeclaredSymbol.DECLARATIONTYPE_INTERFACEINPUT;
 					if(mode.equalsIgnoreCase("inout")) declarationtype=DeclaredSymbol.DECLARATIONTYPE_INTERFACEBIDIR;
+					if(mode.equalsIgnoreCase("out")) declarationtype=DeclaredSymbol.DECLARATIONTYPE_INTERFACEOUTPUT;
 				}
 			}
+			
+			// differentiate between subprogram and entity
+			if (subprogram) {
+				if (declarationtype == DeclaredSymbol.DECLARATIONTYPE_INTERFACEOUTPUT) {
+					declarationtype = DeclaredSymbol.DECLARATIONTYPE_SUBPROGRAMOUTPUT;
+				}
+				if (declarationtype == DeclaredSymbol.DECLARATIONTYPE_INTERFACEBIDIR) {
+					declarationtype = DeclaredSymbol.DECLARATIONTYPE_SUBPROGRAMBIDIR;
+				}
+			}
+			
 			for(int i=0;i<node.getChildCount();i++) {
 				if(node.getChild(i) instanceof ASTidentifier) {
 					Token tok = node.getChild(i).getFirstToken();
@@ -341,21 +355,25 @@ public class SemanticWarnings {
 			}
 			if(node instanceof ASTgeneric_clause) isgeneric=true;
 			else if(!(node instanceof ASTinterface_list)) isgeneric=false;
-			addPortToDeclaredSymbols(node.getChild(i),store,isgeneric);
+			addPortToDeclaredSymbols(node.getChild(i),store,isgeneric, subprogram);
 		}
 	}
 
-	private Vector<SimpleNode> getAllIdentifierNodes(SimpleNode node) {
-		if(node instanceof ASTidentifier) {
+	private Vector<SimpleNode> getAllBaseIdentifierNodes(SimpleNode node) {
+		if (node instanceof ASTname) {
 			Vector<SimpleNode> result = new Vector<SimpleNode>();
-			result.add(node);
+			if (node.getChildCount() > 0) {
+				if (node.getChild(0) instanceof ASTidentifier) {
+					result.add(node.getChild(0));
+				}
+			}
 			return result;
 		}
 		
 		// do not go into expressions like "port'range"
 		Vector<SimpleNode> result = new Vector<SimpleNode>();
 		for(int i=0;i<node.getChildCount();i++) {
-			result.addAll(getAllIdentifierNodes(node.getChild(i)));
+			result.addAll(getAllBaseIdentifierNodes(node.getChild(i)));
 		}
 		return result;
 	}
@@ -519,7 +537,7 @@ public class SemanticWarnings {
 					checkAssignmentType(node, declared, assignedName);
 					
 					// find in the inputs for the expression if there are any outputs used
-					Vector<SimpleNode> inputName = getAllIdentifierNodes(node.getChild(i+1));
+					Vector<SimpleNode> inputName = getAllBaseIdentifierNodes(node.getChild(i+1));
 					
 					// check if not of the inputs is an output of the entity
 					for (int k=0;k<inputName.size();k++) {
@@ -527,6 +545,10 @@ public class SemanticWarnings {
 						for(int j=declared.size()-1;j>=0;j--) {
 							if(declared.get(j).name.equalsIgnoreCase(inputName.get(k).getFirstToken().toString())) {
 								if ((declared.get(j).declarationType == DeclaredSymbol.DECLARATIONTYPE_INTERFACEOUTPUT) 
+										&& (checkForSignature(inputName.get(k)) == false)) {
+									VerilogPlugin.setErrorMarker(m_File, node.getFirstToken().beginLine, "Output " + inputName.get(k).getFirstToken().toString() +" cannot be used in an expression ");
+								}
+								if ((declared.get(j).declarationType == DeclaredSymbol.DECLARATIONTYPE_SUBPROGRAMOUTPUT)  
 										&& (checkForSignature(inputName.get(k)) == false)) {
 									VerilogPlugin.setErrorMarker(m_File, node.getFirstToken().beginLine, "Output " + inputName.get(k).getFirstToken().toString() +" cannot be used in an expression ");
 								}
