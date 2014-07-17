@@ -102,13 +102,13 @@ SKIP :
 }
 
 MORE :
-{      < ("//")* "pragma protect begin_protected" > : IN_PROTECTED
+{      < ("//")* "pragma" "protect" "begin_protected" > : IN_PROTECTED
 }
 
 <IN_PROTECTED>
 SKIP :
 {
-    <PROTECTED: "pragma protect end_protected"> : DEFAULT
+    <PROTECTED: "pragma" "protect" "end_protected"> : DEFAULT
 }
 
 <IN_PROTECTED>

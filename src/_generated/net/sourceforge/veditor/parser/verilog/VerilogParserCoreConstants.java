@@ -279,7 +279,7 @@ public interface VerilogParserCoreConstants {
     "\"\\n\"",
     "\"\\f\"",
     "<token of kind 12>",
-    "\"pragma protect end_protected\"",
+    "<PROTECTED>",
     "<token of kind 14>",
     "<SINGLE_LINE_COMMENT>",
     "\"module\"",
