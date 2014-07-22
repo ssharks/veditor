@@ -53,6 +53,7 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.IVerticalRuler;
+import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotation;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotationModel;
 import org.eclipse.jface.text.source.projection.ProjectionSupport;
@@ -575,7 +576,11 @@ abstract public class HdlEditor extends TextEditor
 	    m_ProjectionSupport.install();
 
 	    //turn projection mode on
-	    viewer.doOperation(ProjectionViewer.TOGGLE);	    
+	    viewer.doOperation(ProjectionViewer.TOGGLE);
+	    
+	    if (viewer instanceof SourceViewer) {
+			viewer.addPostSelectionChangedListener(new MarkSelectionOccurences(this));
+		}
 	}
 	
 	protected ISourceViewer createSourceViewer(Composite parent,

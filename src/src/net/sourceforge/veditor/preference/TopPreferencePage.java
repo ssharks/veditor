@@ -43,6 +43,7 @@ public class TopPreferencePage extends AbstractSimplePreferencePage
 		addBooleanField(PreferenceStrings.SORT_OUTLINE, "Sort in Outline/Hierarchy");
 		addBooleanField(PreferenceStrings.FILTER_SINGALS_IN_OUTLINE, "Filter Signals in Outline");
 		addBooleanField(PreferenceStrings.FILTER_PORTS_IN_OUTLINE, "Filter Ports in Outline");
+		addBooleanField(PreferenceStrings.MARK_SELECTION_OCCURENCES,"Mark occurences of the selected text");
 		addBooleanField(PreferenceStrings.SAVE_BEFORE_COMPILE,"Save File Before Compile");
 		
 		//mg

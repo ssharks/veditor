@@ -61,6 +61,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer impleme
 		preferences.setDefault(PreferenceStrings.FILTER_PORTS_IN_OUTLINE, false);
 		
 		preferences.setDefault(PreferenceStrings.SAVE_BEFORE_COMPILE,true);
+		preferences.setDefault(PreferenceStrings.MARK_SELECTION_OCCURENCES,true);
 		preferences.setDefault(PreferenceStrings.COMPILE_COMMAND, "vcom %p%f");
 		preferences.setDefault(PreferenceStrings.SYNTH_COMMAND, "vcom -check_synthesis %p%f");
 		preferences.setDefault(PreferenceStrings.COMPILE_FOLDER, "simulation");

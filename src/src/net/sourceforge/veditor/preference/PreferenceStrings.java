@@ -81,6 +81,7 @@ public interface PreferenceStrings {
    public static final String SORT_OUTLINE = "Outline.Sort";
    public static final String FILTER_SINGALS_IN_OUTLINE="Outline.FilterSignals";
    public static final String FILTER_PORTS_IN_OUTLINE="Outline.FilterPorts";
+   public static final String MARK_SELECTION_OCCURENCES="Editor.MarkSelectionOccurences";
    public static final String SAVE_BEFORE_COMPILE="Compile.SaveBeforeCompile";
    public static final String COMPILE_COMMAND="Compile.command";
    public static final String SYNTH_COMMAND="Synthesize.command";
