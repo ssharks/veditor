@@ -96,9 +96,10 @@ public class VerilogParserReader extends ParserReader {
 				break;
 			case '/':
 				next = reader.read();
-				if (next == '/' && context == CODE)
+				if (next == '/' && context == CODE) {
 					context = LINE_COMMENT;
-				else if (next == '*' && context == CODE)
+					reader.pushBack(next); // we push line comments through
+				} else if (next == '*' && context == CODE)
 					context = BLOCK_COMMENT;
 				else
 					reader.pushBack(next);
@@ -126,7 +127,7 @@ public class VerilogParserReader extends ParserReader {
 					else
 						buffer.append('\n');
 				} else if (enable && context != BLOCK_COMMENT) { 
-						//&& context != LINE_COMMENT) // do parse line comments, to find pragma's
+					// do parse line comments, but skip block comments, to find pragma's
 					buffer.append(c);
 				}
 			}
