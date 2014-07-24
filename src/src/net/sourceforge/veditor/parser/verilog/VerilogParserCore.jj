@@ -298,7 +298,7 @@ void moduleDecl() :
 	{
 		beginOutlineElement(name, "module#");
 	}
-	[ "#" "(" [ parameterArg() ( "," parameterArg() )* ] ")"  ]
+	[ "#" "(" [ <PARAMETER> parameterArg() ( "," [<PARAMETER>] parameterArg() )* ] ")"  ]
 	[ "(" [ argument() ( "," argument() )* ] ")" ]
 	";"
 	( moduleItem() )*
@@ -314,7 +314,7 @@ void parameterArg() :
 	String mod, range;
 }
 { 
-	<PARAMETER> mod = parameterModifier() range = bitRange()
+	mod = parameterModifier() range = bitRange()
 	parameterAssign("parameter", mod, range)
 }
 
@@ -324,7 +324,7 @@ String parameterModifier() :
 }
 {
 	(
-		("real" | "integer" | "signed" )
+		("real" | "integer" | "signed" | "time" )
 		{
 			ret += token.image + " ";
 		}
