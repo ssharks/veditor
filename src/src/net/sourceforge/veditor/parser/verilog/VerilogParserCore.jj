@@ -430,14 +430,19 @@ void portDecl() :
 String variableModifier() :
 {
 	String ret = "";
+	String type = "";
 }
 {
 	(
-		( "real" | "realtime" | "integer" | "wire" | "reg" | "signed" | "time" )
+        type = netType()
+        {
+            ret += type + " ";
+        }
+        | ( "real" | "realtime" | "integer" | "reg" | "signed" | "time" ) 
 		{
 			ret += token.image + " ";
 		}
-	)*
+    )*
 	{
 		return ret;
 	}
