@@ -432,11 +432,14 @@ public class OutlineDatabase {
 				parser.parse();				
 			}
 		} catch (CoreException e) {
+		} catch (TokenMgrError e) {
+			VerilogPlugin.setErrorMarker(file, 1, "Token manager error: " + e.getMessage());
 		} catch (HdlParserException e){
-			
+			VerilogPlugin.setErrorMarker(file, 1, "Parsing error: " + e.getMessage());
+		} catch (Error e) {
+			VerilogPlugin.setErrorMarker(file, 1, "Parsing error: " + e.getMessage());
 		}
 	}
-	
 	
 	 /**
 	  * Class used to determine the changes
