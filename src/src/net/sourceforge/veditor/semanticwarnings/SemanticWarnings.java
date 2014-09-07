@@ -259,7 +259,8 @@ public class SemanticWarnings {
 		
 		if( node instanceof ASTconditional_signal_assignment ||
 			node instanceof ASTsignal_assignment_statement ||
-			node instanceof ASTvariable_assignment_statement				
+			node instanceof ASTvariable_assignment_statement ||
+			node instanceof ASTselected_signal_assignment 
 		) {
 			checkAssignmentSymbol(store, node);
 			
