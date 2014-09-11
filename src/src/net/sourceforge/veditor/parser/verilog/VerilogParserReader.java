@@ -80,7 +80,7 @@ public class VerilogParserReader extends ParserReader {
 			}
 
 			char c = reader.read();
-			char next;
+			/*char next;
 			switch (c) {
 			case '\n':
 				if (context == LINE_COMMENT) {
@@ -113,7 +113,7 @@ public class VerilogParserReader extends ParserReader {
 					reader.pushBack(next);
 				}
 				break;
-			}
+			}*/
 			if (c == '`' && context == CODE) {
 				int status = directive(enable);
 				if (status != CONTINUED) {
