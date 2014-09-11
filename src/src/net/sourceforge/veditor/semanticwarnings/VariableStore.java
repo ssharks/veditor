@@ -19,6 +19,8 @@ public class VariableStore {
 		public static final int DECLARATIONTYPE_INTERFACEBIDIR = 10;
 		public static final int DECLARATIONTYPE_SUBPROGRAMOUTPUT = 11;
 		public static final int DECLARATIONTYPE_SUBPROGRAMBIDIR = 12;
+		public static final int DECLARATIONTYPE_PARAMETER = 13;
+		public static final int DECLARATIONTYPE_ALIAS = 14;
 		
 		DeclaredSymbol(String n,int l,int d) {
 			name=n;
@@ -35,9 +37,12 @@ public class VariableStore {
 			if(node instanceof ASTcomponent_declaration) declarationtype=DECLARATIONTYPE_COMPONENT;
 			if(node instanceof ASTsignal_declaration) declarationtype=DECLARATIONTYPE_SIGNAL;
 			if(node instanceof ASTsubprogram_body) declarationtype=DECLARATIONTYPE_SUBPROGRAM;
+			if(node instanceof ASTsubprogram_specification) declarationtype=DECLARATIONTYPE_SUBPROGRAM;
 			if(node instanceof ASTconstant_declaration) declarationtype=DECLARATIONTYPE_CONSTANT;
 			if(node instanceof ASTfull_type_declaration) declarationtype=DECLARATIONTYPE_FULLTYPE;
 			if(node instanceof ASTvariable_declaration) declarationtype=DECLARATIONTYPE_VARIABLE;
+			if(node instanceof ASTparameter_specification) declarationtype=DECLARATIONTYPE_PARAMETER;
+			if(node instanceof ASTalias_designator) declarationtype=DECLARATIONTYPE_ALIAS;
 			return declarationtype;
 		}
 	}
