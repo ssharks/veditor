@@ -473,8 +473,8 @@
          point="org.eclipse.ui.editors.markerAnnotationSpecification">
       <specification
             annotationType="net.sourceforge.veditor.occurrences"
-            label="%OccurrenceAnnotation.label"
-            icon="$nl$/icons/full/obj16/searchm_obj.gif"
+            label="Occurrence (Veditor)"
+            icon="$nl$/icons/searchm_obj.gif"
             textPreferenceKey="occurrenceIndication"
             textPreferenceValue="false"
             highlightPreferenceKey="occurrenceHighlighting"
