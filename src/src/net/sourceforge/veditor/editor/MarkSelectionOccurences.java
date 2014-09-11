@@ -73,7 +73,7 @@ public class MarkSelectionOccurences implements ISelectionChangedListener {
 				// for single finds do not highlight
 				if ((findList.size() > 1) && (findList.size() < maxHits)) {
 					for (int i=0;i < findList.size(); i++) {
-						Annotation annotation = new Annotation( "org.eclipse.jdt.ui.occurrences", false, "Description" );
+						Annotation annotation = new Annotation( "net.sourceforge.veditor.occurrences", false, "Description" );
 						model.addAnnotation( annotation, new Position( findList.get(i), textSelection.getLength() ) );
 						annotationArray.add(annotation);
 					}
