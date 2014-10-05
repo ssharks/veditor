@@ -473,8 +473,8 @@
          point="org.eclipse.ui.editors.markerAnnotationSpecification">
       <specification
             annotationType="net.sourceforge.veditor.occurrences"
-            label="%OccurrenceAnnotation.label"
-            icon="$nl$/icons/full/obj16/searchm_obj.gif"
+            label="Occurrence (Veditor)"
+            icon="$nl$/icons/searchm_obj.gif"
             textPreferenceKey="occurrenceIndication"
             textPreferenceValue="false"
             highlightPreferenceKey="occurrenceHighlighting"
@@ -494,23 +494,6 @@
             isGoToPreviousNavigationTargetKey="isOccurrenceGoToPreviousNavigationTarget"
             isGoToPreviousNavigationTarget="false"
             textStylePreferenceKey="occurrenceTextStyle"
-            textStylePreferenceValue="NONE">
-      </specification>
-      <specification
-            annotationType="net.sourceforge.veditor.occurrences.write"
-            label="%WriteOccurrenceAnnotation.label"
-            textPreferenceKey="writeOccurrenceIndication"
-            textPreferenceValue="false"
-            highlightPreferenceKey="writeOccurrenceHighlighting"
-            highlightPreferenceValue="true"
-            overviewRulerPreferenceKey="writeOccurrenceIndicationInOverviewRuler"
-            overviewRulerPreferenceValue="true"
-            verticalRulerPreferenceKey="writeOccurrenceIndicationInVerticalRuler"
-            verticalRulerPreferenceValue="false"
-            colorPreferenceKey="writeOccurrenceIndicationColor"
-            colorPreferenceValue="240,216,168"
-            presentationLayer="4"
-            textStylePreferenceKey="writeOccurrenceTextStyle"
             textStylePreferenceValue="NONE">
       </specification>
    </extension>
