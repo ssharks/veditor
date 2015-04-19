@@ -231,8 +231,8 @@ TOKEN [IGNORE_CASE] :
 
 TOKEN :
 {
-    <#upper_case_letter:               ["A"-"Z"]>
-  | <#lower_case_letter:               ["a"-"z"]>
+    <#upper_case_letter:               ["A"-"Z","À"-"ß"]>
+  | <#lower_case_letter:               ["a"-"z","à"-"ÿ"]>
   | <#digit:                           ["0"-"9"]>
   | <#extended_digit:                  ["0"-"9","A"-"F","a"-"f"]>
   | <#special_character:               ["#","&","'","(",")","*","+",",","-",
@@ -241,10 +241,13 @@ TOKEN :
   | <#other_special_character:         ["!","$","%","@","?","^","`","{","}","~",
                                         "\\"]>
   | <#format_effector:                 ["\n","\t"]>
-  | <#base_specifier:                  ["B","O","X","b","o","x"]>
+  | <#base_specifier_bin_oct_hex:      ["B","O","X","b","o","x"]>
+  | <#base_specifier_dec:              ["D","d"]>
+  | <#base_specifier_sign:             ["S", "U", "s", "u"] >
+  | <#base_specifier:((<base_specifier_sign>)? <base_specifier_bin_oct_hex>)|<base_specifier_dec>>
   | <#underline:                       "_">
-  | <#letter:                          ["a"-"z","A"-"Z"]>
-  | <#letter_or_digit:                 ["a"-"z","A"-"Z","0"-"9"]>
+  | <#letter: <lower_case_letter>|<upper_case_letter >>
+  | <#letter_or_digit: <letter>|<digit>>
   | <#integer: <digit> (("_")? <digit>)*>
   | <#base: <integer>>
   | <#based_integer: (("_")? <extended_digit>)*>
@@ -252,8 +255,8 @@ TOKEN :
   | <#basic_character: (<basic_graphic_character>|<format_effector>)>
   | <#basic_graphic_character: (["A"-"Z"]|<digit>|<special_character>|" ")>
   | <basic_identifier: <letter> ( ("_")? <letter_or_digit> )*>
-  | <bit_string_literal: <base_specifier> "\"" <bit_value> "\"">
-  | <#bit_value: <extended_digit> ( ("_")? <extended_digit>)*>
+  | <bit_string_literal: (<integer>)? <base_specifier> "\"" <bit_value> "\"">
+  | <#bit_value: <graphic_character> ( ("_")? <graphic_character>)*>
   | <character_literal:  "'" (<graphic_character>|"\"") "'">
   | <decimal_literal: <integer> ( "." <integer>)? ( <exponent> )?>
   | <#exponent: ("E" ("+")? <integer>) | ("E" "-" <integer>)>
@@ -275,6 +278,12 @@ TOKEN :
   | <LE:  "<=">
   | <GT:  ">">
   | <LO:  "<">
+  | <MEQ: "?=">
+  | <MNEQ: "?/=">
+  | <MLO: "?<">
+  | <MLE: "?<=">
+  | <MGT: "?>">
+  | <MGE: "?>=">
   | <SEMICOLON: ";">
   | <COLON: ":">
   | <ASSIGN: ":=">
@@ -1140,6 +1149,83 @@ void entity_declarative_item() #void :
   }
 }
 
+/*
+* IEEE1076-2008 Section 8.7 External names
+*/
+void external_name() #void :
+{}
+{
+    LOOKAHEAD(external_constant_name())
+    external_constant_name()
+  | LOOKAHEAD(external_signal_name())
+    external_signal_name()
+  | external_variable_name()   
+}
+
+void external_constant_name() #void :
+{}
+{
+  "<<" <CONSTANT> external_pathname() ":" subtype_indication() ">>" 
+}
+
+void external_signal_name() #void :
+{}
+{
+  "<<" <SIGNAL> external_pathname() ":" subtype_indication() ">>" 
+}
+
+void external_variable_name() #void :
+{}
+{
+  "<<" <VARIABLE> external_pathname() ":" subtype_indication() ">>" 
+}
+
+void external_pathname() #void :
+{}
+{
+    package_pathname()
+  | absolute_pathname()
+  | relative_pathname()
+}
+
+void package_pathname() #void :
+{}
+{
+  "@" logical_name() "." package_simple_name() "." ( LOOKAHEAD(package_simple_name() ".") package_simple_name() "." )* object_simple_name()
+}
+
+void absolute_pathname() #void :
+{}
+{
+  "." partial_pathname()
+}
+
+void relative_pathname() #void :
+{}
+{
+  ( "^" "." )* partial_pathname()
+}
+
+void partial_pathname() #void :
+{}
+{
+  ( LOOKAHEAD(pathname_element() ".") pathname_element() "." )* object_simple_name()    
+}
+
+void pathname_element() #void :
+{}
+{
+    LOOKAHEAD(entity_simple_name())
+    entity_simple_name()
+  | LOOKAHEAD(instantiation_label())
+    instantiation_label()
+  | LOOKAHEAD(block_label())
+    block_label()
+  | LOOKAHEAD(generate_statement_label())
+    generate_statement_label() [ "(" static_expression() ")" ]
+  | package_simple_name()
+}
+
 /**
  * 4.8: Nature Declaration
  * 1076.1 extension
@@ -1375,16 +1461,13 @@ void function_call() :
 
 
 /**
- * Section 9.7
+ * Section 11.8 in IEEE Std 1076-2008
  */
 void generate_statement() :
 {}
 {
   generate_label() ":"
-  generation_scheme() <GENERATE>
-    [ LOOKAHEAD(2) ( block_declarative_item() )* <BEGIN> ]
-    ( architecture_statement() )*
-  <END> <GENERATE> [ generate_label() ] ";"
+  generation_scheme()
 }
 
 /** 1076.1 extension: */
@@ -1398,10 +1481,47 @@ void concurrent_break_statement() :
 void generation_scheme() :
 {}
 {
-    <FOR> generate_parameter_specification()
-  | <IF> condition()
+    for_generate_statement()
+  | if_generate_statement()
+  | case_generate_statement()
 }
 
+void for_generate_statement() #void :
+{}
+{
+    <FOR> generate_parameter_specification() <GENERATE>
+    [ LOOKAHEAD(2) ( block_declarative_item() )* <BEGIN> ]
+    ( architecture_statement() )*
+    <END> <GENERATE> [ generate_label() ] ";"
+}
+
+void if_generate_statement() #void :
+{}
+{
+    <IF> condition() <GENERATE>
+    [ LOOKAHEAD(2) ( block_declarative_item() )* <BEGIN> ]
+    ( architecture_statement() )*
+    ( <ELSIF> condition() <GENERATE>
+    ( architecture_statement() )* )*
+    [ <ELSE> <GENERATE>
+    ( architecture_statement() )* ]
+    <END> <GENERATE> [ generate_label() ] ";"
+}
+
+void case_generate_statement() #void :
+{}
+{
+    <CASE> expression() <GENERATE>
+    case_generate_alternative()
+    ( case_generate_alternative() )*
+    <END> <GENERATE> [ generate_label() ] ";"
+}
+
+void case_generate_alternative() #void :
+{}
+{
+    <WHEN> choices() "=>" ( architecture_statement() )*
+}
 
 void generic_clause() :
 {}
@@ -1673,9 +1793,11 @@ void literal() :
 {
     LOOKAHEAD( numeric_literal() )
     numeric_literal()
-  | enumeration_literal()
+  | LOOKAHEAD(enumeration_literal())
+    enumeration_literal()
   | <string_literal>
-  | <bit_string_literal>
+  | LOOKAHEAD(<bit_string_literal>)
+    <bit_string_literal>
   | <NULL>
 }
 
@@ -1758,7 +1880,7 @@ void name() :
  *
  * Kann ohne Linksrekursion wie folgt geschrieben werden:
  */
-  ( simple_name() | operator_symbol() )
+  ( simple_name() | operator_symbol() | external_name() )
   [ LOOKAHEAD(name_extension()) name_extension()   ]
 }
 
@@ -1899,15 +2021,24 @@ void package_body_declarative_part() :
 }
 
 
-
+/** 
+ * IEEE1076-2008 Section 4.7 Package declarations
+ */
 void package_declaration() :
 {}
 {
   <PACKAGE> identifier() <IS>
+     package_header()
      package_declarative_part()
   <END> [ <PACKAGE> ] [ package_simple_name() ] ";"
 }
 
+void package_header() #void :
+{}
+{
+    [ generic_clause()
+    [ generic_map_aspect() ";" ]]
+}
 
 void package_declarative_item() #void :
 {}
@@ -1946,6 +2077,13 @@ void package_declarative_part() :
 {}
 {
   ( package_declarative_item() )*
+}
+
+void package_instantiation_declaration() :
+{}
+{
+    <PACKAGE> identifier() <IS> <NEW> uninstantiated_package_name()
+      [ generic_map_aspect() ] ";"
 }
 
 
@@ -2032,12 +2170,16 @@ void primary() #void :
 
 }
 
-
+/*
+* IEEE1076-2008 Section 13.1 Design units
+*/
 void primary_unit() #void :
 {}
 {
     entity_declaration()
   | configuration_declaration()
+  | LOOKAHEAD(<PACKAGE> identifier() <IS> <NEW>)
+    package_instantiation_declaration()
   | LOOKAHEAD(<PACKAGE> identifier())
     package_declaration()
 }
@@ -2241,6 +2383,12 @@ int relational_operator() #void :
   | <LE>                { return LE; }
   | <GT>                { return GT; }
   | <GE>                { return GE; }
+  | <MEQ>               { return MEQ; }
+  | <MNEQ>              { return MNEQ; }
+  | <MLO>               { return MLO; }
+  | <MLE>               { return MLE; }
+  | <MGT>               { return MGT; }
+  | <MGE>               { return MGE; }
 }
 
 
@@ -3044,6 +3192,12 @@ void entity_simple_name() #void :
   simple_name()
 }
 
+void object_simple_name() #void :
+{}
+{
+  simple_name()
+}
+
 void package_simple_name() #void :
 {}
 {
@@ -3140,6 +3294,12 @@ void signal_name() #void:
 // Name, der einen Typen bezeichnet...
 //
 void type_name() #void:
+{}
+{
+  name()
+}
+
+void uninstantiated_package_name() #void :
 {}
 {
   name()
