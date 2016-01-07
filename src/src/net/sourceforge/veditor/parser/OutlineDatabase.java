@@ -69,7 +69,7 @@ public class OutlineDatabase {
 				m_ResourceChangeListener, IResourceChangeEvent.POST_CHANGE);
 	}
 
-	public OutlineContainer getOutlineContainer(IFile file) {
+	synchronized public OutlineContainer getOutlineContainer(IFile file) {
 		OutlineContainer results = m_HierarchyDatabase.get(file);
 		//if the outline already exists
 		if (m_HierarchyDatabase.get(file) == null) {
@@ -142,7 +142,7 @@ public class OutlineDatabase {
 	 * @param name Element name
 	 * @return found element or null if not found.
 	 */
-	public OutlineElement findTopLevelElement(String name) {
+	synchronized public OutlineElement findTopLevelElement(String name) {
 		for (OutlineContainer container : m_HierarchyDatabase.values()) {
 			OutlineElement element = container.findTopLevelElement(name);
 			if (element != null)
@@ -370,7 +370,7 @@ public class OutlineDatabase {
 	/**
 	 * search definition from instance
 	 */
-	public OutlineElement findDefinition(OutlineElement instance) {
+	synchronized public OutlineElement findDefinition(OutlineElement instance) {
 		if (instance instanceof VerilogInstanceElement) {
 			String[] types = instance.getType().split("#");
 			OutlineElement[] element = findTopLevelElements(types[1], true);
