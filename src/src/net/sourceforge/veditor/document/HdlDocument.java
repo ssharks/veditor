@@ -19,6 +19,7 @@ import net.sourceforge.veditor.parser.IParser;
 import net.sourceforge.veditor.parser.OutlineContainer;
 import net.sourceforge.veditor.parser.OutlineDatabase;
 import net.sourceforge.veditor.parser.OutlineElement;
+import net.sourceforge.veditor.parser.VariableStore;
 import net.sourceforge.veditor.parser.vhdl.VhdlOutlineElementFactory.PackageDeclElement;
 
 import org.eclipse.core.resources.IFile;
@@ -37,6 +38,7 @@ abstract public class HdlDocument extends Document
 	private IProject m_Project;
 	private IFile m_File;	
 	private boolean m_NeedToRefresh;
+	private VariableStore variableStore;
 
 	public HdlDocument(IProject project, IFile file)
 	{
@@ -124,11 +126,21 @@ abstract public class HdlDocument extends Document
 			}
 			OutlineDatabase database = OutlineDatabase.getProjectsDatabase(getProject());
 			database.scanTree(getFile());
+			variableStore = parser.getVariableStore();
 			return true;
 		}		
 		return false;
 	}
 	
+	public VariableStore getVariableStore() {
+		try {
+			refreshOutline();
+		} catch (HdlParserException e) {
+			return null;
+		}
+		return variableStore;
+	}
+
 	/**
 	 * Used to listen for document changes
 	 *

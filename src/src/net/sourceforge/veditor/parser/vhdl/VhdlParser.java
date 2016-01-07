@@ -25,6 +25,7 @@ import net.sourceforge.veditor.parser.OutlineDatabase;
 import net.sourceforge.veditor.parser.OutlineElementFactory;
 import net.sourceforge.veditor.parser.OutlineContainer.Collapsible;
 import net.sourceforge.veditor.parser.ParserReader;
+import net.sourceforge.veditor.parser.VariableStore;
 import net.sourceforge.veditor.parser.vhdl.ASTsubtype_declaration;
 import net.sourceforge.veditor.parser.vhdl.ASTsubtype_indication;
 import net.sourceforge.veditor.parser.vhdl.VhdlParserCore;
@@ -145,6 +146,13 @@ public class VhdlParser implements IParser
 			updateMarkers();
 			//throw e;
 		}
+	}
+	
+	/**
+	 * Currently it is dummy.
+	 */
+	public VariableStore getVariableStore() {
+		return null;
 	}
 
 	/**

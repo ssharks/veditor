@@ -44,7 +44,7 @@ public abstract class VerilogParserCore
 	protected abstract Expression variableReference(Identifier ident);
 	protected abstract Expression functionReference(Identifier ident);
 
-	protected abstract void parameterAssignment(String name, Expression value);
+	protected abstract void parameterAssignment(Identifier ident, Expression value);
 	protected abstract void variableAssignment(Identifier ident);
 	protected abstract void taskReference(Identifier ident);
 	protected abstract void variableConnection(Expression arg, String module, Identifier port);
@@ -103,7 +103,7 @@ SKIP :
 
 MORE :
 {
-      < ("//")* ("`")* (" " | "\t")* "pragma" (" " | "\t")+ "protect" (" " | "\t")+ "begin_protected" (~["\n"])*> : IN_PROTECTED
+      < ("//" | "`") (" " | "\t")* "pragma" (" " | "\t")+ "protect" (" " | "\t")+ "begin_protected" (~["\n"])*> : IN_PROTECTED
 }
 
 <IN_PROTECTED>
@@ -348,7 +348,7 @@ void parameterAssign(String type, String mod, String range) :
 	{
 		String types = type + "#" + mod + "#" + range + "#" + value.toString();
 		beginOutlineElement(name, types);
-		parameterAssignment(name.image, value);
+		parameterAssignment(name, value);
 		endOutlineElement(name, types);
 	}
 }

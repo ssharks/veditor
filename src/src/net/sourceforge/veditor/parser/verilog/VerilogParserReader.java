@@ -171,9 +171,15 @@ public class VerilogParserReader extends ParserReader {
 	private int directive(boolean enable) {
 		String cmd = getIdent();
 
-		if (cmd.equals("timescale") || cmd.equals("default_nettype")) {
-			getToEndOfLine();
-		} else if (cmd.equals("define")) {
+		String skipToEol[] = { "timescale", "default_nettype", "celldefine", "endcelldefine" };
+		for (int i = 0; i < skipToEol.length; i++) {
+			if (cmd.equals(skipToEol[i])) {
+				getToEndOfLine();
+				return CONTINUED;
+			}
+		}
+		
+		if (cmd.equals("define")) {
 			String def = getNextIdent();
 			int line = reader.getLine();
 			skipSpace();
