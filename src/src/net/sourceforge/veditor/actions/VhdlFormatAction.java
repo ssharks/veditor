@@ -536,6 +536,12 @@ public class VhdlFormatAction extends AbstractAction {
 			case VhdlParserCoreTokenManager.LE:
 			case VhdlParserCoreTokenManager.GT:
 			case VhdlParserCoreTokenManager.LO:
+			case VhdlParserCoreTokenManager.MEQ:
+			case VhdlParserCoreTokenManager.MNEQ:
+			case VhdlParserCoreTokenManager.MGE:
+			case VhdlParserCoreTokenManager.MLE:
+			case VhdlParserCoreTokenManager.MGT:
+			case VhdlParserCoreTokenManager.MLO:
 			case VhdlParserCoreTokenManager.COLON:
 			case VhdlParserCoreTokenManager.ASSIGN:
 			case VhdlParserCoreTokenManager.RARROW:

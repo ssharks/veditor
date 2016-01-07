@@ -41,7 +41,7 @@ public class ASTarchitecture_body extends SimpleNode {
     int i = jjtGetNumChildren()-1;
     if (jjtGetChild(i).toString() == "identifier")
     {
-      if ( s1.compareTo( ((ASTidentifier)jjtGetChild(i)).name) != 0)
+      if ( s1.compareToIgnoreCase( ((ASTidentifier)jjtGetChild(i)).name) != 0)
         getErrorHandler().Error("identifiers don't match: "
           +s1+"/="+((ASTidentifier)jjtGetChild(i)).name,null);
     }
