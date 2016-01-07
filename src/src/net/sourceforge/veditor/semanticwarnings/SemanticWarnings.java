@@ -526,7 +526,7 @@ public class SemanticWarnings {
 		return false;
 	}
 	
-	// check for incorrect assignment statements, line using := to assign a signal or <= to assign a variable
+	// check for incorrect assignment statements, line using := to assign a signal or <= to assing a variable
 	private void checkAssignmentSymbol(VariableStore store, SimpleNode node) {
 		if (node instanceof ASTsignal_assignment_statement ||
 			node instanceof ASTvariable_assignment_statement ||

@@ -21,5 +21,6 @@ public interface IParser
 
 	public void parse() throws HdlParserException;
 	public int getContext();
+	public VariableStore getVariableStore();
 }
 

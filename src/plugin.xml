@@ -498,19 +498,20 @@
       </specification>
       <specification
             annotationType="net.sourceforge.veditor.occurrences.write"
-            label="%WriteOccurrenceAnnotation.label"
-            textPreferenceKey="writeOccurrenceIndication"
+            label="Write Occurrence (Veditor)"
+            icon="$nl$/icons/searchm_obj.gif"
+            textPreferenceKey="net.sourceforge.veditor.occurrenceIndication"
             textPreferenceValue="false"
-            highlightPreferenceKey="writeOccurrenceHighlighting"
+            highlightPreferenceKey="net.sourceforge.veditor.writeOccurrenceHighlighting"
             highlightPreferenceValue="true"
-            overviewRulerPreferenceKey="writeOccurrenceIndicationInOverviewRuler"
+            overviewRulerPreferenceKey="net.sourceforge.veditor.writeOccurrenceIndicationInOverviewRuler"
             overviewRulerPreferenceValue="true"
-            verticalRulerPreferenceKey="writeOccurrenceIndicationInVerticalRuler"
+            verticalRulerPreferenceKey="net.sourceforge.veditor.writeOccurrenceIndicationInVerticalRuler"
             verticalRulerPreferenceValue="false"
-            colorPreferenceKey="writeOccurrenceIndicationColor"
-            colorPreferenceValue="240,216,168"
+            colorPreferenceKey="net.sourceforge.veditor.writeOccurrenceIndicationColor"
+            colorPreferenceValue="240, 216, 168"
             presentationLayer="4"
-            textStylePreferenceKey="writeOccurrenceTextStyle"
+            textStylePreferenceKey="net.sourceforge.veditor.writeOccurrenceTextStyle"
             textStylePreferenceValue="NONE">
       </specification>
    </extension>

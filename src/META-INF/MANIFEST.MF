@@ -1,26 +1,19 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: V%Bundle-Name
+Bundle-Name: Verilog/VHDL Plugin 
 Bundle-SymbolicName: net.sourceforge.veditor; singleton:=true
-Bundle-Version: 1.2.1.9
+Bundle-Version: 1.2.1.c
 Bundle-ClassPath: veditor.jar
 Bundle-Activator: net.sourceforge.veditor.VerilogPlugin
-Bundle-Vendor: %Bundle-Vendor
+Bundle-Vendor: VEditor Team
 Bundle-Localization: plugin
 Export-Package: 
  net.sourceforge.veditor,
  net.sourceforge.veditor.actions,
  net.sourceforge.veditor.builder,
- net.sourceforge.veditor.document,
  net.sourceforge.veditor.editor,
- net.sourceforge.veditor.editor.completionProposals,
- net.sourceforge.veditor.editor.scanner,
- net.sourceforge.veditor.editor.scanner.verilog,
- net.sourceforge.veditor.editor.scanner.vhdl,
  net.sourceforge.veditor.log,
  net.sourceforge.veditor.parser,
- net.sourceforge.veditor.parser.verilog,
- net.sourceforge.veditor.parser.vhdl,
  net.sourceforge.veditor.preference,
  net.sourceforge.veditor.semanticwarnings,
  net.sourceforge.veditor.templates,

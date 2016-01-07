@@ -14,6 +14,7 @@ package net.sourceforge.veditor.parser.verilog;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -25,6 +26,7 @@ import net.sourceforge.veditor.parser.OutlineContainer;
 import net.sourceforge.veditor.parser.OutlineDatabase;
 import net.sourceforge.veditor.parser.OutlineElement;
 import net.sourceforge.veditor.parser.OutlineElementFactory;
+import net.sourceforge.veditor.parser.VariableStore;
 import net.sourceforge.veditor.parser.OutlineContainer.Collapsible;
 import net.sourceforge.veditor.parser.ParserReader;
 import net.sourceforge.veditor.preference.PreferenceStrings;
@@ -79,10 +81,9 @@ public class VerilogParser extends VerilogParserCore implements IParser, Prefere
 	private int blockStatus;
 	private Pattern[] taskTokenPattern;
 	private boolean isPortConnect;
-	private VariableStore variableStore;
+	private VariableStore variableStore = new VariableStore();
 	private InstanceStore instanceStore = new InstanceStore();
 	private List<String> generateBlock = new ArrayList<String>();
-	private List<VariableStore> variableStoreList = new ArrayList<VariableStore>();
 	
 	private Preferences preferences = new Preferences();
 	
@@ -95,7 +96,10 @@ public class VerilogParser extends VerilogParserCore implements IParser, Prefere
 		m_OutlineContainer = null;
 		blockContext = STATEMENT; // no check of block or assign statement
 
-		// if project == null, the context scanning is running
+		// because JavaCC counts '\t' as 8 columns by default.
+		jj_input_stream.setTabSize(1);
+
+   	    // if project == null, the context scanning is running
 		// no update outline and error markers 
 
 		if (project != null) {
@@ -118,10 +122,11 @@ public class VerilogParser extends VerilogParserCore implements IParser, Prefere
 	protected void beginOutlineElement(Token begin, String name, String type) {
 		if (type.equals("module#")) {
 			m_Context = IParser.IN_MODULE;
-			variableStore = new VariableStore();
+			variableStore.openScope(name, begin.beginLine);
 		}
 		if (m_OutlineContainer != null) {
 			int line = begin.beginLine;
+			int col = begin.beginColumn;
 			m_OutlineContainer.beginElement(name, type, line,
 					begin.beginColumn, m_File, m_OutlineElementFactory);
 			String[] types = type.split("#");
@@ -130,52 +135,52 @@ public class VerilogParser extends VerilogParserCore implements IParser, Prefere
 				if (bitRange.equals(""))
 					bitRange = "[31:0]";
 				VariableStore.Symbol ref;
-				ref = variableStore.addSymbol(name, line, types, bitRange);
+				ref = variableStore.addSymbol(name, line, col, types, bitRange);
 				if (ref == null) {
 					warning(line, DUPLICATE_PARAM, name);
 				} 
 			} else if (types[0].equals("task")) {
-				addTask(name, line, types);
+				addTask(name, line, col, types);
 			} else if (types[0].equals("function")) {
-				addFunciton(name, line, types);
+				addFunciton(name, line, col, types);
 			} else if (types[0].equals("instance")) {
 				isPortConnect = true;
 				instanceStore.addInstance(types[1], line);
 			} else {
-				addVariable(name, line, types);
+				addVariable(name, line, col, types);
 			}
 		}
 	}
 
-	private void addTask(String name, int line, String[] types) {
+	private void addTask(String name, int line, int col, String[] types) {
 		VariableStore.Symbol ref = variableStore.findSymbol(name);
 		if (ref == null) {
-			ref = variableStore.addSymbol(name, line, types, "");
+			ref = variableStore.addSymbol(name, line, col, types, "");
 		} else {
-			if (ref.isTask() == false || ref.isAssignd()) {
+			if (ref.isTask() == false || ref.isAssigned()) {
 				warning(line, DUPLICATE_TASK, name);
 				return;
 			}
 		}
-		ref.setAssignd();
+		ref.setAssigned(line, col);
 	}
 
-	private void addFunciton(String name, int line, String[] types) {
+	private void addFunciton(String name, int line, int col, String[] types) {
 		String bitRange = (types.length > 1) ? types[1] : "";
 		VariableStore.Symbol ref = variableStore.findSymbol(name);
 		if (ref == null) {
-			ref = variableStore.addSymbol(name, line, types, bitRange);
+			ref = variableStore.addSymbol(name, line, col, types, bitRange);
 		} else {
-			if (ref.isFunction() == false || ref.isAssignd()) {
+			if (ref.isFunction() == false || ref.isAssigned()) {
 				warning(line, DUPLICATE_FUNCTION, name);
 				return;
 			}
 			ref.setWidth(bitRange);
 		}
-		ref.setAssignd();
+		ref.setAssigned(line, col);
 	}
 
-	private void addVariable(String name, int line, String[] types) {
+	private void addVariable(String name, int line, int col, String[] types) {
 		String bitRange = null;
 		int dim = 0;
 		if (types[0].equals("variable")) {
@@ -196,7 +201,7 @@ public class VerilogParser extends VerilogParserCore implements IParser, Prefere
 			}
 			name = head + name;
 			
-			if (variableStore.addSymbol(name, line, types, bitRange, dim) == null) {
+			if (variableStore.addSymbol(name, line, col, types, bitRange, dim) == null) {
 				// c-style port declaration can add reg or wire modifiers.
 				if (types[0].equals("variable")) {
 					VariableStore.Symbol ref = variableStore.findSymbol(name);
@@ -213,7 +218,7 @@ public class VerilogParser extends VerilogParserCore implements IParser, Prefere
 	protected void endOutlineElement(Token end, String name, String type) {
 		if (type.equals("module#")) {
 			m_Context = IParser.OUT_OF_MODULE;
-			variableStoreList.add(variableStore);
+			variableStore.closeScope(end.beginLine);
 		}
 		if (m_OutlineContainer != null) {
 			if (type.startsWith("instance#")) {
@@ -224,15 +229,15 @@ public class VerilogParser extends VerilogParserCore implements IParser, Prefere
 		}
 	}
 	
-	protected void parameterAssignment(String name, Expression value) {
+	protected void parameterAssignment(Identifier ident, Expression value) {
 		VariableStore.Symbol sym;
-		sym = variableStore.getVariableSymbol(name, generateBlock);
+		sym = variableStore.getVariableSymbol(ident.image, generateBlock);
 		if (sym != null) {
 			if (value.isValidInt())
 				sym.setValue(value.intValue());
 			else
 				sym.setValue(value.toString());
-			sym.setAssignd();
+			sym.setAssigned(ident.beginLine, ident.beginColumn);
 		}
 	}
 	
@@ -249,17 +254,18 @@ public class VerilogParser extends VerilogParserCore implements IParser, Prefere
 				OutlineElement port = findPortInModule(module, portName);
 				if (port != null) {
 					String type = port.getType();
+					int line = Integer.parseInt(csplit[2]);
+					int col = Integer.parseInt(csplit[3]);
 					if (type.startsWith("port#input")) {
-						sym.setUsed();
+						sym.setUsed(line, col);
 					} else if (type.startsWith("port#output")) {
 						if (sym.isReg()) {
-							int line = Integer.parseInt(csplit[2]);
 							warning(line, REG_CONNECT_OUTPUT, sym.getName());
 						}
-						sym.setAssignd();
+						sym.setAssigned(line, col);
 					} else if (type.startsWith("port#inout")) {
-						sym.setUsed();
-						sym.setAssignd();
+						sym.setUsed(line, col);
+						sym.setAssigned(line, col);
 					}
 				}
 			}
@@ -283,10 +289,10 @@ public class VerilogParser extends VerilogParserCore implements IParser, Prefere
 		}
 	}
 
-	private void checkVariables(VariableStore store) {
+	private void checkVariables() {
 		OutlineDatabase database = OutlineDatabase.getProjectsDatabase(m_Project);
 		
-		for (VariableStore.Symbol sym : store.collection()) {
+		for (VariableStore.Symbol sym : variableStore.collection()) {
 			updateConnection(database, sym);
 
 			boolean notUsed = false;
@@ -294,11 +300,11 @@ public class VerilogParser extends VerilogParserCore implements IParser, Prefere
 			if (sym.isUsed() == false && sym.containsType("output") == false) {
 				notUsed = true;
 			}
-			if (sym.isAssignd() == false && sym.containsType("input") == false) {
+			if (sym.isAssigned() == false && sym.containsType("input") == false) {
 				notAssigned = true;
 			}
 			if (notUsed || notAssigned) {
-				int line = sym.getLine();
+				int line = sym.getPosition().line;
 				String name = sym.getName();
 				if (sym.isTask()) {
 					if (notUsed) {
@@ -425,6 +431,9 @@ public class VerilogParser extends VerilogParserCore implements IParser, Prefere
 			Expression arg3) {
 		Operator ope = new Operator(op.image);
 		Expression ret = ope.operate(arg1, arg2, arg3);
+		ret.addReference(arg1);
+		ret.addReference(arg2);
+		ret.addReference(arg3);
 		if (ope.isWarning())
 			warning(op.beginLine, ope.getWarning());
 		return ret;
@@ -441,7 +450,7 @@ public class VerilogParser extends VerilogParserCore implements IParser, Prefere
 				// I cannot decide whether the variable is referred or assigned.
 				sym = variableStore.getVariableSymbol(name, generateBlock);
 			} else {
-				sym = variableStore.addUsedVariable(name, generateBlock);
+				sym = variableStore.addUsedVariable(name, ident.beginLine, ident.beginColumn, generateBlock);
 			}
 			if (sym == null) {
 				if (preferences.unresolved)
@@ -474,12 +483,13 @@ public class VerilogParser extends VerilogParserCore implements IParser, Prefere
 			if (name.contains("."))
 				return;
 			int line = ident.beginLine;
+			int col = ident.beginColumn;
 			VariableStore.Symbol sym = variableStore.findSymbol(name);
 			if (sym == null) {
 				String[] types = {"task"};
-				sym = variableStore.addSymbol(name, line, types, "");
+				sym = variableStore.addSymbol(name, line, col, types, "");
 			}
-			sym.setUsed();
+			sym.setUsed(line, col);
 		}
 	}
 
@@ -489,18 +499,19 @@ public class VerilogParser extends VerilogParserCore implements IParser, Prefere
 			if (name.contains("."))
 				return new Expression();
 			int line = ident.beginLine;
+			int col = ident.beginColumn;
 			VariableStore.Symbol sym = variableStore.findSymbol(name);
 			if (sym == null) {
 				String[] types = {"function", ""};
-				sym = variableStore.addSymbol(name, line, types, "");
-				sym.setUsed();
+				sym = variableStore.addSymbol(name, line, col, types, "");
+				sym.setUsed(line, col);
 			} else {
 				int width = ident.getWidth();
 				if (width == 0)
 					width = sym.getWidth(); // doesn't have bit range
 				Expression exp = new Expression(width);
 				exp.addReference(ident);
-				sym.setUsed();
+				sym.setUsed(line, col);
 				return exp;
 			}
 		}
@@ -511,7 +522,8 @@ public class VerilogParser extends VerilogParserCore implements IParser, Prefere
 		if (m_OutlineContainer != null) {
 			String name = ident.image;
 			int line = ident.beginLine;
-			VariableStore.Symbol sym = variableStore.addAssignedVariable(name, generateBlock);
+			int col = ident.beginColumn;
+			VariableStore.Symbol sym = variableStore.addAssignedVariable(name, line, col, generateBlock);
 			if (sym == null || sym.isVariable() == false) {
 				if (preferences.unresolved)
 					warning(line, CANNOT_RESOLVED_SIGNAL, name);
@@ -544,7 +556,7 @@ public class VerilogParser extends VerilogParserCore implements IParser, Prefere
 			return;
 
 		String name = Integer.toString(portIndex);
-		variableConnection(arg, module, name, idents[0].beginLine);
+		variableConnection(arg, module, name);
 	}
 
 	/**
@@ -559,28 +571,30 @@ public class VerilogParser extends VerilogParserCore implements IParser, Prefere
 		instanceStore.addPort(portName, line, arg);
 
 		if (arg != null)
-			variableConnection(arg, module, portName, line);
+			variableConnection(arg, module, portName);
 	}
 	
-	private void variableConnection(Expression arg, String module, String portName, int line) {
+	private void variableConnection(Expression arg, String module, String portName) {
 		Identifier[] idents = arg.getReferences();
 		if (idents == null)
 			return;
 
 		for (Identifier ident : idents) {
+			int line = ident.beginLine;
+			int col = ident.beginColumn;
 			if (preferences.moduleConnection) {
 				if (arg.isAssignable()) {
 					// The decision of input or output is delayed, just recorded now.
 					variableStore.addConnection(ident.image, generateBlock,
-							module + "#" + portName + "#" + line);
+							module + "#" + portName + "#" + line + "#" + col);
 				} else {
 					// Expression must be used as input only.
-					variableStore.addUsedVariable(ident.image, generateBlock);
+					variableStore.addUsedVariable(ident.image, line, col, generateBlock);
 				}
 			} else {
 				// no checking module port connection, assume inout port.
-				variableStore.addAssignedVariable(ident.image, generateBlock);
-				variableStore.addUsedVariable(ident.image, generateBlock);
+				variableStore.addAssignedVariable(ident.image, line, col, generateBlock);
+				variableStore.addUsedVariable(ident.image, line, col, generateBlock);
 			}
 		}
 	}
@@ -671,6 +685,7 @@ public class VerilogParser extends VerilogParserCore implements IParser, Prefere
 			VerilogPlugin.deleteMarkers(m_File);
 			preferences.updatePreferences();
 			Expression.setPreferences(preferences);
+			Operator.setPreferences(preferences);
 		}
 		try
 		{
@@ -695,10 +710,12 @@ public class VerilogParser extends VerilogParserCore implements IParser, Prefere
 		}
 		close();
 		
-		for(VariableStore store : variableStoreList) {
-			checkVariables(store);
-		}
+		checkVariables();
 		checkInstance();
+	}
+
+	public VariableStore getVariableStore() {
+		return variableStore;
 	}
 	 
 	/**

@@ -18,6 +18,12 @@ public class Operator {
 	private static final String CONDITIONAL_WIDTH_MISMATCH = "Conditional operator bit width mismatch: %d ? %d : %d";
 	private static final String LOGICAL_WIDTH_MISMATCH = "Logical operator bit width mismatch: %d and %d";
 
+	private static VerilogParser.Preferences preferences = null;
+
+	public static void setPreferences(VerilogParser.Preferences p) {
+		preferences = p;
+	}
+
 	private String image;
 	private String warning = null;
 
@@ -98,6 +104,10 @@ public class Operator {
 		int widthc = cond.getVisibleWidth();
 		int width1 = arg1.getVisibleWidth();
 		int width2 = arg2.getVisibleWidth();
+		if (preferences.intConst == false && widthc == 32 && cond.isValid()) {
+			// assume constant integer as one bit width
+			widthc = 1;
+		}
 		if (widthc != 1 || width1 != width2) {
 			if (arg1.isFixedWidth() && arg2.isFixedWidth()) {
 				warning = String.format(CONDITIONAL_WIDTH_MISMATCH, widthc,
@@ -105,7 +115,12 @@ public class Operator {
 			}
 		}
 		if (cond.isValid()) {
-			return (cond.intValue() != 0) ? arg1 : arg2;
+			Expression ref = (cond.intValue() != 0) ? arg1 : arg2;
+			if (ref.isValid()) {
+				return new Expression(ref.getWidth(), ref.intValue());
+			} else {
+				return new Expression(ref.getWidth());
+			}
 		} else {
 			return new Expression(arg1.getWidth());
 		}

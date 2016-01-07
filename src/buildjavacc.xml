@@ -10,7 +10,7 @@
 
 	<!-- must be linked with plugin.xml -->
 	<property name="project" value="net.sourceforge.veditor"/>
-	<property name="plugin_version" value="1.1.1"/>
+	<property name="plugin_version" value="1.2.1.c"/>
 
 	<property name="src" value="src"/>
 	<property name="dst" value="bin"/>
@@ -89,6 +89,7 @@
 		<copydir src="templates" dest="plugins/templates"/>
 		<copydir src="META-INF" dest="plugins/META-INF"/>
 		<copy file="plugin.xml" todir="plugins"/>
+		<copy file="plugin.properties" todir="plugins"/>
 		<copy file="about.html" todir="plugins"/>
 		<copy file="${jar}" todir="plugins"/>
 		<zip

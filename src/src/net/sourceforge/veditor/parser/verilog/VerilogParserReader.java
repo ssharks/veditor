@@ -70,17 +70,26 @@ public class VerilogParserReader extends ParserReader {
 	private static final int BLOCK_COMMENT = 1;
 	private static final int LINE_COMMENT = 2;
 	private static final int STRING = 3;
+	private static final int PROTECTED = 4;
+	
+	private String lastCode = "";
 
 	private int parseRegion(boolean enable) {
 		int context = CODE;
+		lastCode = "";
 
 		for (;;) {
 			if (reader.isEof()) {
 				return CONTINUED;
 			}
-
+			
 			char c = reader.read();
-			/*char next;
+			lastCode += c;
+			
+			while (lastCode.length() > "pragma protect begin_protected".length()) {
+				lastCode = lastCode.substring(1); // remove the first element from the string
+			}
+			char next;
 			switch (c) {
 			case '\n':
 				if (context == LINE_COMMENT) {
@@ -96,24 +105,38 @@ public class VerilogParserReader extends ParserReader {
 				break;
 			case '/':
 				next = reader.read();
-				if (next == '/' && context == CODE) {
+				if (next == '/' && context == CODE)
 					context = LINE_COMMENT;
-					reader.pushBack(next); // we push line comments through
-				} else if (next == '*' && context == CODE)
+				else if (next == '*' && context == CODE)
 					context = BLOCK_COMMENT;
 				else
 					reader.pushBack(next);
 				break;
+			// detect the start of fully encrypted Verilog files
+			case '\u00e2' : 
+				next = reader.read();
+				if (next == '%' || next == '\u0013') {
+					context = PROTECTED;
+					
+					// stop parsing any further, read to the end of the file
+					reader.readForward();
+					// stop parsing further
+					return CONTINUED;
+				} else {
+					reader.pushBack(next);
+				}
 			case '*':
 				next = reader.read();
 				if (next == '/' && context == BLOCK_COMMENT) {
 					context = CODE;
 					c = ' ';
 				} else {
-					reader.pushBack(next);
+					if (context != PROTECTED) {
+						reader.pushBack(next);
+					}
 				}
 				break;
-			}*/
+			}
 			if (c == '`' && context == CODE) {
 				int status = directive(enable);
 				if (status != CONTINUED) {
@@ -126,10 +149,21 @@ public class VerilogParserReader extends ParserReader {
 						buffer.append(' '); // for keeping line number
 					else
 						buffer.append('\n');
-				} else if (enable && context != BLOCK_COMMENT) { 
-					// do parse line comments, but skip block comments, to find pragma's
+				} else if (enable && context != BLOCK_COMMENT
+						&& context != LINE_COMMENT && context != PROTECTED) {
 					buffer.append(c);
 				}
+			}
+			
+			// search for the start marker
+			if (lastCode.contains("protect begin_protected") && (context != PROTECTED)) {
+				context = PROTECTED;
+			}
+			
+			// search for then end marker
+			if (lastCode.contains("protect end_protected") && (context == PROTECTED)) {
+				buffer.append("//pragma protect end_protected");
+				context = CODE;
 			}
 		}
 	}
@@ -137,9 +171,15 @@ public class VerilogParserReader extends ParserReader {
 	private int directive(boolean enable) {
 		String cmd = getIdent();
 
-		if (cmd.equals("timescale") || cmd.equals("default_nettype")) {
-			getToEndOfLine();
-		} else if (cmd.equals("define")) {
+		String skipToEol[] = { "timescale", "default_nettype", "celldefine", "endcelldefine" };
+		for (int i = 0; i < skipToEol.length; i++) {
+			if (cmd.equals(skipToEol[i])) {
+				getToEndOfLine();
+				return CONTINUED;
+			}
+		}
+		
+		if (cmd.equals("define")) {
 			String def = getNextIdent();
 			int line = reader.getLine();
 			skipSpace();
@@ -183,6 +223,8 @@ public class VerilogParserReader extends ParserReader {
 					// not match
 					buffer.append('`');
 					buffer.append(cmd);
+					// store in the lastcode
+					lastCode += cmd;
 				}
 			}
 			return CONTINUED;

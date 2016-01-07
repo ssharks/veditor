@@ -138,7 +138,8 @@ public class OutlineElement extends Object{
 	public String getFullSourceCode(){
 		try {
 			InputStream is = m_File.getContents(true);
-			BufferedReader br = new BufferedReader(new InputStreamReader(is));
+			String charSet = m_File.getCharset();
+			BufferedReader br = new BufferedReader(new InputStreamReader(is, charSet));
 			int line=1;
 			for(;line < m_StartingLine;line++)	br.readLine();
 			StringBuffer sb = new StringBuffer();
@@ -178,6 +179,10 @@ public class OutlineElement extends Object{
 			e.printStackTrace();
 			return "";
 		}
+	}
+	
+	public String getHoverInfo() {
+		return getFullSourceCode();
 	}
 	
 

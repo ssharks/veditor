@@ -136,7 +136,7 @@ public class VhdlCompletionProcessor extends HdlCompletionProcessor {
 						}
 					}
 				}
-				if (matchword.length==3) {
+				if (matchword.length>=3) {
 					String match3 = matchword[2].trim();
 					
 					// find subtypes in the package
@@ -150,34 +150,43 @@ public class VhdlCompletionProcessor extends HdlCompletionProcessor {
 							PackageDeclElement packageDecl = (PackageDeclElement)elements[i];
 							
 							if (matchword.length>3) {
+								// find a the elements of a record instantiated in a package
 								String recordname = null;
-								recordname = getSignalType(doc, documentOffset, matchword[0], packageDecl);
-								for(int j=1;i<matchword.length-1;j++){
+								recordname = getSignalType(doc, documentOffset, matchword[2], packageDecl);
+								for(int j=2;j<matchword.length-2;j++){ // only find the record itself
 									OutlineElement[] tempRecord=searchRecordDefinition(doc, documentOffset, recordname,packageDecl).getChildren();
 									recordname=getMemberType(doc,documentOffset,matchword[j],tempRecord);
 								}
 								
-								TypeDecl finalRecord=(TypeDecl)searchRecordDefinition(doc, documentOffset, recordname,packageDecl);
-								
-								matchList = new ArrayList<IComparableCompletionProposal>();
-								
-								if (finalRecord != null) {
-									OutlineElement[] memberElements = finalRecord.getChildren();
-									String matchlc1 = matchword[matchword.length-1];
-									String matchlc=matchlc1.trim().toLowerCase();   
-									for (int h = 0; h < memberElements.length; h++) {
-										String recordmember = memberElements[h].getName().toLowerCase();
-										if (recordmember.startsWith(matchlc)) {
-											 int cc=matchlc.length();
-											 String replace = memberElements[h].getName();
-											
-											 matchList.add(new VhdlRecordCompletionProposal(replace, documentOffset, cc, replace.length(), replace));
+								if (recordname != null) { 
+									TypeDecl finalRecord=(TypeDecl)searchRecordDefinition(doc, documentOffset, recordname,packageDecl);
+									
+									matchList = new ArrayList<IComparableCompletionProposal>();
+									
+									if (finalRecord != null) {
+										OutlineElement[] memberElements = finalRecord.getChildren();
+										String matchlc1 = matchword[matchword.length-1];
+										String matchlc=matchlc1.trim().toLowerCase();   
+										for (int h = 0; h < memberElements.length; h++) {
+											String recordmember = memberElements[h].getName().toLowerCase();
+											if (recordmember.startsWith(matchlc)) {
+												 int cc=matchlc.length();
+												 String replace = memberElements[h].getName();
+												
+												 matchList.add(new VhdlRecordCompletionProposal(replace, documentOffset, cc, replace.length(), replace));
+											}
 										}
 									}
 								}
 							} else {
+								// add elements from an package
+								String matchlc1 = matchword[matchword.length-1];
+								String matchlc=matchlc1.trim().toLowerCase();
 								for (int j = 0; j < packageDecl.getChildren().length; j++) {
-									matchList.add(new VhdlInstanceCompletionProposal(doc, packageDecl.getChild(j), documentOffset, match3.length()));
+									String packageMember = packageDecl.getChild(j).getName().toLowerCase();
+									if (packageMember.startsWith(matchlc)) {
+										 matchList.add(new VhdlInstanceCompletionProposal(doc, packageDecl.getChild(j), documentOffset, match3.length()));
+									}
 								}
 							}
 						}
@@ -192,7 +201,6 @@ public class VhdlCompletionProcessor extends HdlCompletionProcessor {
 				}
 				
 				TypeDecl finalRecord=(TypeDecl)searchRecordDefinition(doc, documentOffset, recordname,currentElement);
-				
 				
 				matchList = new ArrayList<IComparableCompletionProposal>();
 				
@@ -403,11 +411,11 @@ public class VhdlCompletionProcessor extends HdlCompletionProcessor {
 		
 		Vector<OutlineElement> packageResults = doc.getPackageElementByName(recordname, true, -1);
 		// only with a unique result resolve it
-		if (packageResults.size() == 0) {
+		if (packageResults.size() > 0) {
 			return packageResults.get(0);
 		}
-		// not found in this file, search it in packages of other files
-		/*OutlineDatabase database = doc.getOutlineDatabase();
+		/*// not found in this file, search it in packages of other files
+		OutlineDatabase database = doc.getOutlineDatabase();
 		
 		if (database != null) {
 			OutlineElement[] elements = database.findTopLevelElements("");

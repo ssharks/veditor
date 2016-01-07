@@ -98,6 +98,11 @@ public class VerilogOutlineElementFactory extends OutlineElementFactory {
 				return "";
 			}
 		}
+		
+		public String getHoverInfo() {
+			// exclude module instance because it is often same with module name.
+			return "";
+		}
 	}
 	public class VerilogFunctionElement extends VerilogOutlineElement{
 		public VerilogFunctionElement(String name,String type,int startLine,int startCol,int endLine,int endCol,IFile file,boolean bVisible){
@@ -144,6 +149,9 @@ public class VerilogOutlineElementFactory extends OutlineElementFactory {
 				m_LongName += String.format(" %s", m_TypeParts[i]);
 			}
 		}
+		public String getHoverInfo() {
+			return getLongName();
+		}
 	}
 	public class VerilogParameterElement extends VerilogOutlineElement{
 		public VerilogParameterElement(String name,String type,int startLine,int startCol,int endLine,int endCol,IFile file,boolean bVisible){
@@ -162,6 +170,9 @@ public class VerilogOutlineElementFactory extends OutlineElementFactory {
 				return m_TypeParts[3];			
 			else
 				return "";
+		}
+		public String getHoverInfo() {
+			return getLongName();
 		}
 	}
 	public class VerilogSignalElement extends VerilogOutlineElement{		
@@ -183,6 +194,9 @@ public class VerilogOutlineElementFactory extends OutlineElementFactory {
 					m_LongName += "[]";
 				}
 			}
+		}
+		public String getHoverInfo() {
+			return getLongName();
 		}
 	}
 

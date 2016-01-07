@@ -3,3 +3,4 @@
 Ken Horn - bugfixes
 Ali Ghorashi - Bug Fixes, Block Comment/Uncomment, templates, and other features
 Stijn Last - VHDL Feature improvements
+Sjors Hettinga - Many VHDL/Verilog Feature improvements
