@@ -3,6 +3,8 @@ package net.sourceforge.veditor.semanticwarnings;
 import java.util.Vector;
 
 import org.eclipse.core.resources.IFile;
+
+import sun.org.mozilla.javascript.internal.ast.AstNode;
 import net.sourceforge.veditor.VerilogPlugin;
 import net.sourceforge.veditor.parser.vhdl.*;
 import net.sourceforge.veditor.semanticwarnings.VariableStore.DeclaredSymbol;
@@ -211,7 +213,8 @@ public class SemanticWarnings {
 			node instanceof ASTinterface_signal_declaration ||
 			node instanceof ASTfull_type_declaration ||
 			node instanceof ASTvariable_declaration ||
-			node instanceof ASTcomponent_instantiation_statement
+			node instanceof ASTcomponent_instantiation_statement ||
+			node instanceof ASTconcurrent_signal_assignment_statement
 		) {
 			for(int i=0;i<node.getChildCount();i++) {
 				if(node.getChild(i) instanceof ASTidentifier) {
@@ -374,7 +377,11 @@ public class SemanticWarnings {
 		// do not go into expressions like "port'range"
 		Vector<SimpleNode> result = new Vector<SimpleNode>();
 		for(int i=0;i<node.getChildCount();i++) {
-			result.addAll(getAllBaseIdentifierNodes(node.getChild(i)));
+			SimpleNode child = node.getChild(i);
+			 // ignore choice selections for semantic warnings to avoid issues with record with identical element names
+			if (!(child instanceof ASTchoice)) {
+				result.addAll(getAllBaseIdentifierNodes(node.getChild(i)));
+			}
 		}
 		return result;
 	}
@@ -538,7 +545,10 @@ public class SemanticWarnings {
 					checkAssignmentType(node, declared, assignedName);
 					
 					// find in the inputs for the expression if there are any outputs used
-					Vector<SimpleNode> inputName = getAllBaseIdentifierNodes(node.getChild(i+1));
+					Vector<SimpleNode> inputName = new Vector<SimpleNode>();
+					for (int j=i+1; j<node.getChildCount();j++) {
+						inputName.addAll( getAllBaseIdentifierNodes(node.getChild(j)) );
+					}
 					
 					// check if not of the inputs is an output of the entity
 					for (int k=0;k<inputName.size();k++) {
