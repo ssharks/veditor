@@ -103,6 +103,12 @@ public class VhdlHierarchyProvider extends HdlTreeProviderBase implements
 		return elements.get(0);
 	}
 	
+	public EntityDeclElement getEntityElement(String entityname) {
+		//VerilogPlugin.println("Searching for element: "+entityname);
+		String entitynameUp = entityname.toUpperCase();
+		return m_ElementDeclList.get(entitynameUp);
+	}
+	
 	/**
 	 * Called to get the parent for an object
 	 */

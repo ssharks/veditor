@@ -13,6 +13,8 @@ package net.sourceforge.veditor.parser;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import net.sourceforge.veditor.parser.vhdl.VhdlOutlineElementFactory.UseClauseElement;
+
 import org.eclipse.core.resources.IFile;
 
 /**
@@ -102,6 +104,23 @@ public class OutlineContainer
 			}
 		}
 		return null;
+	}
+	
+	/**
+	 * Find all the use clauses in a particular file
+	 * @param file The file to look in
+	 * @return array of use clauses found
+	 */
+	public ArrayList<UseClauseElement> getUseClauses(IFile file) {
+		ArrayList<UseClauseElement> foundList = new ArrayList<UseClauseElement>();
+		for (OutlineElement element : m_FileInfo.ElementList) {
+			if (element.getFile().equals(file)) {
+				if (element instanceof UseClauseElement) {
+					foundList.add((UseClauseElement)element);
+				}
+			}
+		}
+		return foundList;
 	}
 	
 	/**

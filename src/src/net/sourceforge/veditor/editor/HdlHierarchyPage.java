@@ -10,6 +10,13 @@
  *******************************************************************************/
 package net.sourceforge.veditor.editor;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.Vector;
 
 import net.sourceforge.veditor.VerilogPlugin;
@@ -18,7 +25,14 @@ import net.sourceforge.veditor.parser.OutlineDatabase;
 import net.sourceforge.veditor.parser.OutlineElement;
 import net.sourceforge.veditor.parser.OutlineDatabase.OutlineDatabaseEvent;
 import net.sourceforge.veditor.parser.verilog.VerilogOutlineElementFactory.VerilogInstanceElement;
+import net.sourceforge.veditor.parser.vhdl.VhdlOutlineElementFactory.ArchitectureElement;
+import net.sourceforge.veditor.parser.vhdl.VhdlOutlineElementFactory.ComponentInstElement;
+import net.sourceforge.veditor.parser.vhdl.VhdlOutlineElementFactory.EntityDeclElement;
+import net.sourceforge.veditor.parser.vhdl.VhdlOutlineElementFactory.EntityInstElement;
+import net.sourceforge.veditor.parser.vhdl.VhdlOutlineElementFactory.PackageDeclElement;
+import net.sourceforge.veditor.parser.vhdl.VhdlOutlineElementFactory.UseClauseElement;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.action.Action;
@@ -58,6 +72,8 @@ public class HdlHierarchyPage extends Page implements ISelectionChangedListener,
     private Action     m_RefreshAction;
     private Action     m_CopyTextAction;
     private Action     m_CopyHierarchyAction;
+    private Action     m_DependancyAction;
+    private Action     m_SourceListAction;
     private Action     m_GotoDefinition;
     private Action     m_CollapseAllAction;
     private Action     m_RescanAllAction;
@@ -77,6 +93,8 @@ public class HdlHierarchyPage extends Page implements ISelectionChangedListener,
 		m_CollapseAllAction = null;
 		m_RescanAllAction = null;
 		m_EnableSortAction = null;
+		m_DependancyAction = null;
+		m_SourceListAction = null;
 		enableSort = VerilogPlugin.getPreferenceBoolean("Outline.Sort");
 	}
 	
@@ -132,6 +150,8 @@ public class HdlHierarchyPage extends Page implements ISelectionChangedListener,
 	private void createActions() {
 		m_CopyTextAction = new CopyTextAction();
 		m_CopyHierarchyAction = new CopyHierarchyAction();
+		m_DependancyAction = new DependancyAction();
+		m_SourceListAction = new SourceListAction();
 		m_RefreshAction = new RefreshAction();
 		m_GotoDefinition = new GotoDefinitionAction();
 		m_CollapseAllAction = new CollapseAllAction();
@@ -170,6 +190,8 @@ public class HdlHierarchyPage extends Page implements ISelectionChangedListener,
 					menu.add(m_CopyTextAction);
 					menu.add(m_CopyHierarchyAction);
 					menu.add(m_GotoDefinition);
+					menu.add(m_DependancyAction);
+					menu.add(m_SourceListAction);
 				}
 				menu.add(m_RefreshAction);
 				menu.add(m_CollapseAllAction);				
@@ -367,6 +389,284 @@ public class HdlHierarchyPage extends Page implements ISelectionChangedListener,
 					text.append(ary[i].toString() + "\n");
 				}
 				setClipboard(text);
+			}
+		}
+	}
+	
+	private class DependancyAction extends Action
+	{
+		Set<String> m_EntityDependancyList;
+		
+		public DependancyAction()
+		{
+			super();
+			setText("Create dependancy list");
+		}
+		
+		public String AddDependacy(Object obj) {
+			String dependancyString = "";
+			
+			//top level entity
+			String archFile = "";
+			Set<IFile> files = new HashSet<IFile>();
+			
+			// for the architectures we need to print a line
+			if (obj instanceof ArchitectureElement) {
+				ArchitectureElement a = (ArchitectureElement)obj;
+				if (!m_EntityDependancyList.contains(a.GetEntityName())) { // check if we already have it
+					m_EntityDependancyList.add(a.GetEntityName());
+					archFile = a.getFile().getName();
+					
+					VhdlHierarchyProvider prov = (VhdlHierarchyProvider)(m_Editor.TreeContentProvider);
+					EntityDeclElement e = prov.getEntityElement(a.GetEntityName());
+					if (e != null) {
+						String entityFile = e.getFile().getFullPath().toString();
+						if (archFile.compareTo(entityFile) != 0) {
+							files.add(e.getFile());
+						}
+					}
+				}
+			}
+			
+			// the entities only have to pas through
+			if (obj instanceof EntityDeclElement) {
+				EntityDeclElement e = (EntityDeclElement)obj;
+				VhdlHierarchyProvider prov = (VhdlHierarchyProvider)(m_Editor.TreeContentProvider);
+				ArchitectureElement a = prov.getArchElement(e.getName());
+				if (a != null) {
+					dependancyString += AddDependacy(a);
+				}
+			}
+			
+			Object[] children = m_Editor.TreeContentProvider.getChildren(obj);
+			for (int i = 0; i < children.length; i++) {
+				if (children[i] instanceof EntityDeclElement)
+				{
+					EntityDeclElement e = (EntityDeclElement)children[i];
+					files.add(e.getFile());
+					// do a recursive call
+					dependancyString += AddDependacy(children[i]);
+				}
+				if (children[i] instanceof ArchitectureElement)
+				{
+					//ArchitectureElement a = (ArchitectureElement)children[i];
+					//archFile = a.getFile().getFullPath().toString();
+					dependancyString += AddDependacy(children[i]);
+				}
+				if (children[i] instanceof EntityInstElement) {
+					EntityInstElement e = (EntityInstElement)children[i];
+					VhdlHierarchyProvider prov = (VhdlHierarchyProvider)(m_Editor.TreeContentProvider);
+					ArchitectureElement a = prov.getArchElement(e.GetEntityName());
+					if (a != null) {
+						files.add(a.getFile());
+						dependancyString += AddDependacy(a);
+					}
+				}
+				if (children[i] instanceof ComponentInstElement)
+				{
+					ComponentInstElement c = (ComponentInstElement)children[i];
+					VhdlHierarchyProvider prov = (VhdlHierarchyProvider)(m_Editor.TreeContentProvider);
+					ArchitectureElement a = prov.getArchElement(c.GetEntityName());
+					if (a != null) {
+						files.add(a.getFile());
+						dependancyString += AddDependacy(a);
+					}
+				}
+				if (children[i] instanceof UseClauseElement) {
+					UseClauseElement u = (UseClauseElement)children[i];
+					u.getName();
+				}
+			}
+			
+			if ((archFile.compareTo("") != 0) && (!files.isEmpty())) {
+				dependancyString += String.format("vhdl,work,%s,", archFile);
+		        Iterator<IFile> it = files.iterator();
+		        if(it.hasNext()) {
+		        	dependancyString += it.next().getName();
+		        }
+		        while(it.hasNext()) {
+		        	IFile file = it.next();
+		        	dependancyString += " ";
+		        	dependancyString += file.getName();
+		        }
+		        dependancyString += "\n";
+			}
+			return dependancyString;
+		}
+		
+		public void run()
+		{
+			StringBuffer text = new StringBuffer();
+			m_EntityDependancyList = new HashSet<String>();
+			
+			if (m_Selection instanceof IStructuredSelection)
+			{
+				Object[] ary = ((IStructuredSelection)m_Selection).toArray();
+				for (int i = 0; i < ary.length; i++)
+				{
+					//top level entity
+					if (ary[i] instanceof EntityDeclElement)
+					{
+						EntityDeclElement e = (EntityDeclElement)ary[i];
+						text.append(AddDependacy(ary[i]));
+					}
+				}
+				setClipboard(text);
+			}
+		}
+	}
+	
+	private class SourceListAction extends Action
+	{
+		Set<String> m_EntityDependancyList;
+		Set<IFile> m_FileList; 
+		private final String formatString = "add_source        \"%s\"\n";
+		PackageDeclElement[] m_packageList;
+		
+		public SourceListAction()
+		{
+			super();
+			setText("Create source list");
+			
+		}
+		
+		public void AddUseClauses(IFile file) {
+			OutlineDatabase database = getOutlineDatabase();
+			ArrayList<UseClauseElement> useArray = database.getOutlineContainer(file).getUseClauses(file);
+			for (int i=0; i<useArray.size(); i++) {
+				UseClauseElement u = useArray.get(i);
+				for (int j=0; j<m_packageList.length; j++) {
+					String useString = u.getName();
+					String packageString = "work." + m_packageList[j].getName();
+					//System.out.println(useString + " versus " + packageString);
+					if (useString.equalsIgnoreCase(packageString)) {
+						m_FileList.add(m_packageList[j].getFile());
+					}
+				}
+			}
+		}
+		
+		public String AddDependacy(Object obj) {
+			String sourceList = "";
+			
+			//top level entity
+			String archFile = "";
+			
+			// for the architectures we need to print a line
+			if (obj instanceof ArchitectureElement) {
+				ArchitectureElement a = (ArchitectureElement)obj;
+				if (!m_EntityDependancyList.contains(a.GetEntityName())) { // check if we already have it
+					m_EntityDependancyList.add(a.GetEntityName());
+					m_FileList.add(a.getFile());
+					AddUseClauses(a.getFile());
+					
+					VhdlHierarchyProvider prov = (VhdlHierarchyProvider)(m_Editor.TreeContentProvider);
+					EntityDeclElement e = prov.getEntityElement(a.GetEntityName());
+					if (e != null) {
+						m_FileList.add(e.getFile());
+						AddUseClauses(e.getFile());
+					}
+				}
+			}
+			
+			// the entities only have to pas through
+			if (obj instanceof EntityDeclElement) {
+				EntityDeclElement e = (EntityDeclElement)obj;
+				VhdlHierarchyProvider prov = (VhdlHierarchyProvider)(m_Editor.TreeContentProvider);
+				ArchitectureElement a = prov.getArchElement(e.getName());
+				if (a != null) {
+					sourceList += AddDependacy(a);
+				}
+			}
+			
+			Object[] children = m_Editor.TreeContentProvider.getChildren(obj);
+			for (int i = 0; i < children.length; i++) {
+				if (children[i] instanceof EntityDeclElement)
+				{
+					EntityDeclElement e = (EntityDeclElement)children[i];
+					// do a recursive call
+					sourceList += AddDependacy(children[i]);
+					m_FileList.add(e.getFile());
+				}
+				if (children[i] instanceof ArchitectureElement)
+				{
+					//ArchitectureElement a = (ArchitectureElement)children[i];
+					//archFile = a.getFile().getFullPath().toString();
+					sourceList += AddDependacy(children[i]);
+				}
+				if (children[i] instanceof EntityInstElement) {
+					EntityInstElement e = (EntityInstElement)children[i];
+					VhdlHierarchyProvider prov = (VhdlHierarchyProvider)(m_Editor.TreeContentProvider);
+					ArchitectureElement a = prov.getArchElement(e.GetEntityName());
+					if (a != null) {
+						m_FileList.add(a.getFile());
+						sourceList += AddDependacy(a);
+					}
+				}
+				if (children[i] instanceof ComponentInstElement)
+				{
+					ComponentInstElement c = (ComponentInstElement)children[i];
+					VhdlHierarchyProvider prov = (VhdlHierarchyProvider)(m_Editor.TreeContentProvider);
+					ArchitectureElement a = prov.getArchElement(c.GetEntityName());
+					if (a != null) {
+						m_FileList.add(a.getFile());
+						sourceList += AddDependacy(a);
+					}
+				}
+				if (children[i] instanceof UseClauseElement) {
+					UseClauseElement u = (UseClauseElement)children[i];
+					u.getName();
+					m_FileList.add(u.getFile());
+				}
+			}
+			
+			return sourceList;
+		}
+		
+		public final Comparator<IFile> DEFAULT_COMPARATOR = new Comparator<IFile>() {
+			
+			public int compare(IFile one, IFile two) {
+				return one.getFullPath().toString().compareTo(two.getFullPath().toString());
+			}
+		};
+		
+		public void run()
+		{
+			StringBuffer text = new StringBuffer();
+			m_EntityDependancyList = new HashSet<String>();
+			m_FileList = new HashSet<IFile>();
+			OutlineDatabase database = getOutlineDatabase();
+			m_packageList = database.findTopLevelPackages();
+			
+			if (m_Selection instanceof IStructuredSelection)
+			{
+				Object[] ary = ((IStructuredSelection)m_Selection).toArray();
+				for (int i = 0; i < ary.length; i++)
+				{
+					//top level entity
+					if ((ary[i] instanceof EntityDeclElement) || (ary[i] instanceof EntityInstElement)) 
+					{
+						AddDependacy(ary[i]);
+						
+						String sourceList = "";
+						TreeSet<String> sortedFileSet = new TreeSet<String>();
+						
+						// format the strings
+						Iterator<IFile> iter = m_FileList.iterator();
+						do {
+							sortedFileSet.add(String.format(formatString, iter.next().getFullPath().toString()));
+						} while(iter.hasNext());
+						
+						// make it into one list
+						Iterator<String> stringIter = sortedFileSet.iterator();
+						do {
+							sourceList = sourceList + stringIter.next();
+						} while(stringIter.hasNext());
+						text.append(sourceList);
+						
+						setClipboard(text);
+					}
+				}
 			}
 		}
 	}
