@@ -134,8 +134,8 @@ public class OpenDeclarationAction extends AbstractAction
 		m_ProposalTable.setItemCount(definitionList.size());		
 		TableItem[] tableItem=m_ProposalTable.getItems();
 		for(int i=0;i<tableItem.length;i++){
-			tableItem[i].setText(definitionList.get(i).getFile().getName() + " : " +
-				definitionList.get(i).getLongName());
+			tableItem[i].setText(definitionList.get(i).getLongName() + " @ " +
+					definitionList.get(i).getFile().getFullPath().toString());
 			String imageName=definitionList.get(i).GetImageName();
 			if(imageName!=null){
 				tableItem[i].setImage(VerilogPlugin.getPlugin().getImage(imageName));
