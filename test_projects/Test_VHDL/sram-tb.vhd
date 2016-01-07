@@ -9,14 +9,15 @@ USE ieee.numeric_std.ALL;
 ENTITY testbench IS
 END testbench;
 
-ARCHITECTURE behavior OF testbench IS 
+ARCHITECTURE behavior OF testbench IS
+   constant c_offset    : natural := 0; 
 
    signal   clock            : std_logic := '0';
    signal reset : std_logic := '1';
    
    signal sram_cs_l, we_l, oe_l : std_logic;
 
-   signal D, A : std_logic_vector(0 to 31);
+   signal D, A : std_logic_vector(0 to 31) := (c_offset-1 => '1', others => '0');
    signal sram_a : std_logic_vector(0 to 18);
    
 begin

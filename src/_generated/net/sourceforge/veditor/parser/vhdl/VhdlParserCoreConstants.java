@@ -245,75 +245,93 @@ public interface VhdlParserCoreConstants {
   /** RegularExpression Id. */
   int format_effector = 122;
   /** RegularExpression Id. */
-  int base_specifier = 123;
+  int base_specifier_bin_oct_hex = 123;
   /** RegularExpression Id. */
-  int underline = 124;
+  int base_specifier_dec = 124;
   /** RegularExpression Id. */
-  int letter = 125;
+  int base_specifier_sign = 125;
   /** RegularExpression Id. */
-  int letter_or_digit = 126;
+  int base_specifier = 126;
   /** RegularExpression Id. */
-  int integer = 127;
+  int underline = 127;
   /** RegularExpression Id. */
-  int base = 128;
+  int letter = 128;
   /** RegularExpression Id. */
-  int based_integer = 129;
+  int letter_or_digit = 129;
   /** RegularExpression Id. */
-  int based_literal = 130;
+  int integer = 130;
   /** RegularExpression Id. */
-  int basic_character = 131;
+  int base = 131;
   /** RegularExpression Id. */
-  int basic_graphic_character = 132;
+  int based_integer = 132;
   /** RegularExpression Id. */
-  int basic_identifier = 133;
+  int based_literal = 133;
   /** RegularExpression Id. */
-  int bit_string_literal = 134;
+  int basic_character = 134;
   /** RegularExpression Id. */
-  int bit_value = 135;
+  int basic_graphic_character = 135;
   /** RegularExpression Id. */
-  int character_literal = 136;
+  int basic_identifier = 136;
   /** RegularExpression Id. */
-  int decimal_literal = 137;
+  int bit_string_literal = 137;
   /** RegularExpression Id. */
-  int exponent = 138;
+  int bit_value = 138;
   /** RegularExpression Id. */
-  int extended_identifier = 139;
+  int character_literal = 139;
   /** RegularExpression Id. */
-  int graphic_character = 140;
+  int decimal_literal = 140;
   /** RegularExpression Id. */
-  int string_literal = 141;
+  int exponent = 141;
   /** RegularExpression Id. */
-  int EXP = 142;
+  int extended_identifier = 142;
   /** RegularExpression Id. */
-  int MUL = 143;
+  int graphic_character = 143;
   /** RegularExpression Id. */
-  int DIV = 144;
+  int string_literal = 144;
   /** RegularExpression Id. */
-  int ADD = 145;
+  int EXP = 145;
   /** RegularExpression Id. */
-  int SUB = 146;
+  int MUL = 146;
   /** RegularExpression Id. */
-  int CONCAT = 147;
+  int DIV = 147;
   /** RegularExpression Id. */
-  int EQ = 148;
+  int ADD = 148;
   /** RegularExpression Id. */
-  int NEQ = 149;
+  int SUB = 149;
   /** RegularExpression Id. */
-  int GE = 150;
+  int CONCAT = 150;
   /** RegularExpression Id. */
-  int LE = 151;
+  int EQ = 151;
   /** RegularExpression Id. */
-  int GT = 152;
+  int NEQ = 152;
   /** RegularExpression Id. */
-  int LO = 153;
+  int GE = 153;
   /** RegularExpression Id. */
-  int SEMICOLON = 154;
+  int LE = 154;
   /** RegularExpression Id. */
-  int COLON = 155;
+  int GT = 155;
   /** RegularExpression Id. */
-  int ASSIGN = 156;
+  int LO = 156;
   /** RegularExpression Id. */
-  int RARROW = 157;
+  int MEQ = 157;
+  /** RegularExpression Id. */
+  int MNEQ = 158;
+  /** RegularExpression Id. */
+  int MLO = 159;
+  /** RegularExpression Id. */
+  int MLE = 160;
+  /** RegularExpression Id. */
+  int MGT = 161;
+  /** RegularExpression Id. */
+  int MGE = 162;
+  /** RegularExpression Id. */
+  int SEMICOLON = 163;
+  /** RegularExpression Id. */
+  int COLON = 164;
+  /** RegularExpression Id. */
+  int ASSIGN = 165;
+  /** RegularExpression Id. */
+  int RARROW = 166;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -443,6 +461,9 @@ public interface VhdlParserCoreConstants {
     "<special_character>",
     "<other_special_character>",
     "<format_effector>",
+    "<base_specifier_bin_oct_hex>",
+    "<base_specifier_dec>",
+    "<base_specifier_sign>",
     "<base_specifier>",
     "\"_\"",
     "<letter>",
@@ -474,6 +495,12 @@ public interface VhdlParserCoreConstants {
     "\"<=\"",
     "\">\"",
     "\"<\"",
+    "\"?=\"",
+    "\"?/=\"",
+    "\"?<\"",
+    "\"?<=\"",
+    "\"?>\"",
+    "\"?>=\"",
     "\";\"",
     "\":\"",
     "\":=\"",
@@ -484,7 +511,11 @@ public interface VhdlParserCoreConstants {
     "\"\\\'\"",
     "\"|\"",
     "\"<>\"",
+    "\"<<\"",
+    "\">>\"",
+    "\"@\"",
     "\".\"",
+    "\"^\"",
     "\"==\"",
   };
 

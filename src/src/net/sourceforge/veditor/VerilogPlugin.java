@@ -324,10 +324,12 @@ public class VerilogPlugin extends AbstractUIPlugin
 	    clearAutoTaskMarker(file,lineNumber);
 	    try {
             IMarker marker = createAutoMarker(file);
-            marker.setAttribute(IMarker.MESSAGE, msg);
-            marker.setAttribute(IMarker.LINE_NUMBER, lineNumber);
-            marker.setAttribute(IMarker.PRIORITY,priority);
-            marker.setAttribute(IMarker.USER_EDITABLE, false);
+            if (marker != null) {
+	            marker.setAttribute(IMarker.MESSAGE, msg);
+	            marker.setAttribute(IMarker.LINE_NUMBER, lineNumber);
+	            marker.setAttribute(IMarker.PRIORITY,priority);
+	            marker.setAttribute(IMarker.USER_EDITABLE, false);
+            }
         } catch (CoreException e) {           
             e.printStackTrace();
         }

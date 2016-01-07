@@ -736,11 +736,9 @@ void choice() :
 {}
 {
   /** Dirty Solution */
-    LOOKAHEAD( discrete_range()  ("=>" | "|" | ";" | ",") )
-    discrete_range()
-  | LOOKAHEAD( simple_expression()  ("=>" | "|" | ";" | ",") )
-    simple_expression()
-  | element_simple_name()
+  LOOKAHEAD( bare_range()  ("=>" | "|" | ";" | ",") )
+    bare_range()
+  | simple_expression()
   | <OTHERS>
 }
 
@@ -2333,9 +2331,15 @@ void qualified_expression() :
 void range() :
 {}
 {
-    LOOKAHEAD( simple_expression() direction() )
-    simple_expression() direction() simple_expression()
+    LOOKAHEAD( bare_range() )
+    bare_range()
   | range_attribute_name()
+}
+
+void bare_range() :
+{}
+{
+    simple_expression() direction() simple_expression()
 }
 
 

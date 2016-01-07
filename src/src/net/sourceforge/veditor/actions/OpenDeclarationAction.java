@@ -125,7 +125,7 @@ public class OpenDeclarationAction extends AbstractAction
 			m_ProposalTable.setLocation(0, 0);
 			GridData data= new GridData(GridData.FILL_BOTH);
 			m_ProposalTable.setLayoutData(data);
-			Point size= new Point(400,200);
+			Point size= new Point(600,200);
 			m_ProposalShell.setSize(size);
 			m_ProposalTable.setSize(size);
 			m_ProposalTable.addFocusListener(new focusListener());
