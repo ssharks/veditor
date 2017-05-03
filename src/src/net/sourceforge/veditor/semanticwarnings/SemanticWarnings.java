@@ -4,7 +4,6 @@ import java.util.Vector;
 
 import org.eclipse.core.resources.IFile;
 
-import sun.org.mozilla.javascript.internal.ast.AstNode;
 import net.sourceforge.veditor.VerilogPlugin;
 import net.sourceforge.veditor.parser.vhdl.*;
 import net.sourceforge.veditor.semanticwarnings.VariableStore.DeclaredSymbol;
