@@ -1689,6 +1689,8 @@ void interface_declaration() #void :
     interface_variable_declaration()
   | LOOKAHEAD(interface_file_declaration() )
     interface_file_declaration()
+  | LOOKAHEAD(interface_type_declaration() )
+    interface_type_declaration()
 
   /** 1076.1 extensions: */
   | interface_terminal_declaration() 
@@ -1728,6 +1730,12 @@ void interface_file_declaration() :
 {}
 {
   <FILE> identifier_list() ":" subtype_indication()
+}
+
+void interface_type_declaration() :
+{}
+{
+  <TYPE> identifier_list()
 }
 
 
@@ -2334,6 +2342,7 @@ void range() :
     LOOKAHEAD( bare_range() )
     bare_range()
   | range_attribute_name()
+  | <OPEN>
 }
 
 void bare_range() :
@@ -2497,6 +2506,7 @@ void sensitivity_list() :
 {}
 {
   signal_name() ( "," signal_name() )*
+  | <ALL>
 }
 
 
@@ -3170,6 +3180,7 @@ void attribute_simple_name() #void :
 {
   simple_name()
   | <RANGE>
+  | <SUBTYPE>
 }
 
 void component_simple_name() #void :
