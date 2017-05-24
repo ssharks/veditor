@@ -27,6 +27,15 @@ public class VHDLParserThread extends VhdlParserCore implements Runnable {
 	public void run() {
 		boolean ignorefile = false;
 		int file_lines=0;
+		
+		int nMaxFileLines;
+		try{
+			String s = VerilogPlugin.getPreferenceString(PreferenceStrings.MAX_PARSE_LINES);
+			nMaxFileLines = Integer.parseInt(s);			
+		}catch (NumberFormatException e) {
+			nMaxFileLines =50000;
+		}
+		
 		{
 			InputStreamReader reader;
 			try {
@@ -41,8 +50,13 @@ public class VHDLParserThread extends VhdlParserCore implements Runnable {
 						}
 						file_lines++;
 						if(line.contains("-- turn off superfluous VHDL processor warnings") ||
-						   line.contains("-- Skip Parsing")) {
+						   line.contains("-- Skip Parsing") || 
+						   line.contains("begin_protected")) {
 							ignorefile=true;
+							break;
+						}
+						if (file_lines > nMaxFileLines) {
+							break;
 						}
 					}
 				} catch(IOException e) {
@@ -52,16 +66,6 @@ public class VHDLParserThread extends VhdlParserCore implements Runnable {
 				ignorefile=true;
 			}
 		}
-		
-		
-		int nMaxFileLines;
-		try{
-			String s = VerilogPlugin.getPreferenceString(PreferenceStrings.MAX_PARSE_LINES);
-			nMaxFileLines = Integer.parseInt(s);			
-		}catch (NumberFormatException e) {
-			nMaxFileLines =50000;
-		}
-		
 		
 		if(!ignorefile && file_lines < nMaxFileLines) {
 			try {
