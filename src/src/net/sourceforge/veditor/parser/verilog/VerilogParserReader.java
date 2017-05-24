@@ -22,7 +22,9 @@ import java.util.Map;
 
 import org.eclipse.core.resources.IFile;
 
+import net.sourceforge.veditor.VerilogPlugin;
 import net.sourceforge.veditor.parser.ParserReader;
+import net.sourceforge.veditor.preference.PreferenceStrings;
 
 public class VerilogParserReader extends ParserReader {
 	private final static int CONTINUED = 0;
@@ -35,6 +37,8 @@ public class VerilogParserReader extends ParserReader {
 	private StringBuilder buffer;
 	private Map<String, String> defines;
 	private boolean isInclude;
+	private int lines;
+	private int nMaxFileLines;
 
 	public VerilogParserReader(InputStream in, IFile file) {
 		reader = new CharReader(new InputStreamReader(in));
@@ -45,11 +49,21 @@ public class VerilogParserReader extends ParserReader {
 	}
 
 	public VerilogParserReader(String text, IFile file) {
-		reader = new CharReader(new StringReader(text));
+		try{
+			String s = VerilogPlugin.getPreferenceString(PreferenceStrings.MAX_PARSE_LINES);
+			nMaxFileLines = Integer.parseInt(s);			
+		}catch (NumberFormatException e) {
+			nMaxFileLines =50000;
+		}
+		
+		reader = new CharReader(new StringReader(text));		
 		process(file);
 		reader.close();
 		// System.out.println(buffer);
-		initialize(buffer.toString());
+		// do not parse too long files
+		if (lines <= nMaxFileLines) {
+			initialize(buffer.toString());
+		}
 	}
 
 	private void process(IFile file) {
@@ -57,12 +71,15 @@ public class VerilogParserReader extends ParserReader {
 		buffer = new StringBuilder();
 		defines = new HashMap<String, String>();
 		isInclude = false;
+		lines = 0;
 
 		for (;;) {
 			if (reader.isEof())
 				break;
 			// Normally it runs just once. It allows accidental `else or `endif
-			parseRegion(true);
+			if (parseRegion(true) == FILE_TOO_LARGE) {
+				break;
+			}
 		}
 	}
 	
@@ -71,6 +88,7 @@ public class VerilogParserReader extends ParserReader {
 	private static final int LINE_COMMENT = 2;
 	private static final int STRING = 3;
 	private static final int PROTECTED = 4;
+	private static final int FILE_TOO_LARGE = 5;
 	
 	private String lastCode = "";
 
@@ -145,6 +163,12 @@ public class VerilogParserReader extends ParserReader {
 				}
 			} else {
 				if (c == '\n') {
+					// avoid parsing too large files
+					lines++;
+					if (lines > nMaxFileLines) {
+						return FILE_TOO_LARGE;
+					}
+					
 					if (isInclude)
 						buffer.append(' '); // for keeping line number
 					else
