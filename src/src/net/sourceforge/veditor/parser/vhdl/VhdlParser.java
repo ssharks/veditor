@@ -120,8 +120,17 @@ public class VhdlParser implements IParser
 			parsethread.join(nTimeout);
 			if(parsethread.isAlive()) {
 				VerilogPlugin.println("VHDL Parser is taking too long parsing "+m_File.getName()+" . I'm killing it\n");
+				long startTime = System.currentTimeMillis();
 				m_Reader.stop();
-				
+				// wait for the thread to actually stop
+				parsethread.join(100);
+				if (parsethread.isAlive()) {
+					// do a hard kill
+					parsethread.stop();
+					parsethread.join(0);
+				}
+				long estimatedTime = System.currentTimeMillis() - startTime;
+				VerilogPlugin.println("Stopping the parser took " + estimatedTime + " ms\n");
 			}
 		} catch (InterruptedException e) {
 			HdlParserException hdlParserException=new HdlParserException(e);
